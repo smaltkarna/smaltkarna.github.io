@@ -1,0 +1,2063 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pizza Box Coin Toss</title>
+<link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+  body{--off:157px}
+  body.panel-closed{--off:0px}
+  body.panel-closed #panel{display:none}
+  body.panel-closed #menuBtn{display:block}
+  #panelClose{position:absolute;top:12px;right:12px;background:rgba(255,255,255,.07);color:var(--muted);border:1px solid var(--line);width:30px;height:30px;padding:0;font-size:18px;line-height:1}
+  #panelClose:hover{color:var(--ink)}
+  #panel{position:fixed}
+  :root{--ink:#f6efe4;--muted:#b9a993;--card:rgba(28,20,15,.86);--line:rgba(255,235,205,.12);--accent:#f2a33a;--red:#e2453c}
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;overflow:hidden;background:#1b1410;color:var(--ink);font-family:Inter,system-ui,sans-serif}
+  #scene{position:fixed;inset:0;touch-action:none}
+  #scene canvas{display:block;cursor:grab}
+  body.placing #scene canvas{cursor:crosshair}
+  button{font:inherit;cursor:pointer;border:0;border-radius:10px}
+  #panel{position:fixed;top:14px;left:14px;bottom:14px;width:300px;background:var(--card);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid var(--line);border-radius:18px;padding:18px 16px;overflow:auto;z-index:5}
+  #panel h1{font-family:"Permanent Marker",cursive;font-weight:400;font-size:28px;margin:0;letter-spacing:.5px}
+  #panel header p{margin:4px 0 0;color:var(--muted);font-size:13px;line-height:1.4}
+  #panel section{margin-top:18px}
+  #panel h2{font-size:11px;text-transform:uppercase;letter-spacing:1.4px;color:var(--muted);margin:0 0 8px;font-weight:800}
+  .foldBtn{all:unset;cursor:pointer;display:flex;align-items:center;gap:6px;width:100%;font:inherit;color:inherit;letter-spacing:inherit;text-transform:inherit}
+  .foldBtn:hover{color:var(--ink)}
+  .foldBtn .chev{margin-left:auto;font-size:13px;transition:transform .2s}
+  .fold.closed .chev{transform:rotate(-90deg)}
+  .fold.closed .foldBody{display:none}
+  #ruleCount{color:var(--accent)}
+  #addForm{display:flex;gap:6px}
+  #addForm input{flex:1;min-width:0;background:rgba(255,255,255,.07);border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:10px 12px;font:inherit;font-size:15px;outline:none}
+  #addForm input:focus{border-color:var(--accent)}
+  #addForm button{background:var(--accent);color:#2a1a08;font-weight:800;padding:0 14px}
+  ul{list-style:none;margin:10px 0 0;padding:0}
+  .player{display:flex;align-items:center;gap:10px;padding:7px 8px;border-radius:10px}
+  .player.up{background:rgba(242,163,58,.16);outline:1px solid rgba(242,163,58,.45)}
+  .dot{width:14px;height:14px;border-radius:50%;flex:none;border:2px solid rgba(255,255,255,.5)}
+  .player .nm{flex:1;font-family:"Permanent Marker",cursive;font-size:17px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .player .tag{font-size:10px;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:1px}
+  .x{background:none;color:var(--muted);font-size:16px;padding:2px 6px}
+  .x:hover{color:var(--red)}
+  .rule{display:flex;gap:8px;align-items:flex-start;padding:7px 8px;border-radius:10px;background:rgba(255,255,255,.04);margin-bottom:6px;font-size:13.5px;line-height:1.35}
+  .rule .txt{flex:1}
+  .rule .by{display:block;color:var(--muted);font-size:11.5px;margin-top:2px}
+  .empty{color:var(--muted);font-size:13px;margin:6px 0 0;font-style:italic}
+  #log{margin:0;padding:0 0 0 18px;font-size:12.5px;color:#d9cbb6;line-height:1.5;max-height:180px;overflow:auto}
+  #panel footer{display:flex;gap:8px;margin-top:18px}
+  #panel footer button{flex:1;background:rgba(255,255,255,.07);color:var(--ink);padding:9px;font-size:13px;border:1px solid var(--line)}
+  #panel footer button.warn{background:rgba(226,69,60,.25);border-color:var(--red)}
+  #hud{position:fixed;left:50%;bottom:22px;transform:translateX(calc(-50% + var(--off)));display:flex;align-items:center;gap:10px;z-index:6}
+  #turn{background:var(--card);border:1px solid var(--line);padding:10px 14px;border-radius:14px;font-size:14px;white-space:nowrap;backdrop-filter:blur(8px)}
+  #turn b{font-family:"Permanent Marker",cursive;font-weight:400;font-size:18px;color:var(--accent)}
+  #tossBtn{background:linear-gradient(180deg,#ffcf5a,#e8962a);color:#2a1606;font-weight:900;font-size:18px;padding:15px 26px;border-radius:16px;box-shadow:0 8px 24px rgba(232,150,42,.35),inset 0 -3px 0 rgba(0,0,0,.18);letter-spacing:.3px}
+  #tossBtn{white-space:nowrap}
+  @media (max-width:1250px){#help{display:none}}
+  #tossBtn kbd{font:700 11px Inter,sans-serif;background:rgba(0,0,0,.18);border-radius:6px;padding:3px 7px;margin-left:6px;vertical-align:2px;letter-spacing:.5px}
+  #tossBtn:active{transform:translateY(2px)}
+  #tossBtn:disabled{filter:grayscale(.7) brightness(.7);cursor:default}
+  #viewBtn{background:var(--card);color:var(--ink);border:1px solid var(--line);padding:12px 14px;font-size:13px;font-weight:600}
+  #hint,#result{position:fixed;left:50%;top:18px;transform:translateX(calc(-50% + var(--off)));z-index:7;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px 16px;backdrop-filter:blur(10px);display:none;max-width:min(560px,calc(100vw - 360px))}
+  #hint{align-items:center;gap:10px;font-size:14.5px}
+  #hint.on{display:flex}
+  #hint b{font-family:"Permanent Marker",cursive;font-weight:400;font-size:18px}
+  #hint button{background:rgba(255,255,255,.08);color:var(--ink);padding:7px 10px;font-size:13px;border:1px solid var(--line);white-space:nowrap}
+  #result{text-align:center;padding:16px 24px;border-width:2px}
+  #result.on{display:block;animation:pop .35s cubic-bezier(.2,1.6,.4,1)}
+  #result .title{font-family:"Permanent Marker",cursive;font-size:34px;line-height:1.1}
+  #result .sub{color:#e6d8c3;font-size:14.5px;margin-top:6px;line-height:1.4}
+  @keyframes pop{from{transform:translateX(calc(-50% + var(--off))) scale(.7);opacity:0}}
+  #modal{position:fixed;inset:0;background:rgba(10,6,3,.55);display:none;align-items:center;justify-content:center;z-index:20;padding:16px}
+  #modal.on{display:flex}
+  #modal .card{background:#2a1e16;border:1px solid var(--line);border-radius:20px;padding:22px;width:min(440px,100%);box-shadow:0 20px 60px rgba(0,0,0,.5)}
+  #modal h3{font-family:"Permanent Marker",cursive;font-weight:400;font-size:30px;margin:0 0 4px}
+  #modal p{margin:0 0 12px;color:#e6d8c3;font-size:14.5px;line-height:1.45}
+  #modal b{color:var(--accent)}
+  #ruleText{width:100%;min-height:74px;resize:none;background:#f1e3c8;color:#2a1a0c;border:0;border-radius:12px;padding:12px;font-family:"Permanent Marker",cursive;font-size:19px;outline:none}
+  .sugs{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 14px}
+  .sugs button{background:rgba(255,255,255,.07);color:#e6d8c3;font-size:12.5px;padding:6px 10px;border:1px solid var(--line);border-radius:999px}
+  .sugs button:hover{border-color:var(--accent)}
+  .actions{display:flex;gap:8px;justify-content:flex-end}
+  .actions button{padding:11px 16px;font-weight:700}
+  #skipRule{background:none;color:var(--muted)}
+  #saveRule{background:var(--accent);color:#2a1a08}
+  #bubble{position:fixed;left:0;top:0;z-index:35;pointer-events:none;background:#fff;color:#1d1d1d;font-weight:800;font-size:clamp(17px,2.2vw,24px);padding:14px 20px;border-radius:20px;box-shadow:0 10px 30px rgba(0,0,0,.35);white-space:nowrap;max-width:90vw;transform:translate(-50%,-100%) scale(.5);opacity:0;transition:opacity .25s,transform .35s cubic-bezier(.2,1.6,.4,1)}
+  #bubble::after{content:'';position:absolute;left:50%;bottom:-12px;margin-left:-12px;border:12px solid transparent;border-bottom:0;border-top-color:#fff}
+  #bubble.on{opacity:1;transform:translate(-50%,-100%) scale(1)}
+  #gameover{position:fixed;inset:0;z-index:60;display:none}
+  #gameover.on{display:block}
+  #goo{position:absolute;inset:0;width:100%;height:100%}
+  .go-card{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(.6);opacity:0;text-align:center;width:min(520px,92vw);transition:opacity .6s,transform .7s cubic-bezier(.2,1.5,.4,1)}
+  #gameover.card .go-card{opacity:1;transform:translate(-50%,-50%) scale(1)}
+  .go-card h1{font-family:"Permanent Marker",cursive;font-weight:400;font-size:clamp(56px,12vw,120px);margin:0;color:#ff3b4f;-webkit-text-stroke:4px #1a0406;paint-order:stroke fill;text-shadow:0 6px 0 #1a0406,0 0 40px rgba(0,0,0,.85);letter-spacing:2px;line-height:1}
+  .go-sub{display:inline-block;font-size:17px;color:#fff;margin:12px 0 16px;font-weight:800;background:rgba(20,8,6,.8);padding:6px 14px;border-radius:10px}
+  #goStats{background:rgba(20,8,6,.82);border:2px solid #6b8f2a;border-radius:18px;padding:16px 18px;text-align:left;color:#f3ead8;font-size:15px}
+  #goStats .row{display:flex;justify-content:space-between;padding:4px 0}
+  #goStats .lb{margin-top:10px;border-top:1px solid rgba(255,255,255,.12);padding-top:8px}
+  #goStats .nm{font-family:"Permanent Marker",cursive;font-size:18px}
+  .go-btns{display:flex;gap:10px;justify-content:center;margin-top:16px;flex-wrap:wrap}
+  .go-btns button{padding:13px 20px;font-weight:800;font-size:15px}
+  #goAgain{background:linear-gradient(180deg,#9be15d,#4f9a2a);color:#10230a}
+  #goNew{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.3)}
+  #ctrl{display:none}
+  body.ctrl #scene,body.ctrl #panel,body.ctrl #hud,body.ctrl #help,body.ctrl #menuBtn,body.ctrl #jazzBtn,body.ctrl #hint,body.ctrl #result,body.ctrl #yugo,body.ctrl #bubble,body.ctrl #gameover,body.ctrl #modal{display:none!important}
+  body.ctrl{overflow:auto;background:radial-gradient(circle at 50% 0%,#3a2a1e,#140d09 70%)}
+  body.ctrl #ctrl{display:flex;flex-direction:column;min-height:100vh;min-height:100dvh;padding:16px 16px calc(16px + env(safe-area-inset-bottom));gap:14px;max-width:560px;margin:0 auto}
+  .c-top{display:flex;justify-content:space-between;align-items:center}
+  .c-logo{font-family:"Permanent Marker",cursive;font-size:24px}
+  #cMe{font-family:"Permanent Marker",cursive;font-size:20px;display:flex;align-items:center;gap:8px}
+  #cBody{flex:1;display:flex;flex-direction:column;gap:14px}
+  .c-card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px}
+  .c-card h3{margin:0 0 6px;font-family:"Permanent Marker",cursive;font-weight:400;font-size:22px}
+  .c-card p{margin:0;color:#e6d8c3;font-size:15px;line-height:1.45}
+  .c-status{text-align:center;font-size:17px;color:#e6d8c3}
+  .c-status b{font-family:"Permanent Marker",cursive;font-weight:400;font-size:24px}
+  #cLive{display:none;width:100%;aspect-ratio:1/1;max-height:46vh;border-radius:16px;align-self:center;object-fit:contain}
+  #cLive.on{display:block}
+  .c-big{width:100%;min-height:24vh;border-radius:28px;font-size:clamp(30px,9vw,46px);font-weight:900;color:#2a1606;background:linear-gradient(180deg,#ffd76a,#e8962a);box-shadow:0 14px 40px rgba(232,150,42,.4),inset 0 -6px 0 rgba(0,0,0,.18);touch-action:manipulation;-webkit-user-select:none;user-select:none;line-height:1.1}
+  .c-big.lock{background:linear-gradient(180deg,#9be15d,#3f9a2a);color:#0c2207;box-shadow:0 14px 40px rgba(80,180,60,.4),inset 0 -6px 0 rgba(0,0,0,.18)}
+  .c-big:disabled{filter:grayscale(.8) brightness(.55)}
+  .c-big.mine:not(:disabled){animation:throb 1.2s ease-in-out infinite}
+  @keyframes throb{50%{transform:scale(1.025)}}
+  .c-names{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .c-names button{padding:18px 10px;border-radius:16px;font-family:"Permanent Marker",cursive;font-size:22px;color:#fff;border:2px solid rgba(255,255,255,.15)}
+  .c-names button small{display:block;font-family:Inter,sans-serif;font-size:11px;opacity:.8}
+  .c-row{display:flex;gap:8px}
+  .c-row input,#cRule{flex:1;min-width:0;background:#f1e3c8;color:#2a1a0c;border:0;border-radius:12px;padding:14px;font-family:"Permanent Marker",cursive;font-size:19px;outline:none}
+  #cRule{width:100%;min-height:90px;resize:none}
+  .c-btn{background:var(--accent);color:#2a1a08;font-weight:800;padding:0 18px;font-size:16px;border-radius:12px;min-height:50px}
+  .c-ghost{background:rgba(255,255,255,.08);color:var(--ink);border:1px solid var(--line)}
+  .c-link{background:none;color:var(--muted);font-size:13px;text-decoration:underline;padding:6px}
+  .c-foot{display:flex;justify-content:space-between;flex-wrap:wrap}
+  .c-result{text-align:center;border-width:2px}
+  .c-result .t{font-family:"Permanent Marker",cursive;font-size:26px;line-height:1.15}
+  .c-rules{margin:0;padding-left:20px;font-size:14.5px;line-height:1.5;color:#e6d8c3}
+  #phones{background:var(--card);border:1px solid var(--line);padding:10px 12px;border-radius:14px;font-size:13px;white-space:nowrap;display:none}
+  #phones.on{display:block}
+  #roomCode{display:none;background:#ffd84a;color:#2a1606;padding:10px 12px;border-radius:14px;font-size:14px;font-weight:900;letter-spacing:2px;white-space:nowrap}
+  #roomCode.on{display:block}
+  .ph{font-size:12px;margin-left:2px}
+  #inviteBtn{position:fixed;top:14px;right:128px;z-index:8;background:linear-gradient(180deg,#ffd76a,#e8962a);color:#2a1606;border:0;padding:9px 13px;font-size:13px;font-weight:800}
+  #invite{position:fixed;inset:0;background:rgba(10,6,3,.6);display:none;align-items:center;justify-content:center;z-index:25;padding:16px}
+  #invite.on{display:flex}
+  #invite .card{position:relative;background:#2a1e16;border:1px solid var(--line);border-radius:22px;padding:24px;width:min(440px,100%);text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+  #invite h3{font-family:"Permanent Marker",cursive;font-weight:400;font-size:30px;margin:0 0 14px}
+  #qr{background:#fff;border-radius:16px;padding:14px;display:inline-block}
+  #qr img,#qr canvas{display:block;width:240px;height:240px}
+  .inv-link{display:flex;gap:8px;align-items:center;justify-content:center;margin:14px 0 8px;font-size:13px;color:var(--muted);word-break:break-all}
+  .inv-link button{background:var(--accent);color:#2a1a08;font-weight:800;padding:8px 12px;font-size:13px;white-space:nowrap}
+  .inv-steps{text-align:left;margin:10px 0 0;padding-left:20px;color:#e6d8c3;font-size:14px;line-height:1.5}
+  body.ctrl #inviteBtn,body.ctrl #invite{display:none!important}
+  @media (max-width:760px){#inviteBtn{top:12px;right:118px}}
+  #yugo{position:fixed;left:50%;top:40%;transform:translate(-50%,-50%) scale(.6);z-index:40;pointer-events:none;opacity:0;font-family:'Hiragino Maru Gothic ProN','Yu Gothic','Noto Sans JP',sans-serif;font-weight:800;font-size:clamp(26px,5vw,52px);line-height:1.25;text-align:center;color:#fff;background:linear-gradient(135deg,#ff5fa2,#ff9a3c);padding:22px 34px;border-radius:28px;box-shadow:0 18px 50px rgba(255,80,150,.45);transition:opacity .35s,transform .45s cubic-bezier(.2,1.6,.4,1)}
+  #yugo.on{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(-3deg)}
+  #toast{position:fixed;left:50%;bottom:100px;transform:translateX(calc(-50% + var(--off)));background:#000c;color:#fff;padding:9px 14px;border-radius:10px;font-size:13.5px;opacity:0;transition:opacity .25s;pointer-events:none;z-index:30}
+  #toast.on{opacity:1}
+  #menuBtn{display:none;position:fixed;top:12px;left:12px;z-index:8;background:var(--card);color:var(--ink);border:1px solid var(--line);padding:9px 13px;font-weight:700;font-size:14px}
+  #jazzBtn{position:fixed;top:14px;right:14px;z-index:8;background:var(--card);color:var(--ink);border:1px solid var(--line);padding:9px 13px;font-size:13px;font-weight:700;backdrop-filter:blur(8px)}
+  #jazzBtn.off{opacity:.6}
+  #help{position:fixed;right:16px;bottom:22px;color:rgba(246,239,228,.45);font-size:12px;text-align:right;line-height:1.5;z-index:4}
+  @media (max-width:760px){
+    #panel{display:none;top:58px;left:10px;right:10px;width:auto;bottom:auto;max-height:62vh}
+    #panel.open{display:block}
+    #menuBtn{display:block}
+    #hud{transform:translateX(-50%);bottom:14px;flex-wrap:wrap;justify-content:center;width:calc(100vw - 20px)}
+    #turn{order:-1;width:100%;text-align:center}
+    #tossBtn{flex:1}
+    #hint,#result{transform:translateX(-50%);top:58px;max-width:calc(100vw - 20px);width:calc(100vw - 20px)}
+    #hint{flex-wrap:wrap}
+    @keyframes pop{from{transform:translateX(-50%) scale(.7);opacity:0}}
+    #toast{transform:translateX(-50%);bottom:150px}
+    #help{display:none}
+    #jazzBtn{top:12px;right:10px}
+  }
+</style>
+</head>
+<body>
+<div id="scene"></div>
+<div id="ctrl">
+  <div class="c-top"><span class="c-logo">🍕 Pizza Box</span><span id="cMe"></span></div>
+  <canvas id="cLive"></canvas>
+  <div id="cBody"></div>
+  <div class="c-foot"><button id="cSwitch" class="c-link">Change player</button><button id="cHost" class="c-link">Use this device as the main screen</button></div>
+</div>
+
+<button id="menuBtn">☰ Pizza Box</button>
+<aside id="panel">
+  <button id="panelClose" title="Close panel">×</button>
+  <header>
+    <h1>🍕 Pizza Box</h1>
+    <p>Write your name inside the box and circle it. Flip the coin: land in a circle, that person drinks. Land on cardboard, you write a rule there.</p>
+  </header>
+  <section>
+    <h2>Players</h2>
+    <form id="addForm" autocomplete="off">
+      <input id="nameInput" maxlength="16" placeholder="Add a name…">
+      <button type="submit">Add</button>
+    </form>
+    <ul id="playerList"></ul>
+  </section>
+  <section class="fold" id="rulesSec">
+    <h2><button class="foldBtn" data-sec="rulesSec">Rules on the box <span id="ruleCount"></span><span class="chev">▾</span></button></h2>
+    <div class="foldBody"><ul id="ruleList"></ul></div>
+  </section>
+  <section class="fold" id="logSec">
+    <h2><button class="foldBtn" data-sec="logSec">Log <span class="chev">▾</span></button></h2>
+    <div class="foldBody"><ol id="log"></ol></div>
+  </section>
+  <section id="phoneSec">
+    <h2>📱 Play from your phones</h2>
+    <p class="empty" id="phoneHelp">This computer is the main screen. Everyone else opens this same page on their phone (share it from its page on claude.ai) — phones are controllers: draw your circle, take your turn, write your rules.</p>
+    <button id="asCtrl" class="c-link" style="margin-top:6px">Use this device as a controller instead</button>
+  </section>
+  <footer>
+    <button id="clearRules">Wipe rules</button>
+    <button id="newGame">New game</button>
+  </footer>
+</aside>
+
+<div id="hint"><span></span><button id="autoBtn">Random spot</button><button id="cancelBtn">Cancel</button></div>
+<div id="result"><div class="title"></div><div class="sub"></div></div>
+
+<div id="hud">
+  <div id="turn">Add at least 2 players</div>
+  <div id="phones" title="Phones connected as controllers"></div>
+  <div id="roomCode" title="Phones join with this code"></div>
+  <button id="tossBtn">🎯 Flip the coin <kbd>Space</kbd></button>
+  <button id="viewBtn">Top view</button>
+</div>
+<button id="jazzBtn">🎷 Jazz: on</button>
+<button id="inviteBtn">📱 Invite phones</button>
+<div id="invite"><div class="card">
+  <button id="inviteClose" class="x" style="position:absolute;top:12px;right:14px;font-size:22px">×</button>
+  <h3>Join on your phone 📱</h3>
+  <div id="qr"></div>
+  <div class="inv-link"><span id="invUrl"></span><button id="copyLink">Copy link</button></div>
+  <ol class="inv-steps">
+    <li><b>Host:</b> on claude.ai, open this game's page and click <b>Share</b> → invite each friend's email (Can view is enough).</li>
+    <li><b>Friends:</b> accept the invite, stay signed in to Claude on your phone, then scan the code.</li>
+    <li>Your phone becomes the controller — draw your circle, take turns, write rules.</li>
+  </ol>
+</div></div>
+<div id="help">Press <b>Space</b> to freeze the crosshair, <b>Space</b> again to throw<br>Drag to orbit · scroll/pinch to zoom</div>
+<div id="toast"></div>
+<div id="bubble">Hey Yugo, welcome to our house! 🏠</div>
+<div id="gameover"><canvas id="goo"></canvas>
+  <div class="go-card">
+    <h1>GAME OVER</h1>
+    <p class="go-sub">The goblin ate the coin… and then he exploded.</p>
+    <div id="goStats"></div>
+    <div class="go-btns"><button id="goAgain">Play again — same crew</button><button id="goNew">New game</button></div>
+  </div>
+</div>
+<div id="yugo">こんにちは、ユーゴ！<br>元気？ 大好きだよ！💖</div>
+
+<div id="modal">
+  <div class="card">
+    <h3>Empty spot!</h3>
+    <p><b id="ruleWho">You</b> landed on bare cardboard. Write a rule here — whoever lands on it next has to do it.</p>
+    <textarea id="ruleText" maxlength="70" placeholder="e.g. Drink with your left hand"></textarea>
+    <div class="sugs" id="sugs"></div>
+    <div class="actions">
+      <button id="skipRule">No rule</button>
+      <button id="saveRule">Write it on the box ✍️</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+(() => {
+const S = 2048;            // top texture resolution
+const HALF = 4.94;         // half-size of the inside floor (world units)
+const OUT = 5.0;           // outer half-size of the box
+const IN = 10.12 / 16;    // world units per inch (box is ~16" across)
+const ruleR = () => 0.45 + Math.random() * 0.75; // rule circles: random size every time
+const TOP = 0.05;          // inside floor height
+const WALL_H = 0.95;       // wall height
+const COIN_R = 0.38, COIN_T = 0.07;
+const COLORS = ['#c81e1e','#1d4ed8','#15803d','#7c3aed','#d9480f','#0f766e','#be185d','#1f2937','#a16207','#0369a1'];
+const SUGGESTIONS = ['Drink with your other hand','Waterfall — everyone drinks','Speak in an accent till your next turn','Pick a drinking buddy','Finish your drink','Give out 3 sips','No first names allowed','Compliment everyone, then drink','Thumb master','Rhyme your next sentence','Take a sip standing up','Swap seats with someone'];
+
+const $ = s => document.querySelector(s);
+// standalone website (GitHub Pages) uses room codes; on claude.ai the page uses Claude's live room
+const STANDALONE = /github\.io$/.test(location.hostname) || new URLSearchParams(location.search).has('standalone');
+let ROOM_CODE = null;
+const CTRL = (() => {
+  const h = (location.hash || '').slice(1); let saved = null; try { saved = localStorage.getItem('pizzabox-mode'); } catch (e) {}
+  const hj = /^join-([a-z]{4})$/i.exec(h);
+  if (hj) { ROOM_CODE = hj[1].toUpperCase(); try { localStorage.setItem('pizzabox-mode', 'ctrl'); localStorage.setItem('pizzabox-join', ROOM_CODE); } catch (e) {} return true; }
+  if (h === 'controller') return true; if (h === 'host') return false;
+  if (STANDALONE && !saved) {
+    let hasGame = false; try { const g = JSON.parse(localStorage.getItem('pizzabox-v1')); hasGame = !!(g && g.players && g.players.length); } catch (e) {}
+    const phoneLike = matchMedia('(pointer: coarse)').matches && Math.min(screen.width, screen.height) < 820;
+    const c = !hasGame && phoneLike; try { localStorage.setItem('pizzabox-mode', c ? 'ctrl' : 'host'); } catch (e) {} return c;
+  }
+  if (saved) return saved === 'ctrl';
+  let hasGame = false; try { const g = JSON.parse(localStorage.getItem('pizzabox-v1')); hasGame = !!(g && g.players && g.players.length); } catch (e) {}
+  try { localStorage.setItem('pizzabox-mode', hasGame ? 'host' : 'ctrl'); } catch (e) {}
+  return !hasGame;
+})();
+const mulberry32 = a => () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const esc = s => s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const newId = () => (Date.now() % 1e9) + Math.floor(Math.random() * 1e6);
+
+// ---------- state ----------
+let state = { players: [], rules: [], turn: 0, log: [], playTime: 0, rounds: 0, drinks: {} };
+try { const s = JSON.parse(localStorage.getItem('pizzabox-v1')); if (s && Array.isArray(s.players)) state = Object.assign(state, s); } catch (e) {}
+function ruleCap(x, z, skip) {
+  const minName = Math.min(...state.players.map(p => p.r), 1.2);
+  const others = [...state.players, ...state.rules.filter(q => q !== skip)];
+  const gap = Math.min(9, ...others.map(c => Math.hypot(c.x - x, c.z - z) - c.r * 1.1));
+  return Math.max(0.22, Math.min(minName * 0.75, gap / 1.12 - 0.08, HALF - Math.max(Math.abs(x), Math.abs(z)) - 0.05));
+}
+function fixRules() { state.rules.forEach(r => { r.r = Math.min(r.r || 0.5, ruleCap(r.x, r.z, r)); }); }
+fixRules();
+state.playTime = state.playTime || 0; state.rounds = state.rounds || 0; state.drinks = state.drinks || {};
+if (!state.clockV2) { if (state.players.length >= 2) state.playTime = Math.max(state.playTime, 30 * 60); state.clockV2 = true; }
+const drink = (p, n = 1) => { if (p) state.drinks[p.id] = (state.drinks[p.id] || 0) + n; };
+const save = () => { try { localStorage.setItem('pizzabox-v1', JSON.stringify(state)); } catch (e) {} };
+
+// ---------- three setup ----------
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.outputEncoding = THREE.sRGBEncoding;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 0.95;
+$('#scene').appendChild(renderer.domElement);
+const maxAniso = renderer.capabilities.getMaxAnisotropy();
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color('#1b1410');
+scene.fog = new THREE.Fog('#1b1410', 26, 55);
+const camera = new THREE.PerspectiveCamera(42, innerWidth / innerHeight, 0.1, 200);
+
+// simple environment for the metal coin
+{
+  const pm = new THREE.PMREMGenerator(renderer);
+  const env = new THREE.Scene();
+  env.background = new THREE.Color('#5a4636');
+  const lightMat = new THREE.MeshBasicMaterial({ color: '#fff2dc', side: THREE.DoubleSide });
+  [[0, 8, 0, -Math.PI / 2, 10], [7, 3, 4, 0, 4], [-6, 2, -5, 0, 3]].forEach(([x, y, z, rx, s]) => {
+    const p = new THREE.Mesh(new THREE.PlaneGeometry(s, s), lightMat); p.position.set(x, y, z); p.lookAt(0, 0, 0); env.add(p);
+  });
+  window.__env = pm.fromScene(env, 0.04).texture;
+}
+
+scene.add(new THREE.HemisphereLight(0xfff1dd, 0x2a1d12, 0.45));
+const sun = new THREE.DirectionalLight(0xffe2bd, 1.05);
+sun.position.set(6, 15, 7);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+Object.assign(sun.shadow.camera, { left: -13, right: 13, top: 13, bottom: -13, near: 1, far: 40 });
+sun.shadow.bias = -0.0004;
+scene.add(sun);
+const pendant = new THREE.PointLight(0xffb866, 0.5, 30); pendant.position.set(-4, 8, -3); scene.add(pendant);
+
+// ---------- textures ----------
+function makeCanvas(w, h) { const c = document.createElement('canvas'); c.width = w; c.height = h || w; return c; }
+function cardboard(g, w, h, seed, base) {
+  const rnd = mulberry32(seed);
+  g.fillStyle = base; g.fillRect(0, 0, w, h);
+  const n = Math.floor(w * h / 3000);
+  for (let i = 0; i < n; i++) {
+    const x = rnd() * w, y = rnd() * h, r = 15 + rnd() * w * 0.06;
+    const gr = g.createRadialGradient(x, y, 0, x, y, r), a = rnd() * 0.06;
+    gr.addColorStop(0, rnd() < .5 ? `rgba(105,70,35,${a})` : `rgba(240,210,165,${a})`); gr.addColorStop(1, 'rgba(0,0,0,0)');
+    g.fillStyle = gr; g.fillRect(x - r, y - r, 2 * r, 2 * r);
+  }
+  for (let i = 0; i < n * 6; i++) {
+    g.strokeStyle = `rgba(${rnd() < .5 ? '90,60,30' : '245,220,180'},${0.04 + rnd() * 0.08})`;
+    g.lineWidth = 0.6 + rnd() * 1.2;
+    const x = rnd() * w, y = rnd() * h, l = 3 + rnd() * 16, a = rnd() * Math.PI;
+    g.beginPath(); g.moveTo(x, y); g.lineTo(x + Math.cos(a) * l, y + Math.sin(a) * l); g.stroke();
+  }
+  for (let y = 0; y < h; y += 24) { g.fillStyle = 'rgba(120,85,45,0.03)'; g.fillRect(0, y, w, 9); }
+}
+
+let baseCanvas;
+function makeBase() {
+  const c = makeCanvas(S), g = c.getContext('2d'), rnd = mulberry32(11);
+  cardboard(g, S, S, 3, '#c9a271');
+  // grease stains
+  for (let i = 0; i < 5; i++) {
+    const x = S * (0.12 + rnd() * 0.76), y = S * (0.12 + rnd() * 0.76), r = 60 + rnd() * 160;
+    g.beginPath();
+    for (let k = 0; k <= 28; k++) { const a = k / 28 * Math.PI * 2, rr = r * (0.75 + rnd() * 0.35); k ? g.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr) : g.moveTo(x + rr, y); }
+    g.closePath();
+    const gr = g.createRadialGradient(x, y, 0, x, y, r); gr.addColorStop(0, 'rgba(150,95,30,0.10)'); gr.addColorStop(.85, 'rgba(140,85,25,0.17)'); gr.addColorStop(1, 'rgba(120,70,20,0.05)');
+    g.fillStyle = gr; g.fill(); g.strokeStyle = 'rgba(110,65,20,0.12)'; g.lineWidth = 3; g.stroke();
+  }
+  // where the pizza sat: faint grease ring + crumbs
+  g.save(); g.translate(S / 2, S / 2);
+  const ring = g.createRadialGradient(0, 0, S * 0.3, 0, 0, S * 0.44);
+  ring.addColorStop(0, 'rgba(150,95,30,0.0)'); ring.addColorStop(.78, 'rgba(150,95,30,0.10)'); ring.addColorStop(.92, 'rgba(120,70,20,0.16)'); ring.addColorStop(1, 'rgba(120,70,20,0)');
+  g.fillStyle = ring; g.beginPath(); g.arc(0, 0, S * 0.44, 0, Math.PI * 2); g.fill();
+  for (let i = 0; i < 160; i++) { const a = rnd() * Math.PI * 2, d = S * (0.05 + rnd() * 0.4); g.fillStyle = `rgba(${rnd() < .5 ? '150,80,20' : '230,200,140'},${0.25 + rnd() * 0.4})`; g.beginPath(); g.arc(Math.cos(a) * d, Math.sin(a) * d, 2 + rnd() * 5, 0, Math.PI * 2); g.fill(); }
+  g.restore();
+  // fold lines (hinge at back, tab at front) + edge vignette
+  g.strokeStyle = 'rgba(70,45,20,0.28)'; g.lineWidth = 5;
+  [[0, 10, S, 10], [0, S - 10, S, S - 10], [10, 0, 10, S], [S - 10, 0, S - 10, S]].forEach(([a, b, c2, d]) => { g.beginPath(); g.moveTo(a, b); g.lineTo(c2, d); g.stroke(); });
+  g.strokeStyle = 'rgba(255,235,200,0.18)'; g.lineWidth = 3;
+  [[0, 16, S, 16], [0, S - 16, S, S - 16]].forEach(([a, b, c2, d]) => { g.beginPath(); g.moveTo(a, b); g.lineTo(c2, d); g.stroke(); });
+  const v = g.createRadialGradient(S / 2, S / 2, S * 0.35, S / 2, S / 2, S * 0.75); v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(60,35,10,0.22)');
+  g.fillStyle = v; g.fillRect(0, 0, S, S);
+  baseCanvas = c;
+}
+// lid textures: outside print + greasy inside
+const lidOutCanvas = makeCanvas(1024), lidOutTex = new THREE.CanvasTexture(lidOutCanvas);
+const lidInCanvas = makeCanvas(1024), lidInTex = new THREE.CanvasTexture(lidInCanvas);
+[lidOutTex, lidInTex].forEach(t => t.encoding = THREE.sRGBEncoding);
+function makeLid() {
+  let g = lidOutCanvas.getContext('2d'); cardboard(g, 1024, 1024, 31, '#c9a271');
+  g.save(); g.translate(512, 512); g.globalAlpha = 0.85; g.strokeStyle = g.fillStyle = '#a3221b';
+  g.lineWidth = 12; g.beginPath(); g.arc(0, 0, 250, 0, Math.PI * 2); g.stroke();
+  g.lineWidth = 5; g.beginPath(); g.arc(0, 0, 222, 0, Math.PI * 2); g.stroke();
+  g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.font = '900 118px Inter, sans-serif'; g.fillText('PIZZA', 0, -6);
+  g.font = '700 38px Inter, sans-serif'; g.fillText('HOT  ·  FRESH  ·  TO GO', 0, 78);
+  g.font = '700 34px Inter, sans-serif'; g.fillText('★ ★ ★', 0, -105);
+  g.restore(); lidOutTex.needsUpdate = true;
+  g = lidInCanvas.getContext('2d'); cardboard(g, 1024, 1024, 41, '#cfa977');
+  const rnd = mulberry32(9);
+  for (let i = 0; i < 4; i++) { const x = 150 + rnd() * 720, y = 150 + rnd() * 720, r = 30 + rnd() * 70; const gr = g.createRadialGradient(x, y, 0, x, y, r); gr.addColorStop(0, 'rgba(150,95,30,0.12)'); gr.addColorStop(1, 'rgba(150,95,30,0)'); g.fillStyle = gr; g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill(); }
+  lidInTex.needsUpdate = true;
+}
+
+const topCanvas = makeCanvas(S), topCtx = topCanvas.getContext('2d');
+const topTex = new THREE.CanvasTexture(topCanvas);
+topTex.encoding = THREE.sRGBEncoding; topTex.anisotropy = maxAniso;
+
+function sideTexture(seed) {
+  const c = makeCanvas(1024, 96), g = c.getContext('2d');
+  cardboard(g, 1024, 96, seed, '#b98d5b');
+  g.fillStyle = 'rgba(60,35,15,0.25)'; g.fillRect(0, 0, 1024, 5);
+  const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding; t.anisotropy = maxAniso; return t;
+}
+
+function woodTexture() {
+  const c = makeCanvas(1024), g = c.getContext('2d'), rnd = mulberry32(5);
+  g.fillStyle = '#3b2617'; g.fillRect(0, 0, 1024, 1024);
+  for (let p = 0; p < 4; p++) {
+    const y0 = p * 256;
+    g.fillStyle = ['#432b1a', '#3a2415', '#462e1c', '#3d2717'][p]; g.fillRect(0, y0, 1024, 256);
+    for (let i = 0; i < 90; i++) {
+      g.strokeStyle = `rgba(${rnd() < .5 ? '20,10,5' : '120,80,50'},${0.05 + rnd() * 0.12})`; g.lineWidth = 1 + rnd() * 3;
+      const y = y0 + rnd() * 256, amp = 2 + rnd() * 6, f = 0.004 + rnd() * 0.01, ph = rnd() * 10;
+      g.beginPath(); for (let x = 0; x <= 1024; x += 16) { const yy = y + Math.sin(x * f + ph) * amp; x ? g.lineTo(x, yy) : g.moveTo(x, yy); } g.stroke();
+    }
+    g.fillStyle = 'rgba(0,0,0,0.5)'; g.fillRect(0, y0, 1024, 3);
+  }
+  const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(3, 3); t.anisotropy = maxAniso; return t;
+}
+
+function coinTexture() {
+  const c = makeCanvas(256), g = c.getContext('2d');
+  const gr = g.createRadialGradient(100, 90, 10, 128, 128, 130); gr.addColorStop(0, '#fff1b8'); gr.addColorStop(.6, '#e5b84a'); gr.addColorStop(1, '#9c7420');
+  g.fillStyle = gr; g.fillRect(0, 0, 256, 256);
+  g.strokeStyle = 'rgba(90,60,10,.6)'; g.lineWidth = 6; g.beginPath(); g.arc(128, 128, 110, 0, Math.PI * 2); g.stroke();
+  for (let i = 0; i < 60; i++) { const a = i / 60 * Math.PI * 2; g.beginPath(); g.moveTo(128 + Math.cos(a) * 116, 128 + Math.sin(a) * 116); g.lineTo(128 + Math.cos(a) * 124, 128 + Math.sin(a) * 124); g.lineWidth = 3; g.stroke(); }
+  g.fillStyle = 'rgba(110,75,15,.75)'; g.font = '900 120px Inter, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('★', 128, 134);
+  const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding; return t;
+}
+
+// ---------- drawing on the box ----------
+function sketchCircle(g, cx, cy, R, color, seed, dashed) {
+  const rnd = mulberry32(seed);
+  g.save(); g.strokeStyle = color; g.lineCap = 'round'; g.lineJoin = 'round';
+  g.globalCompositeOperation = 'multiply';
+  if (dashed) g.setLineDash([R * 0.2, R * 0.13]);
+  for (let pass = 0; pass < 2; pass++) {
+    g.lineWidth = Math.max(7, R * 0.055) * (pass ? 0.7 : 1);
+    g.globalAlpha = pass ? 0.75 : 0.95;
+    const a0 = rnd() * Math.PI * 2, wob = rnd() * 6, steps = 90, sweep = Math.PI * 2 + 0.25 + rnd() * 0.3;
+    const sx = (rnd() - .5) * R * 0.04, sy = (rnd() - .5) * R * 0.04;
+    g.beginPath();
+    for (let i = 0; i <= steps; i++) {
+      const t = a0 + i / steps * sweep;
+      const rr = R * (1 + 0.025 * Math.sin(t * 2 + wob) + 0.012 * Math.sin(t * 5 + pass) + (i / steps) * 0.03);
+      const x = cx + sx + Math.cos(t) * rr * 1.02, y = cy + sy + Math.sin(t) * rr * 0.98;
+      i ? g.lineTo(x, y) : g.moveTo(x, y);
+    }
+    g.stroke();
+    if (dashed) break;
+  }
+  g.restore();
+}
+
+function wrapLines(g, text, maxW) {
+  const words = text.split(/\s+/).filter(Boolean), lines = []; let line = '';
+  for (const w of words) { const t = line ? line + ' ' + w : w; if (g.measureText(t).width > maxW && line) { lines.push(line); line = w; } else line = t; }
+  if (line) lines.push(line); return lines;
+}
+
+function drawPlayer(g, p, k) {
+  const cx = (p.x + HALF) * k, cy = (p.z + HALF) * k, R = p.r * k, rnd = mulberry32(p.id + 7);
+  sketchCircle(g, cx, cy, R, p.color, p.id, false);
+  g.save(); g.translate(cx, cy); g.rotate((rnd() - .5) * 0.35);
+  g.globalCompositeOperation = 'multiply'; g.fillStyle = p.color; g.globalAlpha = 0.95;
+  g.textAlign = 'center'; g.textBaseline = 'middle';
+  let size = R * 0.52; g.font = `${size}px "Permanent Marker"`;
+  const w = g.measureText(p.name).width; if (w > R * 1.55) { size *= R * 1.55 / w; g.font = `${size}px "Permanent Marker"`; }
+  g.fillText(p.name, 0, size * 0.06);
+  g.restore();
+}
+
+function drawRule(g, r, k, n) {
+  const cx = (r.x + HALF) * k, cy = (r.z + HALF) * k, R = r.r * k, rnd = mulberry32(r.id + 3);
+  sketchCircle(g, cx, cy, R, r.color, r.id, false);
+  g.save(); g.translate(cx, cy); g.rotate((rnd() - .5) * 0.4);
+  g.globalCompositeOperation = 'multiply'; g.fillStyle = r.color; g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.font = `${R * (n > 9 ? 0.95 : 1.15)}px "Permanent Marker"`; g.fillText(String(n), 0, R * 0.06);
+  g.restore();
+}
+
+function drawTop() {
+  if (!baseCanvas) return;
+  const g = topCtx, k = S / (2 * HALF);
+  g.globalCompositeOperation = 'source-over'; g.globalAlpha = 1;
+  g.drawImage(baseCanvas, 0, 0);
+  state.rules.forEach((r, i) => drawRule(g, r, k, i + 1));
+  state.players.forEach(p => drawPlayer(g, p, k));
+  topTex.needsUpdate = true;
+}
+
+// ---------- scene objects ----------
+const sideMat = new THREE.MeshStandardMaterial({ map: sideTexture(21), roughness: 0.95 });
+const sideMat2 = new THREE.MeshStandardMaterial({ map: sideTexture(22), roughness: 0.95 });
+const plain = new THREE.MeshStandardMaterial({ color: '#a77d4e', roughness: 1 });
+const topMat = new THREE.MeshStandardMaterial({ map: topTex, roughness: 0.93 });
+
+const T = OUT - HALF;   // wall thickness
+const floor = new THREE.Mesh(new THREE.BoxGeometry(HALF * 2, TOP, HALF * 2), [plain, plain, topMat, plain, plain, plain]);
+floor.position.y = TOP / 2; floor.receiveShadow = true; scene.add(floor);
+[[0, -OUT + T / 2, OUT * 2, T], [0, OUT - T / 2, OUT * 2, T], [-OUT + T / 2, 0, T, OUT * 2 - 2 * T], [OUT - T / 2, 0, T, OUT * 2 - 2 * T]].forEach(([x, z, w, d], i) => {
+  const wall = new THREE.Mesh(new THREE.BoxGeometry(w, WALL_H, d), i % 2 ? sideMat : sideMat2);
+  wall.position.set(x, WALL_H / 2, z); wall.castShadow = wall.receiveShadow = true; scene.add(wall);
+});
+// lid, hinged at the back edge and propped open
+const lidOutMat = new THREE.MeshStandardMaterial({ map: lidOutTex, roughness: 0.93 });
+const lidInMat = new THREE.MeshStandardMaterial({ map: lidInTex, roughness: 0.95 });
+const LID = OUT + 0.06;
+const hinge = new THREE.Group(); hinge.position.set(0, WALL_H, -OUT); scene.add(hinge);
+const lidPanel = new THREE.Mesh(new THREE.BoxGeometry(LID * 2, 0.05, LID * 2), [sideMat, sideMat, lidOutMat, lidInMat, sideMat2, sideMat2]);
+lidPanel.position.set(0, 0.025, LID); lidPanel.castShadow = lidPanel.receiveShadow = true; hinge.add(lidPanel);
+const lip = new THREE.Mesh(new THREE.BoxGeometry(LID * 2, 0.8, 0.05), sideMat2);
+lip.position.set(0, -0.38, LID * 2 - 0.02); lip.castShadow = true; hinge.add(lip);
+[-1, 1].forEach(sx => { const side = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.8, LID * 2), sideMat); side.position.set(sx * (LID - 0.02), -0.38, LID); side.castShadow = true; hinge.add(side); });
+hinge.rotation.x = -1.83;
+
+const table = new THREE.Mesh(new THREE.PlaneGeometry(60, 60), new THREE.MeshStandardMaterial({ map: woodTexture(), roughness: 0.6 }));
+table.rotation.x = -Math.PI / 2; table.receiveShadow = true; scene.add(table);
+
+// red party cups
+{
+  const pts = [[0, 0], [0.5, 0], [0.52, 0.04], [0.72, 1.55], [0.76, 1.62], [0.79, 1.64]].map(([x, y]) => new THREE.Vector2(x, y));
+  const geo = new THREE.LatheGeometry(pts, 40);
+  const red = new THREE.MeshStandardMaterial({ color: '#c41d24', roughness: 0.4, side: THREE.DoubleSide });
+  const inner = new THREE.MeshStandardMaterial({ color: '#f3efe8', roughness: 0.5, side: THREE.BackSide });
+  const beer = new THREE.MeshStandardMaterial({ color: '#d99a1e', roughness: 0.25, transparent: true, opacity: 0.92 });
+  [[-9.2, -2.2, 1], [9.4, 2.6, 1], [8.8, -5.2, 0.6], [-8.4, 5.4, 0.3]].forEach(([x, z, fill]) => {
+    const g = new THREE.Group();
+    const cup = new THREE.Mesh(geo, red); cup.castShadow = true; cup.receiveShadow = true; g.add(cup);
+    const in2 = new THREE.Mesh(geo, inner); in2.scale.set(0.97, 1, 0.97); g.add(in2);
+    if (fill > 0) { const h = 0.2 + fill * 1.1; const r = 0.5 + (0.72 - 0.5) * (h / 1.55); const b = new THREE.Mesh(new THREE.CircleGeometry(r * 0.96, 32), beer); b.rotation.x = -Math.PI / 2; b.position.y = h; g.add(b); }
+    g.position.set(x, 0, z); scene.add(g);
+  });
+}
+
+// coin
+const coinTex = coinTexture();
+const coinFace = new THREE.MeshStandardMaterial({ map: coinTex, metalness: 0.85, roughness: 0.3, envMap: window.__env });
+const coinEdge = new THREE.MeshStandardMaterial({ color: '#c99b38', metalness: 0.9, roughness: 0.35, envMap: window.__env });
+const coin = new THREE.Mesh(new THREE.CylinderGeometry(COIN_R, COIN_R, COIN_T, 48), [coinEdge, coinFace, coinFace]);
+coin.castShadow = true; coin.visible = false; scene.add(coin);
+
+// placement preview + pulses
+const ringGeo = new THREE.RingGeometry(0.93, 1, 72);
+const preview = new THREE.Mesh(ringGeo, new THREE.MeshBasicMaterial({ color: '#fff', transparent: true, opacity: 0.85, depthWrite: false }));
+preview.rotation.x = -Math.PI / 2; preview.position.y = TOP + 0.01; preview.visible = false; scene.add(preview);
+const pulses = [];
+function pulse(c) {
+  for (let i = 0; i < 2; i++) {
+    const m = new THREE.Mesh(ringGeo, new THREE.MeshBasicMaterial({ color: c.color, transparent: true, opacity: 0.9, depthWrite: false }));
+    m.rotation.x = -Math.PI / 2; m.position.set(c.x, TOP + 0.02, c.z); scene.add(m);
+    pulses.push({ m, r: c.r, t: -i * 0.35 });
+  }
+}
+
+// ---------- camera orbit ----------
+const cam = { theta: 0, phi: 0.8, r: 21 }, goal = { ...cam };
+let shake = 0;
+const homeTarget = new THREE.Vector3(0, 0.6, 1.2), target = homeTarget.clone(), followPt = new THREE.Vector3();
+function updateCamera() {
+  const follow = goblin && goblin.G;
+  const followR = (goblin && (goblin.followCoin ? 11 : goblin.camR)) || 7.5;
+  if (follow) { (goblin.followCoin ? coin : goblin.G.body).getWorldPosition(followPt); followPt.y = clamp(followPt.y, 0.6, 5); }
+  target.lerp(follow ? followPt : homeTarget, follow ? 0.14 : 0.05);
+  const rGoal = follow ? Math.min(goal.r, followR) : goal.r, phiGoal = follow ? 1.0 : goal.phi;
+  cam.theta += (goal.theta - cam.theta) * 0.15; cam.phi += (phiGoal - cam.phi) * (follow ? 0.05 : 0.08); cam.r += (rGoal - cam.r) * (follow ? 0.05 : 0.08);
+  camera.position.set(target.x + cam.r * Math.sin(cam.phi) * Math.sin(cam.theta), target.y + cam.r * Math.cos(cam.phi), target.z + cam.r * Math.sin(cam.phi) * Math.cos(cam.theta));
+  camera.lookAt(target);
+  if (shake > 0.001) { camera.position.x += (Math.random() - .5) * shake; camera.position.y += (Math.random() - .5) * shake; camera.position.z += (Math.random() - .5) * shake; shake *= 0.9; }
+}
+function fitCam() { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); goal.r = Math.max(goal.r, camera.aspect < 0.8 ? 28 : 21); }
+fitCam();
+let topView = false;
+$('#viewBtn').onclick = () => { topView = !topView; goal.phi = topView ? 0.03 : 0.8; if (topView) goal.theta = Math.round(goal.theta / (Math.PI * 2)) * Math.PI * 2; $('#viewBtn').textContent = topView ? '3D view' : 'Top view'; };
+
+// ---------- pointer ----------
+const el = renderer.domElement, ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
+function pickTop(e) {
+  ndc.set(e.clientX / innerWidth * 2 - 1, -(e.clientY / innerHeight) * 2 + 1);
+  ray.setFromCamera(ndc, camera);
+  const p = ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), -TOP), new THREE.Vector3());
+  if (!p || Math.abs(p.x) > HALF || Math.abs(p.z) > HALF) return null;
+  return p;
+}
+const ptrs = new Map(); let down = null, pinch = 0, placeDrag = null;
+el.addEventListener('pointerdown', e => {
+  el.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  if (ptrs.size === 1) {
+    down = { x: e.clientX, y: e.clientY, moved: false };
+    if (placing) { const h = pickTop(e); if (h) { placeDrag = { x: h.x, z: h.z, r: 1, dragged: false }; showPreview(); } }
+  } else if (ptrs.size === 2) { const [a, b] = [...ptrs.values()]; pinch = Math.hypot(a.x - b.x, a.y - b.y); placeDrag = null; preview.visible = false; }
+});
+el.addEventListener('pointermove', e => {
+  const prev = ptrs.get(e.pointerId); if (!prev) return;
+  const dx = e.clientX - prev.x, dy = e.clientY - prev.y; prev.x = e.clientX; prev.y = e.clientY;
+  if (ptrs.size === 2) { const [a, b] = [...ptrs.values()]; const d = Math.hypot(a.x - b.x, a.y - b.y); if (pinch) goal.r = clamp(goal.r * pinch / d, 8, 34); pinch = d; return; }
+  if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) > 6) down.moved = true;
+  if (placeDrag) {
+    const h = pickTop(e);
+    if (h && down.moved) { placeDrag.r = clamp(Math.hypot(h.x - placeDrag.x, h.z - placeDrag.z), 0.55, 2.1); placeDrag.dragged = true; showPreview(); }
+    return;
+  }
+  goal.theta -= dx * 0.006; goal.phi = clamp(goal.phi - dy * 0.005, 0.03, 1.42);
+  if (topView && goal.phi > 0.1) { topView = false; $('#viewBtn').textContent = 'Top view'; }
+});
+const endPtr = e => {
+  ptrs.delete(e.pointerId); if (ptrs.size < 2) pinch = 0;
+  if (placeDrag && ptrs.size === 0) { commitPlayer(placeDrag.x, placeDrag.z, placeDrag.r); placeDrag = null; }
+};
+el.addEventListener('pointerup', endPtr); el.addEventListener('pointercancel', e => { ptrs.delete(e.pointerId); placeDrag = null; preview.visible = !!placing && false; });
+el.addEventListener('wheel', e => { e.preventDefault(); goal.r = clamp(goal.r * (1 + e.deltaY * 0.001), 8, 34); }, { passive: false });
+
+// ---------- players ----------
+let placing = null;
+function showPreview() { const r = placeDrag.r; preview.visible = true; preview.material.color.set(placing.color); preview.scale.set(r, r, r); preview.position.set(clamp(placeDrag.x, -HALF + r, HALF - r), TOP + 0.01, clamp(placeDrag.z, -HALF + r, HALF - r)); }
+function nextColor() { const used = new Set(state.players.map(p => p.color)); return COLORS.find(c => !used.has(c)) || COLORS[state.players.length % COLORS.length]; }
+$('#addForm').addEventListener('submit', e => {
+  e.preventDefault(); const name = $('#nameInput').value.trim(); if (!name) return;
+  if (state.players.some(p => p.name.toLowerCase() === name.toLowerCase())) return toast('That name is already on the box');
+  placing = { name, color: nextColor() }; $('#nameInput').value = ''; $('#nameInput').blur();
+  document.body.classList.add('placing'); $('#panel').classList.remove('open'); hideResult();
+  $('#hint span').innerHTML = `Draw <b style="color:${placing.color}">${esc(name)}</b>'s circle — tap the box, or drag to size it`;
+  $('#hint').classList.add('on');
+});
+function endPlacing() { placing = null; preview.visible = false; document.body.classList.remove('placing'); $('#hint').classList.remove('on'); }
+$('#cancelBtn').onclick = endPlacing;
+$('#autoBtn').onclick = () => autoPlace();
+function autoPlace() {
+  if (!placing) return; const r = 1; let best = null, bestD = -1;
+  for (let i = 0; i < 400; i++) {
+    const x = (Math.random() * 2 - 1) * (HALF - r), z = (Math.random() * 2 - 1) * (HALF - r);
+    const d = Math.min(9, ...state.players.map(p => Math.hypot(p.x - x, p.z - z) - p.r), ...state.rules.map(q => Math.hypot(q.x - x, q.z - z) - q.r));
+    if (d > bestD) { bestD = d; best = { x, z }; }
+  }
+  commitPlayer(best.x, best.z, r);
+}
+function commitPlayer(x, z, r) {
+  if (!placing) return;
+  const p = { id: newId(), name: placing.name, color: placing.color, r, x: clamp(x, -HALF + r, HALF - r), z: clamp(z, -HALF + r, HALF - r) };
+  state.players.push(p); fixRules(); endPlacing(); drawTop(); addLog(`✍️ ${p.name} joined`); save(); renderUI();
+}
+function removePlayer(id) {
+  const i = state.players.findIndex(p => p.id === id); if (i < 0) return;
+  state.players.splice(i, 1); if (i < state.turn) state.turn--; if (state.turn >= state.players.length) state.turn = 0;
+  drawTop(); save(); renderUI();
+}
+function removeRule(id) { state.rules = state.rules.filter(r => r.id !== id); drawTop(); save(); renderUI(); }
+
+// ---------- UI ----------
+function current() { return state.players[state.turn % Math.max(1, state.players.length)]; }
+function addLog(t) { state.log.unshift(t); state.log = state.log.slice(0, 40); }
+function renderUI() {
+  const cur = current();
+  $('#playerList').innerHTML = state.players.length ? state.players.map(p =>
+    `<li class="player ${cur && p.id === cur.id && state.players.length > 1 ? 'up' : ''}"><span class="dot" style="background:${p.color}"></span><span class="nm" style="color:${p.color === '#1f2937' ? '#e8e2d8' : p.color};filter:brightness(1.6)">${esc(p.name)}${claimed.has(String(p.id)) ? ' <span class="ph">📱</span>' : ''}</span>${cur && p.id === cur.id && state.players.length > 1 ? '<span class="tag">flipping</span>' : ''}<button class="x" data-p="${p.id}" title="Remove">×</button></li>`).join('')
+    : '<p class="empty">No one in the box yet. Add names, then tap inside the box to circle them.</p>';
+  $('#ruleList').innerHTML = state.rules.length ? state.rules.map(r =>
+    `<li class="rule"><span class="dot" style="background:${r.color};margin-top:3px"></span><span class="txt"><b>#${state.rules.indexOf(r) + 1}</b> ${esc(r.text)}<span class="by">by ${esc(r.by)}</span></span><button class="x" data-r="${r.id}" title="Erase">×</button></li>`).join('')
+    : '<p class="empty">Land on bare cardboard to write the first rule.</p>';
+  $('#ruleCount').textContent = state.rules.length ? `(${state.rules.length})` : '';
+  $('#log').innerHTML = state.log.map(l => `<li>${esc(l)}</li>`).join('');
+  const ok = state.players.length >= 2;
+  $('#turn').innerHTML = ok ? `Up next: <b>${esc(cur.name)}</b>` : 'Add at least 2 players';
+  $('#tossBtn').disabled = !ok || !!toss || !!goblin;
+  $('#tossBtn').innerHTML = (aim.mode === 'lock' ? '🪙 Throw!' : '🎯 Flip the coin') + ' <kbd>Space</kbd>';
+  hostPublish();
+}
+$('#playerList').onclick = e => { const b = e.target.closest('[data-p]'); if (b) removePlayer(+b.dataset.p); };
+$('#ruleList').onclick = e => { const b = e.target.closest('[data-r]'); if (b) removeRule(+b.dataset.r); };
+const mobile = () => innerWidth <= 760;
+function setPanel(open) { document.body.classList.toggle('panel-closed', !open); try { localStorage.setItem('pizzabox-panel', open ? '1' : '0'); } catch (e) {} }
+try { if (localStorage.getItem('pizzabox-panel') === '0' && !mobile()) setPanel(false); } catch (e) {}
+document.querySelectorAll('.foldBtn').forEach(b => {
+  const sec = $('#' + b.dataset.sec), key = 'pizzabox-fold-' + b.dataset.sec;
+  try { if (localStorage.getItem(key) === '1') sec.classList.add('closed'); } catch (e) {}
+  b.onclick = () => { sec.classList.toggle('closed'); try { localStorage.setItem(key, sec.classList.contains('closed') ? '1' : '0'); } catch (e) {} };
+});
+$('#menuBtn').onclick = () => { if (mobile()) $('#panel').classList.toggle('open'); else setPanel(true); };
+$('#panelClose').onclick = () => { if (mobile()) $('#panel').classList.remove('open'); else setPanel(false); };
+$('#clearRules').onclick = () => { state.rules = []; addLog('🧽 Rules wiped'); drawTop(); save(); renderUI(); };
+let armed = 0;
+$('#newGame').onclick = e => {
+  const b = e.currentTarget;
+  if (Date.now() - armed > 2500) { armed = Date.now(); b.textContent = 'Tap again'; b.classList.add('warn'); setTimeout(() => { b.textContent = 'New game'; b.classList.remove('warn'); }, 2500); return; }
+  state = { players: [], rules: [], turn: 0, log: [], playTime: 0, rounds: 0, drinks: {}, clockV2: true }; clearGuts(); coin.visible = false; hideResult(); drawTop(); save(); renderUI();
+  b.textContent = 'New game'; b.classList.remove('warn'); armed = 0;
+};
+let toastT;
+function toast(t) { const el2 = $('#toast'); el2.textContent = t; el2.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => el2.classList.remove('on'), 2200); }
+function showResult(title, sub, color) { lastResult = { t: String(title).slice(0, 120), s: String(sub || '').slice(0, 200), c: color || null }; setTimeout(hostPublish, 0); const r = $('#result'); r.querySelector('.title').textContent = title; r.querySelector('.sub').textContent = sub; r.style.borderColor = color || 'var(--line)'; r.querySelector('.title').style.color = color ? lighten(color) : 'var(--ink)'; r.classList.remove('on'); void r.offsetWidth; r.classList.add('on'); }
+function hideResult() { lastResult = null; $('#result').classList.remove('on'); }
+function lighten(hex) { const c = new THREE.Color(hex); const hsl = {}; c.getHSL(hsl); c.setHSL(hsl.h, Math.min(1, hsl.s + .1), Math.max(0.62, hsl.l)); return '#' + c.getHexString(); }
+
+// ---------- audio ----------
+let actx;
+function ensureAudio() { try { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); actx.resume(); } catch (e) {} }
+function thudSfx(vol = 1) {
+  if (!actx) return; try {
+    const t = actx.currentTime, o = actx.createOscillator(), g = actx.createGain(); o.frequency.setValueAtTime(150, t); o.frequency.exponentialRampToValueAtTime(70, t + 0.12);
+    g.gain.setValueAtTime(0.5 * vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.16); o.connect(g).connect(actx.destination); o.start(t); o.stop(t + 0.18);
+    const n = actx.createBufferSource(), b = actx.createBuffer(1, actx.sampleRate * 0.15, actx.sampleRate), d = b.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 4);
+    n.buffer = b; const f = actx.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 700; const ng = actx.createGain(); ng.gain.value = 0.6;
+    n.connect(f).connect(ng).connect(actx.destination); n.start(t);
+  } catch (e) {}
+}
+function spinSfx(dur) {
+  if (!actx) return; try {
+    const t = actx.currentTime;
+    const f = actx.createOscillator(), fg = actx.createGain(); f.frequency.value = 3100; fg.gain.setValueAtTime(0.16, t); fg.gain.exponentialRampToValueAtTime(0.0001, t + 0.25); f.connect(fg).connect(actx.destination); f.start(t); f.stop(t + 0.3);
+    const n = actx.createBufferSource(); n.buffer = noiseBuf(); n.loop = true;
+    const bp = actx.createBiquadFilter(); bp.type = 'bandpass'; bp.Q.value = 7; bp.frequency.setValueAtTime(6200, t); bp.frequency.linearRampToValueAtTime(3400, t + dur);
+    const o = actx.createOscillator(); o.frequency.setValueAtTime(4300, t); o.frequency.linearRampToValueAtTime(2500, t + dur); const og = actx.createGain(); og.gain.value = 0.06;
+    const am = actx.createGain(); am.gain.value = 0.5; const lfo = actx.createOscillator(); lfo.type = 'triangle'; lfo.frequency.setValueAtTime(17, t); lfo.frequency.linearRampToValueAtTime(9, t + dur); const lg = actx.createGain(); lg.gain.value = 0.5; lfo.connect(lg).connect(am.gain);
+    const g = actx.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.5, t + 0.06); g.gain.linearRampToValueAtTime(0.22, t + dur * 0.85); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    n.connect(bp).connect(am); o.connect(og).connect(am); am.connect(g).connect(actx.destination);
+    [n, o, lfo].forEach(x => { x.start(t); x.stop(t + dur + 0.05); });
+  } catch (e) {}
+}
+function clink(vol, onTable) {
+  if (!actx) return; try {
+    const t = actx.currentTime;
+    (onTable ? [1500, 2600] : [2300, 3600, 5200]).forEach((f, i) => {
+      const o = actx.createOscillator(), g = actx.createGain(); o.type = 'sine'; o.frequency.value = f * (0.96 + Math.random() * 0.08);
+      g.gain.setValueAtTime(vol * 0.22 / (i + 1), t); g.gain.exponentialRampToValueAtTime(0.0001, t + (onTable ? 0.12 : 0.22) + 0.08 * i);
+      o.connect(g).connect(actx.destination); o.start(t); o.stop(t + 0.5);
+    });
+  } catch (e) {}
+}
+
+// ---------- toss ----------
+let toss = null;
+const surfAt = (x, z) => (Math.abs(x) <= HALF && Math.abs(z) <= HALF ? TOP : 0) + COIN_T / 2;
+// ---------- coin physics: gravity + bounces off floor, table, walls and the open lid ----------
+const GRAV = 20, RC = COIN_R * 0.6;
+const WALLS = (() => { const T2 = OUT - HALF; return [
+  { min: [-OUT, 0, -OUT], max: [OUT, WALL_H, -HALF] }, { min: [-OUT, 0, HALF], max: [OUT, WALL_H, OUT] },
+  { min: [-OUT, 0, -HALF], max: [-HALF, WALL_H, HALF] }, { min: [HALF, 0, -HALF], max: [OUT, WALL_H, HALF] }]; })();
+const LID_O = new THREE.Vector3(0, WALL_H, -OUT), LID_D = new THREE.Vector3(0, Math.sin(1.83), Math.cos(1.83) * -1 * -1), LID_N = new THREE.Vector3();
+// lid direction = local +z rotated by -1.83 about x
+LID_D.set(0, -Math.sin(-1.83), Math.cos(-1.83)); LID_N.set(0, Math.cos(-1.83), Math.sin(-1.83)).negate();
+if (LID_N.z < 0) LID_N.negate(); // normal faces the inside of the box (toward the players)
+function startToss(ax, az) {
+  ensureAudio();
+  if (state.players.length < 2) return toast('Add at least 2 players first');
+  if (toss || goblin || placing || $('#modal').classList.contains('on')) return;
+  hideResult(); clearPoop(); clearBurgers(); coin.scale.set(1, 1, 1);
+  const dir = new THREE.Vector3(camera.position.x, 0, camera.position.z); if (dir.lengthSq() < 1) dir.set(0, 0, 1); dir.normalize();
+  const start = dir.clone().multiplyScalar(9.5).add(new THREE.Vector3((Math.random() - .5) * 2, 3.2, 0));
+  const target = new THREE.Vector3(ax, surfAt(ax, az), az);
+  const tf = 1.0 + start.distanceTo(target) * 0.012;
+  const vel = target.clone().sub(start).divideScalar(tf); vel.y += 0.5 * GRAV * tf;
+  toss = { p: start.clone(), v: vel, spin: 26 + Math.random() * 14, ang: Math.random() * 6, yaw: Math.random() * Math.PI * 2, t: 0, rest: 0, settle: -1, flat: 0, lastSnd: 0, wob: 0 };
+  coin.visible = true; coin.position.copy(start);
+  spinSfx(tf);
+  renderUI();
+}
+function hitSound(kind, impact) {
+  if (!toss || toss.t - toss.lastSnd < 0.06 || impact < 0.8) return; toss.lastSnd = toss.t;
+  const vol = clamp(impact / 9, 0.15, 1);
+  if (kind === 'card') thudSfx(vol); else clink(vol, kind === 'table');
+}
+function bounce(n, rest, fric, kind) {
+  const v = toss.v, vn = v.dot(n);
+  if (vn >= 0) return;
+  hitSound(kind, -vn);
+  v.addScaledVector(n, -(1 + rest) * vn);               // reflect normal part
+  const vt = v.clone().addScaledVector(n, -v.dot(n));    // damp sliding part
+  v.addScaledVector(vt, -(1 - fric));
+  toss.spin *= 0.55;
+}
+function physStep(h) {
+  const P = toss.p, V = toss.v; let supported = false;
+  V.y -= GRAV * h; P.addScaledVector(V, h);
+  // walls (solid boxes); landing on a wall top tips it off one side
+  for (const w of WALLS) {
+    const c = new THREE.Vector3(clamp(P.x, w.min[0], w.max[0]), clamp(P.y, w.min[1], w.max[1]), clamp(P.z, w.min[2], w.max[2]));
+    const d = P.clone().sub(c), dist = d.length();
+    if (dist < RC) {
+      const n = dist > 1e-5 ? d.divideScalar(dist) : new THREE.Vector3(0, 1, 0);
+      P.copy(c).addScaledVector(n, RC);
+      bounce(n, 0.4, 0.8, 'card');
+      if (n.y > 0.7) { // balanced on the rim: nudge it off
+        const mx = (w.min[0] + w.max[0]) / 2, mz = (w.min[2] + w.max[2]) / 2, thinX = w.max[0] - w.min[0] < 1;
+        if (thinX) V.x += Math.sign(P.x - mx || (Math.random() - .5)) * 1.6; else V.z += Math.sign(P.z - mz || (Math.random() - .5)) * 1.6;
+      }
+    }
+  }
+  // the propped-up lid (a tilted panel)
+  { const rel = P.clone().sub(LID_O), sAlong = rel.dot(LID_D), sAcross = rel.x, d = rel.dot(LID_N);
+    if (sAlong > -0.05 && sAlong < LID * 2 && Math.abs(sAcross) < LID && Math.abs(d) < RC + 0.025) {
+      const side = (toss.lidSide !== undefined ? toss.lidSide : Math.sign(d)) || 1;
+      P.addScaledVector(LID_N, side * (RC + 0.026) - d);
+      bounce(LID_N.clone().multiplyScalar(side), 0.5, 0.85, 'card');
+    } else toss.lidSide = Math.sign(d) || 1;
+  }
+  // floor inside the box / table outside
+  const inside = Math.abs(P.x) < HALF && Math.abs(P.z) < HALF, floorY = (inside ? TOP : 0) + COIN_T / 2;
+  if (P.y < floorY && (inside || Math.abs(P.x) > OUT - 0.001 || Math.abs(P.z) > OUT - 0.001 || P.y < COIN_T)) {
+    P.y = floorY; const vn = V.y;
+    if (vn < 0) { bounce(new THREE.Vector3(0, 1, 0), vn < -3 ? 0.22 : 0, inside ? 0.3 : 0.45, inside ? 'floor' : 'table'); if (vn < -1.5) toss.wob = 1; }
+    supported = true; const k = Math.max(0, 1 - 7 * h); V.x *= k; V.z *= k;
+  }
+  return supported;
+}
+function stepToss(dt) {
+  if (!toss) return;
+  const n = 6, h = dt / n; let sup = false;
+  for (let i = 0; i < n; i++) sup = physStep(h) || sup;
+  toss.t += dt;
+  const P = toss.p, V = toss.v, speed = V.length();
+  coin.position.copy(P);
+  if (sup && speed < 0.6) toss.rest += dt; else toss.rest = 0;
+  // spin in the air, lie flat once it's on something
+  if (!sup || speed > 1.5) { toss.ang += toss.spin * dt; toss.flat = 0; }
+  else { toss.flat = Math.min(1, toss.flat + dt * 5); const tgt = Math.round(toss.ang / Math.PI) * Math.PI; toss.ang += (tgt - toss.ang) * toss.flat; }
+  toss.wob *= Math.exp(-5 * dt);
+  coin.rotation.set(toss.ang, toss.yaw + toss.t * 0.6, Math.sin(toss.t * 30) * 0.12 * toss.wob, 'YXZ');
+  if (toss.rest > 0.25 || toss.t > 6) {
+    const f = P.clone(); toss = null;
+    coin.rotation.set(Math.round(coin.rotation.x / Math.PI) * Math.PI, coin.rotation.y, 0, 'YXZ');
+    if (state.playTime >= DOOM_AFTER && Math.random() < 0.2) startDoom(); else evaluate(f.x, f.z);
+  }
+}
+function evaluate(x, z) {
+  const tosser = current();
+  if (Math.abs(x) > HALF || Math.abs(z) > HALF) {
+    if (Math.random() < 0.3) {
+      showResult('Off the box… 👺', `Wait — a goblin is grabbing ${tosser.name}'s coin!`);
+      addLog(`👺 A goblin rescued ${tosser.name}'s missed coin`);
+      goblin = { pending: true }; renderUI();
+      setTimeout(() => startRescue(new THREE.Vector3(x, 0, z)), 500); return;
+    }
+    drink(tosser); state.rounds++;
+    showResult(`Off the box! ${tosser.name} drinks 🍺`, `Missed the pizza box completely.`, tosser.color);
+    addLog(`🙈 ${tosser.name} missed the box → drinks`); advance(); return;
+  }
+  const hit = c => Math.hypot(c.x - x, c.z - z) <= c.r + COIN_R; // any overlap counts
+  const ph = state.players.filter(hit), rh = state.rules.filter(hit);
+  if (ph.length) {
+    const names = ph.map(p => p.name), list = names.length > 1 ? names.slice(0, -1).join(', ') + ' & ' + names.at(-1) : names[0];
+    const own = ph.some(p => p.id === tosser.id);
+    let sub = own && ph.length === 1 ? `${tosser.name} landed in their own circle 😬` : `${tosser.name}'s coin landed in ${list}'s circle`;
+    if (rh.length) sub += ` — and on the rule: "${rh[0].text}"`;
+    ph.filter(p => p.name.trim().toLowerCase() === 'burger').forEach(p => { makeBurger(p, x, z); sub += ' 🍔 Order up — a hamburger was made!'; addLog('🍔 A hamburger was made'); });
+    ph.forEach(p => drink(p, p.name.toLowerCase().replace(/[^a-z]/g, '') === 'suckyducky' ? 2 : 1)); state.rounds++;
+    showResult(`${list} drink${ph.length > 1 ? '' : 's'}! 🍺`, sub, ph[0].color);
+    ph.forEach(pulse); rh.forEach(pulse);
+    if (ph.some(p => p.name.trim().toLowerCase() === 'yugo') && !state.yugoWelcomed) { state.yugoWelcomed = true; goblin = { pending: true }; setTimeout(() => startWelcome(new THREE.Vector3(x, TOP, z)), 650); }
+    else if (ph.some(p => p.name.toLowerCase().replace(/[^a-z]/g, '') === 'suckyducky')) { goblin = { pending: true }; const jp = ph.find(p => p.name.toLowerCase().replace(/[^a-z]/g, '') === 'suckyducky'); setTimeout(() => startJosh(new THREE.Vector3(x, TOP, z), jp), 650); }
+    else if (ph.some(p => p.name.trim().toLowerCase() === 'jack')) { goblin = { pending: true }; setTimeout(() => startGoblin(new THREE.Vector3(x, TOP, z)), 650); }
+    addLog(`🍺 ${tosser.name} → ${list} drink${ph.length > 1 ? '' : 's'}`);
+    advance();
+  } else if (rh.length) {
+    const r = rh[0]; pulse(r);
+    if (r.byId === tosser.id) { showResult('Your own rule 😎', `"${r.text}" — you wrote it, ${tosser.name}, so you're safe.`, r.color); addLog(`😎 ${tosser.name} hit their own rule`); }
+    else { state.rounds++; showResult(`${tosser.name}: ${r.text}`, `Rule #${state.rules.indexOf(r) + 1}, written by ${r.by}`, r.color); addLog(`📜 ${tosser.name} → "${r.text}"`); }
+    advance();
+  } else openRuleModal(x, z, tosser);
+}
+function advance() { if (state.players.length) state.turn = (state.turn + 1) % state.players.length; save(); renderUI(); }
+
+// ---------- rule modal ----------
+let pendingRule = null;
+function openRuleModal(x, z, tosser) {
+  pendingRule = { x, z, tosser }; state.rounds++;
+  $('#ruleWho').textContent = tosser.name; $('#ruleText').value = '';
+  const picks = SUGGESTIONS.slice().sort(() => Math.random() - .5).slice(0, 5);
+  $('#sugs').innerHTML = picks.map(s => `<button type="button">${esc(s)}</button>`).join('');
+  renderUI(); $('#modal').classList.add('on'); hostPublish(); setTimeout(() => $('#ruleText').focus(), 50);
+}
+$('#sugs').onclick = e => { const b = e.target.closest('button'); if (b) { $('#ruleText').value = b.textContent; $('#ruleText').focus(); } };
+$('#ruleText').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); $('#saveRule').click(); } });
+$('#skipRule').onclick = () => { if (!pendingRule) return; addLog(`🫥 ${pendingRule.tosser.name} hit empty cardboard, no rule`); $('#modal').classList.remove('on'); pendingRule = null; advance(); };
+$('#saveRule').onclick = () => {
+  if (!pendingRule) return; const text = $('#ruleText').value.trim(); if (!text) { $('#ruleText').focus(); return; }
+  const { x, z, tosser } = pendingRule;
+  const gap = Math.min(...state.players.map(p => Math.hypot(p.x - x, p.z - z) - p.r), ...state.rules.map(r => Math.hypot(r.x - x, r.z - z) - r.r), 9);
+  // never bigger than the name circles, never overlapping another circle, never through the wall
+  const maxR = ruleCap(x, z, null), minR = Math.min(0.3, maxR);
+  const r = minR + Math.random() * (maxR - minR);
+  const rule = { id: newId(), text, by: tosser.name, byId: tosser.id, color: tosser.color, r, x: clamp(x, -HALF + r, HALF - r), z: clamp(z, -HALF + r, HALF - r) };
+  state.rules.push(rule); drawTop(); pulse(rule);
+  showResult('New rule on the box ✍️', `"${text}" — next person to land here does it.`, tosser.color);
+  addLog(`✍️ ${tosser.name} wrote: "${text}"`);
+  $('#modal').classList.remove('on'); pendingRule = null; advance();
+};
+
+$('#tossBtn').onclick = flipPressed;
+addEventListener('keydown', e => { if (e.code === 'Space' && !/INPUT|TEXTAREA/.test(document.activeElement.tagName)) { e.preventDefault(); if (!e.repeat) flipPressed(); } if (e.key === 'Escape') { if (placing) endPlacing(); else if (aim.mode === 'lock') { aim.mode = 'wander'; renderUI(); } } });
+addEventListener('resize', () => { renderer.setSize(innerWidth, innerHeight); fitCam(); });
+
+// ---------- aiming: wandering crosshair + pulsing circle ----------
+const aim = { mode: 'wander', t: Math.random() * 100, x: 0, z: 0, r: 1, lockT: 0, ph: [Math.random() * 6, Math.random() * 6, Math.random() * 6, Math.random() * 6] };
+const overlay = m => { m.material.depthTest = false; m.material.depthWrite = false; m.material.transparent = true; m.renderOrder = 10; return m; };
+const crosshair = new THREE.Group(); scene.add(crosshair);
+{
+  const red = () => new THREE.MeshBasicMaterial({ color: '#ff2a2a' });
+  const flat = new THREE.Group(); flat.rotation.x = -Math.PI / 2; crosshair.add(flat);
+  flat.add(overlay(new THREE.Mesh(new THREE.RingGeometry(0.3, 0.36, 48), red())));
+  flat.add(overlay(new THREE.Mesh(new THREE.CircleGeometry(0.05, 16), red())));
+  [[0, 0.5], [0, -0.5], [0.5, 0], [-0.5, 0]].forEach(([x, y]) => { const b = overlay(new THREE.Mesh(new THREE.PlaneGeometry(x ? 0.32 : 0.05, y ? 0.32 : 0.05), red())); b.position.set(x, y, 0); flat.add(b); });
+}
+const aimRing = new THREE.Group(); scene.add(aimRing);
+{
+  const flat = new THREE.Group(); flat.rotation.x = -Math.PI / 2; aimRing.add(flat);
+  flat.add(overlay(new THREE.Mesh(new THREE.RingGeometry(0.965, 1, 96), new THREE.MeshBasicMaterial({ color: '#ffd84a', opacity: 0.95 }))));
+  flat.add(overlay(new THREE.Mesh(new THREE.CircleGeometry(1, 64), new THREE.MeshBasicMaterial({ color: '#ffd84a', opacity: 0.13 }))));
+}
+const canAim = () => !gameOver && state.players.length >= 2 && !toss && !goblin && !placing && !$('#modal').classList.contains('on');
+function stepAim(dt) {
+  const ok = canAim();
+  if (!ok && aim.mode === 'lock' && !toss) { aim.mode = 'wander'; }
+  crosshair.visible = ok; aimRing.visible = ok && aim.mode === 'lock';
+  if (!ok) { aim.t += dt; return; }
+  if (aim.mode === 'wander') {
+    aim.t += dt * 4; const t = aim.t, ph = aim.ph;
+    const A = (OUT + 4 * IN) / 5.15;
+    aim.x = A * (3.1 * Math.sin(0.83 * t + ph[0]) + 1.5 * Math.sin(1.77 * t + ph[1]) + 0.55 * Math.sin(3.3 * t + ph[2]));
+    aim.z = A * (3.1 * Math.sin(0.71 * t + ph[3]) + 1.5 * Math.sin(1.93 * t + ph[0] * 1.3) + 0.55 * Math.sin(3.7 * t + ph[1] * 0.7));
+  } else {
+    aim.lockT += dt; const w = Math.pow(0.5 - 0.5 * Math.cos(aim.lockT * 9), 0.42); aim.r = COIN_R + (8 * IN - COIN_R) * w;
+    aimRing.scale.set(aim.r, 1, aim.r);
+  }
+  const y = (Math.abs(aim.x) <= OUT && Math.abs(aim.z) <= OUT ? TOP : 0) + 0.02;
+  crosshair.position.set(aim.x, y, aim.z); aimRing.position.set(aim.x, y, aim.z);
+  crosshair.rotation.y += dt * (aim.mode === 'lock' ? 0 : 1.2);
+}
+function flipPressed() {
+  ensureAudio();
+  if (state.players.length < 2) return toast('Add at least 2 players first');
+  if (!canAim()) return;
+  if (aim.mode === 'wander') { aim.mode = 'lock'; aim.lockT = 0; aim.r = COIN_R; hideResult(); clearPoop(); clearBurgers(); renderUI(); return; }
+  const a = Math.random() * Math.PI * 2, d = aim.r * Math.sqrt(Math.random());
+  aim.mode = 'wander';
+  startToss(aim.x + Math.cos(a) * d, aim.z + Math.sin(a) * d);
+}
+
+// ---------- goblin sounds ----------
+function noiseBuf() { if (!noiseBuf.b) { const b = actx.createBuffer(1, actx.sampleRate, actx.sampleRate), d = b.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; noiseBuf.b = b; } return noiseBuf.b; }
+function sfxOut(vol) {
+  const shaper = actx.createWaveShaper(), k = 6, n = 1024, c = new Float32Array(n);
+  for (let i = 0; i < n; i++) { const x = i / (n - 1) * 2 - 1; c[i] = (1 + k) * x / (1 + k * Math.abs(x)); }
+  shaper.curve = c;
+  const out = actx.createGain(); out.gain.value = vol;
+  const dl = actx.createDelay(), fb = actx.createGain(); dl.delayTime.value = 0.13; fb.gain.value = 0.28;
+  shaper.connect(out); out.connect(actx.destination); out.connect(dl); dl.connect(fb); fb.connect(dl); dl.connect(actx.destination);
+  return shaper;
+}
+function evilLaugh(n = 8, base = 290) {
+  if (!actx) return; try {
+    const out = sfxOut(0.55), t0 = actx.currentTime + 0.05;
+    for (let i = 0; i < n; i++) {
+      const first = i === 0, t = t0 + (first ? 0 : 0.44 + (i - 1) * 0.185), dur = first ? 0.4 : 0.13;
+      const f0 = first ? base * 0.75 : base * (1.2 - i * 0.055);
+      const o = actx.createOscillator(); o.type = 'sawtooth';
+      o.frequency.setValueAtTime(first ? f0 * 0.85 : f0 * 1.1, t); o.frequency.linearRampToValueAtTime(first ? f0 * 1.2 : f0 * 0.82, t + dur);
+      const vib = actx.createOscillator(), vg = actx.createGain(); vib.frequency.value = 26; vg.gain.value = f0 * 0.05; vib.connect(vg).connect(o.frequency);
+      const g = actx.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.9, t + 0.02); g.gain.setValueAtTime(0.9, t + dur * 0.55); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      [[750, 5], [1200, 6], [2500, 8]].forEach(([f, q]) => { const bp = actx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = first ? f * 0.8 : f; bp.Q.value = q; g.connect(bp); bp.connect(out); });
+      o.connect(g); o.start(t); o.stop(t + dur + 0.02); vib.start(t); vib.stop(t + dur + 0.02);
+      if (!first) { const nz = actx.createBufferSource(); nz.buffer = noiseBuf(); const nf = actx.createBiquadFilter(); nf.type = 'bandpass'; nf.frequency.value = 1600; const ng = actx.createGain(); ng.gain.setValueAtTime(0.0001, t - 0.035); ng.gain.exponentialRampToValueAtTime(0.5, t - 0.01); ng.gain.exponentialRampToValueAtTime(0.0001, t + 0.03); nz.connect(nf).connect(ng).connect(out); nz.start(t - 0.04); nz.stop(t + 0.05); }
+    }
+  } catch (e) {}
+}
+function chompSfx(times = 3, gap = 0.3) {
+  if (!actx) return; try {
+    const t0 = actx.currentTime;
+    for (let i = 0; i < times; i++) { const t = t0 + 0.12 + i * gap, nz = actx.createBufferSource(); nz.buffer = noiseBuf(); const f = actx.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 1100; const g = actx.createGain(); g.gain.setValueAtTime(0.7, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.09); nz.connect(f).connect(g).connect(actx.destination); nz.start(t); nz.stop(t + 0.1); }
+  } catch (e) {}
+}
+function gulpSfx() {
+  if (!actx) return; try { const t = actx.currentTime, o = actx.createOscillator(), g = actx.createGain(); o.frequency.setValueAtTime(320, t); o.frequency.exponentialRampToValueAtTime(70, t + 0.28); g.gain.setValueAtTime(0.5, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.3); o.connect(g).connect(actx.destination); o.start(t); o.stop(t + 0.32); } catch (e) {}
+}
+function fartSfx() {
+  if (!actx) return; try {
+    const t = actx.currentTime, d = 0.85, o = actx.createOscillator(); o.type = 'sawtooth';
+    o.frequency.setValueAtTime(95, t); o.frequency.linearRampToValueAtTime(70, t + d * 0.6); o.frequency.linearRampToValueAtTime(110, t + d);
+    const lfo = actx.createOscillator(), lg = actx.createGain(); lfo.type = 'square'; lfo.frequency.setValueAtTime(14, t); lfo.frequency.linearRampToValueAtTime(30, t + d); lg.gain.value = 30; lfo.connect(lg).connect(o.frequency);
+    const lp = actx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 420; lp.Q.value = 6;
+    const g = actx.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.9, t + 0.04); g.gain.setValueAtTime(0.8, t + d * 0.5); g.gain.linearRampToValueAtTime(0.35, t + d * 0.8); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+    const nz = actx.createBufferSource(); nz.buffer = noiseBuf(); const nl = actx.createBiquadFilter(); nl.type = 'lowpass'; nl.frequency.value = 300; const ng = actx.createGain(); ng.gain.value = 0.25;
+    o.connect(lp); nz.connect(nl).connect(ng).connect(lp); lp.connect(g).connect(actx.destination);
+    o.start(t); lfo.start(t); nz.start(t); o.stop(t + d); lfo.stop(t + d); nz.stop(t + d);
+  } catch (e) {}
+}
+function boingSfx() {
+  if (!actx) return; try { const t = actx.currentTime, o = actx.createOscillator(), g = actx.createGain(); o.type = 'triangle'; o.frequency.setValueAtTime(180, t); o.frequency.exponentialRampToValueAtTime(720, t + 0.18); g.gain.setValueAtTime(0.35, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.25); o.connect(g).connect(actx.destination); o.start(t); o.stop(t + 0.26); } catch (e) {}
+}
+
+// ---------- the goblin (different every visit) ----------
+let goblin = null, poop = null, lastGob = {};
+function clearPoop() { if (poop) { scene.remove(poop); poop = null; } }
+function tone(type, f0, f1, dur, vol, delay = 0) {
+  if (!actx) return; try { const t = actx.currentTime + delay, o = actx.createOscillator(), g = actx.createGain(); o.type = type; o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(f1, t + dur); g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dur); o.connect(g).connect(actx.destination); o.start(t); o.stop(t + dur + 0.02); } catch (e) {}
+}
+function noiseSfx(type, f0, f1, dur, vol, q = 1) {
+  if (!actx) return; try { const t = actx.currentTime, n = actx.createBufferSource(); n.buffer = noiseBuf(); n.loop = true; const f = actx.createBiquadFilter(); f.type = type; f.Q.value = q; f.frequency.setValueAtTime(f0, t); f.frequency.exponentialRampToValueAtTime(f1, t + dur); const g = actx.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.08); g.gain.exponentialRampToValueAtTime(0.0001, t + dur); n.connect(f).connect(g).connect(actx.destination); n.start(t); n.stop(t + dur + 0.05); } catch (e) {}
+}
+const wheeSfx = () => { tone('sine', 1500, 320, 1.1, 0.22); tone('sine', 1520, 330, 1.1, 0.08); };
+const rumbleSfx = d => { noiseSfx('lowpass', 220, 90, d, 0.9, 2); tone('sawtooth', 45, 35, d, 0.15); };
+const whooshSfx = d => noiseSfx('bandpass', 300, 3000, d, 0.6, 1.5);
+const dingSfx = () => { tone('sine', 2637, 2600, 0.9, 0.15); tone('sine', 3951, 3900, 0.7, 0.08, 0.05); tone('sine', 5274, 5200, 0.5, 0.05, 0.1); };
+const kissSfx = () => { tone('sine', 900, 2200, 0.08, 0.3); noiseSfx('highpass', 3000, 5000, 0.06, 0.2); };
+const squeakSfx = () => { for (let i = 0; i < 5; i++) tone('square', 1800 + Math.random() * 600, 2400, 0.06, 0.04, i * 0.2); };
+function burpSfx() {
+  if (!actx) return; try {
+    const t = actx.currentTime, d = 1.0, o = actx.createOscillator(); o.type = 'sawtooth'; o.frequency.setValueAtTime(85, t); o.frequency.linearRampToValueAtTime(60, t + d);
+    const l = actx.createOscillator(), lg = actx.createGain(); l.frequency.value = 23; lg.gain.value = 18; l.connect(lg).connect(o.frequency);
+    const bp = actx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.setValueAtTime(500, t); bp.frequency.linearRampToValueAtTime(380, t + d); bp.Q.value = 2.5;
+    const g = actx.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(1.2, t + 0.05); g.gain.setValueAtTime(1.0, t + d * 0.7); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+    o.connect(bp).connect(g).connect(actx.destination); o.start(t); l.start(t); o.stop(t + d); l.stop(t + d);
+  } catch (e) {}
+}
+const SKINS = ['#5fae3a', '#4f9e3f', '#7bb83a', '#3f9a5a', '#8fbf2f', '#5aa86e'];
+function buildGoblin(opt) {
+  const M = (c, r = 0.55, extra = {}) => new THREE.MeshStandardMaterial(Object.assign({ color: c, roughness: r }, extra));
+  const skinC = new THREE.Color(opt.skin), skin = M(skinC), light = M(skinC.clone().lerp(new THREE.Color('#e8ffb0'), 0.35)), dark = M(skinC.clone().multiplyScalar(0.7));
+  const cloth = M(['#6b4a2a', '#4a3a6b', '#7a2a2a', '#2a5a6b'][Math.floor(Math.random() * 4)], 0.9), black = M('#0d0d0d', 0.25), mouthM = M('#3b0b0b', 0.6), tooth = M('#f3ead0', 0.4);
+  const yellow = M(opt.eye, 0.3, { emissive: opt.eye, emissiveIntensity: 0.35 });
+  const root = new THREE.Group(), body = new THREE.Group(); root.add(body); body.position.y = 0.45;
+  const add = (parent, geo, mat, pos, scl, rot) => { const m = new THREE.Mesh(geo, mat); if (pos) m.position.set(...pos); if (scl) m.scale.set(...scl); if (rot) m.rotation.set(...rot); parent.add(m); return m; };
+  add(body, new THREE.SphereGeometry(0.36, 24, 18), skin, [0, 0.38, 0], [1, 1.15, 0.9]);
+  const belly = add(body, new THREE.SphereGeometry(0.26, 20, 14), light, [0, 0.3, 0.17], [1, 1, 0.6]);
+  add(body, new THREE.CylinderGeometry(0.33, 0.38, 0.2, 20), cloth, [0, 0.08, 0]);
+  const head = new THREE.Group(); head.position.y = 0.95; body.add(head);
+  add(head, new THREE.SphereGeometry(0.34, 24, 18), skin, null, [1.1, 0.95, 1]);
+  const earLen = 0.5 + Math.random() * 0.3;
+  [-1, 1].forEach(sx => {
+    add(head, new THREE.ConeGeometry(0.11, earLen, 12), skin, [sx * (0.3 + earLen / 3), 0.1, -0.03], null, [0, 0, -sx * (Math.PI / 2 - 0.4)]);
+    add(head, new THREE.SphereGeometry(0.085, 14, 10), yellow, [sx * 0.13, 0.08, 0.28]);
+    add(head, new THREE.SphereGeometry(0.035, 10, 8), black, [sx * 0.13, 0.08, 0.358], [0.45, 1.5, 0.5]);
+    add(head, new THREE.BoxGeometry(0.18, 0.04, 0.05), dark, [sx * 0.13, 0.2, 0.3], null, [0, 0, sx * 0.5]);
+  });
+  add(head, new THREE.ConeGeometry(0.065, 0.3 + Math.random() * 0.12, 10), skin, [0, -0.02, 0.38], null, [Math.PI / 2 + 0.35, 0, 0]);
+  if (Math.random() < 0.5) add(head, new THREE.SphereGeometry(0.03, 8, 6), dark, [0.18, -0.06, 0.3]);
+  const mouth = new THREE.Group(); mouth.position.set(0, -0.16, 0.27); head.add(mouth);
+  const jaw = add(mouth, new THREE.SphereGeometry(0.14, 18, 12), mouthM, null, [1.35, 0.32, 0.5]);
+  [-0.09, -0.03, 0.03, 0.09].forEach((x, i) => { if (Math.random() < 0.8) add(mouth, new THREE.ConeGeometry(0.024, 0.07, 6), tooth, [x, 0.02, 0.06], null, [Math.PI + (i % 2 ? 0.15 : -0.15), 0, 0]); });
+  const mouthPt = new THREE.Object3D(); mouthPt.position.set(0, 0, 0.12); mouth.add(mouthPt);
+  const headTop = new THREE.Object3D(); head.add(headTop); headTop.position.y = 0.36;
+  // hats
+  const hatC = ['#e63946', '#3a86ff', '#ffbe0b', '#8338ec', '#ff006e'][Math.floor(Math.random() * 5)];
+  if (opt.hat === 'party') { add(head, new THREE.ConeGeometry(0.15, 0.42, 16), M(hatC, 0.5), [0.04, 0.5, 0], null, [0, 0, -0.15]); add(head, new THREE.SphereGeometry(0.05, 10, 8), M('#ffffff'), [0.07, 0.72, 0]); headTop.position.y = 0.75; }
+  if (opt.hat === 'crown') { const gold = M('#f2c14e', 0.3, { metalness: 0.8, envMap: window.__env, side: THREE.DoubleSide }); add(head, new THREE.CylinderGeometry(0.2, 0.19, 0.12, 20, 1, true), gold, [0, 0.36, 0]); for (let i = 0; i < 6; i++) { const a = i / 6 * Math.PI * 2; add(head, new THREE.ConeGeometry(0.04, 0.1, 6), gold, [Math.cos(a) * 0.19, 0.46, Math.sin(a) * 0.19]); } headTop.position.y = 0.44; }
+  if (opt.hat === 'tophat') { add(head, new THREE.CylinderGeometry(0.27, 0.27, 0.025, 24), black, [0, 0.31, 0]); add(head, new THREE.CylinderGeometry(0.16, 0.16, 0.34, 24), black, [0, 0.48, 0]); add(head, new THREE.CylinderGeometry(0.165, 0.165, 0.06, 24), M(hatC), [0, 0.35, 0]); headTop.position.y = 0.66; }
+  if (opt.hat === 'bandana') { add(head, new THREE.TorusGeometry(0.36, 0.045, 8, 32), M(hatC, 0.8), [0, 0.13, 0], [1.05, 1, 0.95], [Math.PI / 2 - 0.15, 0, 0]); }
+  const arms = [-1, 1].map(sx => {
+    const sh = new THREE.Group(); sh.position.set(sx * 0.37, 0.6, 0); body.add(sh); sh.rotation.z = sx * 0.25;
+    add(sh, new THREE.CylinderGeometry(0.055, 0.05, 0.45, 10), skin, [0, -0.22, 0]);
+    sh.hand = add(sh, new THREE.SphereGeometry(0.08, 12, 10), skin, [0, -0.47, 0]);
+    return sh;
+  });
+  const legs = [-1, 1].map(sx => {
+    const hip = new THREE.Group(); hip.position.set(sx * 0.15, 0.45, 0); root.add(hip);
+    add(hip, new THREE.CylinderGeometry(0.075, 0.065, 0.4, 10), skin, [0, -0.2, 0]);
+    add(hip, new THREE.SphereGeometry(0.1, 12, 8), dark, [0, -0.42, 0.06], [1, 0.5, 1.6]);
+    return hip;
+  });
+  const butt = new THREE.Object3D(); butt.position.set(0, 0.12, -0.4); body.add(butt);
+  root.traverse(o => { if (o.isMesh) o.castShadow = true; });
+  root.scale.setScalar(opt.size);
+  return { root, body, head, jaw, mouthPt, headTop, arms, legs, belly, butt };
+}
+function makePoop() {
+  const g = new THREE.Group(), m = new THREE.MeshStandardMaterial({ color: '#5b3a1c', roughness: 0.35 });
+  [[0.22, 0.07, 0.55], [0.16, 0.19, 0.6], [0.1, 0.29, 0.65]].forEach(([r, y, sy]) => { const s = new THREE.Mesh(new THREE.SphereGeometry(r, 18, 12), m); s.position.y = y; s.scale.set(1, sy, 1); s.castShadow = true; g.add(s); });
+  const tip = new THREE.Mesh(new THREE.ConeGeometry(0.06, 0.14, 10), m); tip.position.set(0.02, 0.38, 0); tip.rotation.z = -0.4; g.add(tip);
+  return g;
+}
+const wpos = o => o.getWorldPosition(new THREE.Vector3());
+const lerpAng = (a, b, u) => { let d = ((b - a + Math.PI) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2) - Math.PI; return a + d * u; };
+const ease = u => u * u * (3 - 2 * u);
+const onFloor = v => new THREE.Vector3(clamp(v.x, -HALF + 0.4, HALF - 0.4), TOP + COIN_T / 2, clamp(v.z, -HALF + 0.4, HALF - 0.4));
+const pickOther = (arr, last) => { const o = arr.filter(a => a !== last); return o[Math.floor(Math.random() * o.length)]; };
+
+function startGoblin(coinPos) {
+  const plan = { entr: pickOther(['walk', 'sky', 'lid', 'burrow'], lastGob.entr), act: pickOther(['eat', 'burp', 'juggle', 'bite', 'hat', 'polish'], lastGob.act), exit: pickOther(['jump', 'rocket', 'burrow', 'run'], lastGob.exit) };
+  if (plan.entr === 'burrow' && plan.exit === 'burrow') plan.exit = 'rocket';
+  lastGob = plan;
+  const hat = plan.act === 'hat' ? pickOther(['none', 'bandana'], '') : pickOther(['none', 'party', 'crown', 'tophat', 'bandana'], lastGob.hat);
+  const G = buildGoblin({ skin: SKINS[Math.floor(Math.random() * SKINS.length)], eye: pickOther(['#ffe14d', '#ff5a3c', '#b6ff4d', '#ffffff'], ''), hat, size: 1.15 + Math.random() * 0.35 });
+  scene.add(G.root);
+  const laughBase = 230 + Math.random() * 160;
+  const side = coinPos.x >= 0 ? 1 : -1, zl = clamp(coinPos.z, -3.6, 3.6);
+  const stand = new THREE.Vector3(clamp(coinPos.x + side * 0.78, -HALF + 0.4, HALF - 0.4), TOP, clamp(coinPos.z, -HALF + 0.4, HALF - 0.4));
+  const coinRest = coin.position.clone();
+  const yawTo = (a, b) => Math.atan2(b.x - a.x, b.z - a.z), faceYaw = yawTo(stand, coinRest);
+  const fwd = () => new THREE.Vector3(Math.sin(G.root.rotation.y), 0, Math.cos(G.root.rotation.y));
+  const pose = (ph, amt) => { G.legs[0].rotation.x = Math.sin(ph) * 0.65 * amt; G.legs[1].rotation.x = -Math.sin(ph) * 0.65 * amt; G.arms[0].rotation.x = -Math.sin(ph) * 0.5 * amt; G.arms[1].rotation.x = Math.sin(ph) * 0.5 * amt; G.body.position.y = 0.45 + Math.abs(Math.sin(ph)) * 0.06 * amt; };
+  const neutral = () => { pose(0, 0); G.body.rotation.set(0, 0, 0); G.body.scale.set(1, 1, 1); G.head.rotation.set(0, 0, 0); G.arms.forEach((a2, i) => a2.rotation.set(0, 0, (i ? 1 : -1) * 0.25)); G.jaw.scale.y = 0.32; G.root.rotation.x = 0; G.root.rotation.z = 0; };
+  const steps = [], S2 = (d, f, start) => steps.push({ d, f, start });
+  const walk = (a, b, speed = 2.8) => { const d = a.distanceTo(b); S2(Math.max(0.25, d / speed), u => { G.root.position.lerpVectors(a, b, u); if (d > 0.05) G.root.rotation.y = yawTo(a, b); pose(u * d * 4.2, 1); }); };
+  const hopTo = (a, b, h, d, flip) => S2(d, u => { G.root.position.lerpVectors(a, b, u); G.root.position.y += 4 * h * u * (1 - u); G.root.rotation.y = yawTo(a, b); if (flip) G.root.rotation.x = -Math.PI * 2 * ease(u); pose(0, 0); G.legs.forEach(l => l.rotation.x = -0.5 * Math.sin(Math.PI * u)); G.arms.forEach(a2 => a2.rotation.x = -2.4 * Math.sin(Math.PI * u)); }, boingSfx);
+  const squash = () => S2(0.35, u => { const k = Math.sin(Math.PI * u); G.body.scale.set(1 + 0.25 * k, 1 - 0.3 * k, 1 + 0.25 * k); G.body.position.y = 0.45 - 0.12 * k; }, thudSfx);
+  const cackle = (d = 0.9, n = 7) => S2(d, u => { G.jaw.scale.y = 0.32 + 0.6 * Math.abs(Math.sin(u * 22)); G.head.rotation.x = -0.3 * Math.sin(Math.PI * u); G.body.rotation.x = -0.1 * Math.sin(Math.PI * u); }, () => evilLaugh(n, laughBase));
+  const faceCoin = () => { let y0; S2(0.3, u => { G.root.rotation.y = lerpAng(y0, faceYaw, ease(u)); }, () => { y0 = G.root.rotation.y; neutral(); }); };
+  let from, to, y0, tmp;
+  const coinArc = (dst, h, d, spins = 2, startFn) => S2(d, u => { coin.position.lerpVectors(from, to, u); coin.position.y += 4 * h * u * (1 - u); coin.rotation.set(u * Math.PI * 2 * spins, 0, 0); if (u >= 1) { coin.rotation.set(0, Math.random() * 6, 0); } }, () => { goblin.hold = false; from = coin.position.clone(); to = dst(); startFn && startFn(); });
+  const land = () => S2(0.05, () => {}, () => clink(0.6, false));
+
+  // ----- entrances -----
+  if (plan.entr === 'walk') {
+    const start = new THREE.Vector3(side * (OUT + 0.75), 0, -8.5), pOut = new THREE.Vector3(side * (OUT + 0.75), 0, zl), pIn = new THREE.Vector3(side * (HALF - 0.45), TOP, zl);
+    S2(0.01, () => { G.root.position.copy(start); }, () => evilLaugh(8, laughBase));
+    walk(start, pOut); hopTo(pOut, pIn, 1.3, 0.6); walk(pIn, stand);
+  } else if (plan.entr === 'sky') {
+    S2(1.15, u => { G.root.position.set(stand.x, THREE.MathUtils.lerp(16, TOP, u * u), stand.z); G.root.rotation.y = faceYaw + (1 - u) * 14; G.arms.forEach(a2 => a2.rotation.x = -2.8); G.legs.forEach((l, i) => l.rotation.x = Math.sin(u * 30 + i * 3) * 0.6); }, wheeSfx);
+    S2(0.01, () => neutral()); squash(); cackle();
+  } else if (plan.entr === 'lid') {
+    const fx = clamp(stand.x, -4, 4), top = new THREE.Vector3(fx, WALL_H + 0.966 * 10.1, -OUT - 0.259 * 10.1 - 0.12), hide = top.clone().add(new THREE.Vector3(0, -2.2, -0.4));
+    S2(0.7, u => { G.root.position.lerpVectors(hide, top, ease(u)); G.root.rotation.y = 0; }, () => G.root.position.copy(hide));
+    cackle(1.0, 8); hopTo(top, stand, 2.8, 1.2, true); S2(0.01, () => neutral()); squash();
+  } else {
+    S2(1.3, u => { G.root.position.set(stand.x, THREE.MathUtils.lerp(-2.6, TOP, ease(u)), stand.z); G.root.rotation.y = faceYaw + (1 - u) * 18; G.root.rotation.z = 0.12 * Math.sin(u * 40) * (1 - u); G.arms.forEach(a2 => a2.rotation.x = -2.8); }, () => { G.root.position.set(stand.x, -2.6, stand.z); rumbleSfx(1.3); });
+    S2(0.01, () => neutral()); cackle();
+  }
+  faceCoin();
+
+  // ----- grab the coin -----
+  const grab = () => S2(0.55, u => { G.body.rotation.x = 0.75 * ease(u); G.arms[1].rotation.x = -1.1 * ease(u); G.arms[0].rotation.x = -0.6 * ease(u); if (u > 0.6) coin.position.lerp(wpos(G.arms[1].hand), (u - 0.6) / 0.4); if (u >= 1) goblin.hold = true; });
+  const standUp = (d = 0.4) => S2(d, u => { const e = ease(u); G.body.rotation.x = 0.75 * (1 - e); G.arms[1].rotation.x = -1.1 * (1 - e) - 0.5 * e; G.arms[0].rotation.x = -0.6 * (1 - e); });
+  const toMouth = () => S2(0.55, u => { const e = ease(u); G.body.rotation.x = 0.75 * (1 - e) - 0.15 * e; G.arms[1].rotation.x = -1.1 - 1.4 * e; G.arms[1].rotation.z = 0.25 + 0.5 * e; G.jaw.scale.y = 0.32 + 0.8 * e; coin.position.lerpVectors(from, wpos(G.mouthPt), e); coin.rotation.x = Math.PI / 2 * e; }, () => { goblin.hold = false; from = coin.position.clone(); });
+  const chomp = () => S2(0.95, u => { G.jaw.scale.y = 0.32 + 0.8 * Math.abs(Math.cos(u * Math.PI * 3)); coin.position.copy(wpos(G.mouthPt)); const sc = Math.max(0.001, 1 - u * 1.25); coin.scale.set(sc, sc, sc); G.head.rotation.x = 0.15 * Math.sin(u * Math.PI * 6); if (u > 0.8) coin.visible = false; }, () => chompSfx(3, 0.3));
+  const bellyRub = (big = 0.35) => S2(0.75, u => { const b = 1 + big * Math.sin(Math.PI * u); G.belly.scale.set(b, b, 0.6 * b); G.arms[1].rotation.x = -2.5 * (1 - ease(u)) - 0.6 * ease(u); G.arms[1].rotation.z = 0.75 - 0.5 * ease(u); G.arms[0].rotation.x = -0.6 + 0.15 * Math.sin(u * 20); G.body.rotation.x = -0.15 * (1 - u); G.head.rotation.x = -0.25 * Math.sin(Math.PI * u); }, () => { gulpSfx(); coin.visible = false; G.jaw.scale.y = 0.32; });
+  const unhide = () => { coin.visible = true; coin.scale.set(1, 1, 1); };
+
+  grab();
+  if (plan.act === 'eat') {
+    toMouth(); chomp(); bellyRub();
+    S2(0.4, u => { G.root.rotation.y = y0 + Math.PI * ease(u); pose(u * 6, 0.5); }, () => { y0 = G.root.rotation.y; });
+    S2(0.4, u => { const e = ease(u); pose(0, 0); G.body.position.y = 0.45 - 0.17 * e; G.body.rotation.x = 0.35 * e; G.legs.forEach(l => l.rotation.x = -0.6 * e); G.head.rotation.x = -0.2 * e; });
+    let poopAt;
+    S2(0.9, u => {
+      G.body.rotation.x = 0.35 + 0.08 * Math.sin(u * 40) * (1 - u);
+      const uc = clamp((u - 0.35) / 0.65, 0, 1), up = clamp(u / 0.6, 0, 1);
+      poop.position.lerpVectors(from, poopAt, ease(up)); poop.position.y = THREE.MathUtils.lerp(from.y, TOP, up * up); poop.scale.setScalar(Math.max(0.01, 1.6 * ease(up)));
+      coin.position.lerpVectors(from, to, uc); coin.position.y += 2 * uc * (1 - uc); coin.rotation.set(uc * Math.PI * 3, 0, 0);
+    }, () => {
+      fartSfx(); from = wpos(G.butt); to = onFloor(G.root.position.clone().addScaledVector(fwd(), -0.75));
+      poopAt = to.clone().add(new THREE.Vector3(Math.cos(G.root.rotation.y), 0, -Math.sin(G.root.rotation.y)).multiplyScalar(0.75)); poopAt.y = TOP;
+      clearPoop(); poop = makePoop(); poop.scale.setScalar(0.01); poop.position.copy(from); scene.add(poop);
+      unhide(); coin.position.copy(from);
+    });
+    land();
+    S2(0.5, u => { const e = ease(u); G.body.position.y = 0.28 + 0.17 * e; G.body.rotation.x = 0.35 * (1 - e); G.legs.forEach(l => l.rotation.x = -0.6 * (1 - e)); G.jaw.scale.y = 0.32 + 0.6 * Math.abs(Math.sin(u * 18)); }, () => evilLaugh(5, laughBase * 1.15));
+  } else if (plan.act === 'burp') {
+    toMouth(); chomp(); bellyRub(0.6);
+    S2(0.5, u => { const b = 1 + 0.7 * ease(u); G.belly.scale.set(b, b, 0.6 * b); G.body.rotation.x = -0.35 * ease(u); G.head.rotation.x = -0.4 * ease(u); });
+    coinArc(() => onFloor(stand.clone().addScaledVector(fwd(), 1.7).add(new THREE.Vector3((Math.random() - .5), 0, (Math.random() - .5)))), 1.6, 0.9, 3, () => { burpSfx(); unhide(); from = wpos(G.mouthPt); coin.position.copy(from); });
+    steps[steps.length - 1].f = (orig => u => { orig(u); G.jaw.scale.y = 0.32 + 1.0 * Math.sin(Math.PI * Math.min(1, u * 1.3)); const b = 1.7 - 0.7 * ease(u); G.belly.scale.set(b, b, 0.6 * b); G.body.rotation.x = -0.35 * (1 - u); G.head.rotation.x = -0.4 * (1 - u); })(steps[steps.length - 1].f);
+    land(); S2(0.6, u => { G.arms[0].rotation.x = -1.6 * Math.sin(Math.PI * u); G.arms[0].rotation.z = -0.25 - 0.6 * Math.sin(Math.PI * u); });
+  } else if (plan.act === 'juggle') {
+    standUp();
+    for (let i = 0; i < 3; i++) {
+      let base;
+      S2(0.6, u => { coin.position.copy(base); coin.position.y += 4 * (1.3 + i * 0.4) * u * (1 - u); coin.rotation.x = u * Math.PI * 4; G.arms[1].rotation.x = -0.6 - 0.9 * Math.sin(Math.PI * Math.min(1, u * 3)); G.head.rotation.x = -0.5 * Math.sin(Math.PI * u); }, () => { goblin.hold = false; base = wpos(G.arms[1].hand); tone('sine', 2400, 2300, 0.15, 0.08); });
+    }
+    S2(0.15, () => {}, () => { goblin.hold = true; });
+    coinArc(() => onFloor(stand.clone().addScaledVector(fwd(), 1.3).add(new THREE.Vector3(Math.random() - .5, 0, Math.random() - .5))), 2.8, 1.1, 5, () => spinSfx(1.1));
+    steps[steps.length - 1].f = (orig => u => { orig(u); G.arms[1].rotation.x = -0.5 - 2 * Math.sin(Math.PI * Math.min(1, u * 2.5)); G.head.rotation.x = -0.6 * Math.sin(Math.PI * u); })(steps[steps.length - 1].f);
+    land(); S2(0.6, u => { G.arms.forEach((a2, i) => a2.rotation.z = (i ? 1 : -1) * (0.25 + 0.9 * Math.sin(Math.PI * u))); G.head.rotation.z = 0.3 * Math.sin(Math.PI * u); });
+  } else if (plan.act === 'bite') {
+    toMouth();
+    S2(0.35, u => { G.jaw.scale.y = u < 0.5 ? 1.1 : 0.32; coin.position.copy(wpos(G.mouthPt)); }, () => {});
+    S2(0.01, () => {}, () => { clink(0.9, false); tone('sawtooth', 160, 90, 0.4, 0.15, 0.1); });
+    S2(0.8, u => { G.head.rotation.y = 0.5 * Math.sin(u * Math.PI * 6) * (1 - u); coin.position.copy(wpos(G.mouthPt)); G.jaw.scale.y = 0.32; });
+    S2(0.25, u => { G.arms[1].rotation.x = -2.5 + 0.8 * u; coin.position.copy(wpos(G.mouthPt).lerp(wpos(G.arms[1].hand), u)); });
+    coinArc(() => onFloor(stand.clone().addScaledVector(fwd(), -1.6).add(new THREE.Vector3(Math.random() - .5, 0, Math.random() - .5))), 2.2, 0.9, 4);
+    steps[steps.length - 1].f = (orig => u => { orig(u); G.arms[1].rotation.x = -1.7 - 1.2 * Math.sin(Math.PI * Math.min(1, u * 2)); })(steps[steps.length - 1].f);
+    land(); cackle(0.7, 5);
+  } else if (plan.act === 'hat') {
+    standUp(0.3);
+    S2(0.5, u => { G.arms[1].rotation.x = -0.5 - 2.4 * ease(u); G.arms[1].rotation.z = 0.25 + 0.5 * ease(u); coin.position.lerpVectors(from, wpos(G.headTop).add(new THREE.Vector3(0, COIN_T, 0)), ease(u)); coin.rotation.set(0, 0, 0); }, () => { goblin.hold = false; from = coin.position.clone(); });
+    S2(2.2, u => { coin.position.copy(wpos(G.headTop)).add(new THREE.Vector3(0, COIN_T, 0)); coin.rotation.y = G.root.rotation.y; G.root.rotation.y = faceYaw + u * Math.PI * 4; pose(u * 30, 0.8); G.arms.forEach((a2, i) => { a2.rotation.x = -2.6 + 0.3 * Math.sin(u * 30 + i * 3); }); }, () => evilLaugh(9, laughBase * 1.2));
+    S2(0.4, u => { G.body.rotation.x = 0.8 * ease(u); G.arms.forEach(a2 => a2.rotation.x = -2.6 * (1 - u)); coin.position.copy(wpos(G.headTop)).add(new THREE.Vector3(0, COIN_T, 0)); }, () => neutral());
+    coinArc(() => onFloor(stand.clone().addScaledVector(fwd(), 1.2)), 0.5, 0.5, 1);
+    land(); S2(0.4, u => { G.body.rotation.x = 0.8 * (1 - ease(u)); });
+  } else { // polish
+    standUp(0.3);
+    S2(1.3, u => { G.arms[1].rotation.x = -0.9; G.arms[1].rotation.z = 0.25 - 0.55 + 0.35 * Math.sin(u * 30); }, squeakSfx);
+    S2(0.5, u => { G.arms[1].rotation.x = -0.9 - 1.4 * ease(u); G.arms[1].rotation.z = -0.3 + 0.55 * ease(u); G.head.rotation.x = -0.2 * ease(u); });
+    S2(0.6, u => { coin.rotation.y = u * 6; }, dingSfx);
+    S2(0.35, u => { G.head.rotation.x = -0.2 + 0.4 * Math.sin(Math.PI * u); }, kissSfx);
+    S2(0.55, u => { const e = ease(u); G.body.rotation.x = 0.75 * e; G.arms[1].rotation.x = -2.3 + 1.2 * e; G.arms[1].rotation.z = 0.25; G.head.rotation.x = 0.2 * (1 - e); coin.position.lerpVectors(from, coinRest, e); coin.rotation.set(0, 0, 0); }, () => { goblin.hold = false; from = coin.position.clone(); });
+    land(); S2(0.4, u => { G.body.rotation.x = 0.75 * (1 - ease(u)); G.arms[1].rotation.x = -1.1 * (1 - ease(u)); });
+  }
+  cackle(0.6, 4);
+
+  // ----- exits -----
+  if (plan.exit === 'jump') {
+    let j1, j2, j3;
+    S2(0.01, () => {}, () => { neutral(); const p0 = G.root.position.clone(); j1 = p0; j2 = new THREE.Vector3(side * (OUT + 1.2), 0, p0.z + 0.6); j3 = new THREE.Vector3(side * 17, 0, p0.z + 2.5); });
+    S2(0.75, u => { G.root.position.lerpVectors(j1, j2, u); G.root.position.y = THREE.MathUtils.lerp(TOP, 0, u) + 4 * 2.0 * u * (1 - u); G.root.rotation.y = yawTo(j1, j2); G.legs.forEach(l => l.rotation.x = -0.5 * Math.sin(Math.PI * u)); G.arms.forEach(a2 => a2.rotation.x = -2.6 * Math.sin(Math.PI * u)); }, boingSfx);
+    S2(1.0, u => { G.root.position.lerpVectors(j2, j3, u); G.root.position.y = 4 * 2.6 * u * (1 - u); G.root.rotation.y = yawTo(j2, j3); G.legs.forEach(l => l.rotation.x = -0.5 * Math.sin(Math.PI * u)); G.arms.forEach(a2 => a2.rotation.x = -2.6 * Math.sin(Math.PI * u)); }, boingSfx);
+  } else if (plan.exit === 'rocket') {
+    S2(0.45, u => { const e = ease(u); G.body.position.y = 0.45 - 0.15 * e; G.legs.forEach(l => l.rotation.x = -0.5 * e); G.arms.forEach(a2 => a2.rotation.x = -2.8 * e); }, () => neutral());
+    S2(1.7, u => { G.root.position.y = TOP + 26 * u * u; G.root.rotation.y += 0.25; G.body.position.y = 0.45; G.legs.forEach(l => l.rotation.x = 0.1 * Math.sin(u * 50)); }, () => { fartSfx(); setTimeout(fartSfx, 350); whooshSfx(1.6); evilLaugh(6, laughBase * 1.3); });
+  } else if (plan.exit === 'burrow') {
+    S2(1.4, u => { G.root.position.y = TOP - 2.8 * ease(u); G.root.rotation.y += 0.35 * (0.3 + u); G.arms.forEach(a2 => a2.rotation.x = -2.9); G.root.rotation.z = 0.1 * Math.sin(u * 50); }, () => { neutral(); rumbleSfx(1.4); evilLaugh(5, laughBase * 0.8); });
+  } else {
+    let p0, p1, p2;
+    S2(0.01, () => {}, () => { neutral(); p0 = G.root.position.clone(); p1 = new THREE.Vector3(side * (OUT + 0.8), 0, p0.z); p2 = new THREE.Vector3(side * 18, 0, p0.z + 7); });
+    S2(0.3, u => { G.root.rotation.y = lerpAng(y0, yawTo(p0, p1), ease(u)); }, () => { y0 = G.root.rotation.y; evilLaugh(9, laughBase * 1.45); });
+    S2(0.55, u => { G.root.position.lerpVectors(p0, p1, u); G.root.position.y = THREE.MathUtils.lerp(TOP, 0, u) + 4 * 1.2 * u * (1 - u); G.root.rotation.y = yawTo(p0, p1); G.arms.forEach(a2 => a2.rotation.x = -2.4 * Math.sin(Math.PI * u)); }, boingSfx);
+    S2(1.3, u => { G.root.position.lerpVectors(p1, p2, u); G.root.rotation.y = yawTo(p1, p2); pose(u * 60, 1.4); G.body.rotation.x = 0.35; });
+  }
+  goblin = { G, steps, i: 0, t: 0, started: false, hold: false, plan }; jazzDuck(true);
+  addLog('👺 Goblin ' + { eat: 'ate the coin and pooped it out', burp: 'swallowed the coin and burped it back up', juggle: 'juggled the coin', bite: 'bit the coin and chucked it', hat: 'wore the coin as a hat', polish: 'polished the coin' }[plan.act]); renderUI();
+}
+// missed coin: a goblin fetches it and throws it into the box (that's where it counts)
+function startRescue(coinPos) {
+  const G = buildGoblin({ skin: SKINS[Math.floor(Math.random() * SKINS.length)], eye: pickOther(['#ffe14d', '#ff5a3c', '#b6ff4d', '#ffffff'], ''), hat: pickOther(['none', 'party', 'crown', 'tophat', 'bandana'], ''), size: 1.15 + Math.random() * 0.35 });
+  scene.add(G.root);
+  const laughBase = 230 + Math.random() * 160;
+  const out = new THREE.Vector3(coinPos.x, 0, coinPos.z); if (out.lengthSq() < 0.01) out.set(0, 0, 1); out.normalize();
+  const start = coinPos.clone().addScaledVector(out, 7); start.y = 0;
+  const stand = coinPos.clone().addScaledVector(out, 0.8); stand.y = 0;
+  const target = new THREE.Vector3((Math.random() * 2 - 1) * (HALF - 0.5), TOP + COIN_T / 2, (Math.random() * 2 - 1) * (HALF - 0.5));
+  const yawTo = (a, b) => Math.atan2(b.x - a.x, b.z - a.z);
+  const pose = (ph, amt) => { G.legs[0].rotation.x = Math.sin(ph) * 0.65 * amt; G.legs[1].rotation.x = -Math.sin(ph) * 0.65 * amt; G.arms[0].rotation.x = -Math.sin(ph) * 0.5 * amt; G.arms[1].rotation.x = Math.sin(ph) * 0.5 * amt; G.body.position.y = 0.45 + Math.abs(Math.sin(ph)) * 0.06 * amt; };
+  const steps = [], S2 = (d, f, st) => steps.push({ d, f, start: st });
+  let y0, from;
+  S2(0.01, () => G.root.position.copy(start), () => evilLaugh(7, laughBase));
+  { const d = start.distanceTo(stand); S2(d / 3.4, u => { G.root.position.lerpVectors(start, stand, u); G.root.rotation.y = yawTo(start, stand); pose(u * d * 4.5, 1.2); }); }
+  S2(0.25, u => { G.root.rotation.y = lerpAng(y0, yawTo(stand, coinPos), u); pose(0, 0); }, () => { y0 = G.root.rotation.y; });
+  S2(0.5, u => { G.body.rotation.x = 0.75 * ease(u); G.arms[1].rotation.x = -1.1 * ease(u); if (u > 0.6) coin.position.lerp(wpos(G.arms[1].hand), (u - 0.6) / 0.4); if (u >= 1) goblin.hold = true; });
+  S2(0.4, u => { G.body.rotation.x = 0.75 * (1 - ease(u)); G.arms[1].rotation.x = -1.1 * (1 - ease(u)); });
+  S2(0.45, u => { G.root.rotation.y = lerpAng(y0, yawTo(stand, target), ease(u)); }, () => { y0 = G.root.rotation.y; });
+  // wind up...
+  S2(0.55, u => { const e = ease(u); G.arms[1].rotation.x = 1.4 * e; G.body.rotation.x = -0.25 * e; G.head.rotation.x = -0.2 * e; G.body.rotation.y = 0.4 * e; });
+  // ...and huck it into the box
+  S2(1.15, u => {
+    const k = Math.min(1, u * 4); G.arms[1].rotation.x = 1.4 - 3.6 * ease(k); G.body.rotation.x = -0.25 + 0.5 * Math.sin(Math.PI * k); G.body.rotation.y = 0.4 * (1 - k);
+    coin.position.lerpVectors(from, target, u); coin.position.y += 4 * 2.6 * u * (1 - u); coin.rotation.set(u * Math.PI * 12, 0, 0);
+    if (u >= 1) { coin.position.copy(target); coin.rotation.set(0, Math.random() * 6, 0); }
+  }, () => { goblin.hold = false; goblin.followCoin = true; from = coin.position.clone(); spinSfx(1.15); tone('sawtooth', 200, 120, 0.25, 0.12); });
+  S2(0.05, () => {}, () => clink(0.8, false));
+  S2(0.8, u => { G.arms.forEach((a2, i) => { a2.rotation.x = -2.4 * Math.sin(Math.PI * u); a2.rotation.z = (i ? 1 : -1) * 0.25; }); G.body.rotation.set(0, 0, 0); G.jaw.scale.y = 0.32 + 0.6 * Math.abs(Math.sin(u * 20)); G.body.position.y = 0.45 + 0.25 * Math.abs(Math.sin(u * Math.PI * 2)); }, () => evilLaugh(6, laughBase * 1.2));
+  const far = stand.clone().addScaledVector(out, 10);
+  S2(0.3, u => { G.root.rotation.y = lerpAng(y0, yawTo(stand, far), u); }, () => { y0 = G.root.rotation.y; G.jaw.scale.y = 0.32; });
+  S2(1.4, u => { G.root.position.lerpVectors(stand, far, u); G.root.position.y = Math.abs(Math.sin(u * Math.PI * 3)) * 1.2; G.root.rotation.y = yawTo(stand, far); G.arms.forEach(a2 => a2.rotation.x = -2.4); }, boingSfx);
+  goblin = { G, steps, i: 0, t: 0, started: false, hold: false, after: () => evaluate(target.x, target.z) }; jazzDuck(true); renderUI();
+}
+function stepGoblin(dt) {
+  if (!goblin || goblin.pending) return;
+  const s = goblin.steps[goblin.i];
+  if (!s) { $('#bubble').classList.remove('on'); const after = goblin.after; scene.remove(goblin.G.root); goblin = null; coin.visible = true; coin.scale.set(1, 1, 1); jazzDuck(false); renderUI(); if (after) after(); return; }
+  if (!goblin.started) { goblin.started = true; s.start && s.start(); }
+  goblin.t += dt; const u = Math.min(1, goblin.t / s.d); s.f(u);
+  if (goblin && goblin.hold) coin.position.copy(wpos(goblin.G.arms[1].hand));
+  if (u >= 1) { goblin.i++; goblin.t = 0; goblin.started = false; }
+}
+
+// ---------- jazz band (generated live) ----------
+const BPM = 96, SPB = 60 / BPM, SW = 0.667; // swung 8ths
+const mtof = m => 440 * Math.pow(2, (m - 69) / 12);
+// 8-bar loop in C: Dm9 | G13 | Cmaj9 | A7b9 | Fmaj9 | Bb9 | Em9 A7b9 | Dm9 G7b9
+const PROG = [
+  [[38, [53, 57, 60, 64]]], [[43, [53, 59, 64, 69]]], [[36, [52, 55, 59, 62]]], [[45, [55, 61, 64, 70]]],
+  [[41, [57, 60, 64, 67]]], [[46, [56, 60, 62, 65]]], [[40, [55, 59, 62, 66]], [45, [55, 61, 64, 70]]], [[38, [53, 57, 60, 64]], [43, [53, 59, 64, 68]]]
+];
+const jazz = { on: true, started: false, timer: null, beat: 0, next: 0, bass: 38, mel: 4, out: null };
+try { if (localStorage.getItem('pizzabox-jazz') === '0') jazz.on = false; } catch (e) {}
+const chordAt = b => { const bar = PROG[((Math.floor(b / 4) % 8) + 8) % 8], beat = ((b % 4) + 4) % 4; return bar.length === 2 ? bar[beat < 2 ? 0 : 1] : bar[0]; };
+function jazzGraph() {
+  const A = actx, out = A.createGain(); out.gain.value = 0;
+  const comp = A.createDynamicsCompressor(); comp.threshold.value = -18; comp.ratio.value = 3;
+  out.connect(comp).connect(A.destination);
+  const rev = A.createConvolver(), len = A.sampleRate * 2.4, ir = A.createBuffer(2, len, A.sampleRate);
+  for (let c = 0; c < 2; c++) { const d = ir.getChannelData(c); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3); }
+  rev.buffer = ir; const wet = A.createGain(); wet.gain.value = 0.32; rev.connect(wet).connect(out);
+  const bus = (pan, trem, depth) => {
+    const g = A.createGain(), pn = A.createStereoPanner(); pn.pan.value = pan; g.connect(pn); pn.connect(out); pn.connect(rev);
+    if (trem) { const l = A.createOscillator(), lg = A.createGain(); l.frequency.value = trem; lg.gain.value = depth; l.connect(lg).connect(g.gain); l.start(); }
+    return g;
+  };
+  jazz.out = out; jazz.ep = bus(-0.25, 4.2, 0.18); jazz.vib = bus(0.3, 5.6, 0.35); jazz.bassBus = bus(0, 0, 0); jazz.drum = bus(0.15, 0, 0);
+}
+function ep(t, m, dur, vel) {
+  const A = actx, f = mtof(m), c = A.createOscillator(), mod = A.createOscillator(), mg = A.createGain(), g = A.createGain();
+  c.frequency.value = f; mod.frequency.value = f; mg.gain.setValueAtTime(f * 1.4 * vel, t); mg.gain.exponentialRampToValueAtTime(f * 0.12, t + 0.5);
+  mod.connect(mg).connect(c.frequency);
+  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.11 * vel, t + 0.006); g.gain.exponentialRampToValueAtTime(0.045 * vel, t + 0.7);
+  g.gain.setValueAtTime(0.045 * vel, t + dur); g.gain.exponentialRampToValueAtTime(0.0001, t + dur + 0.35);
+  c.connect(g).connect(jazz.ep); c.start(t); mod.start(t); c.stop(t + dur + 0.4); mod.stop(t + dur + 0.4);
+}
+function vibes(t, m, vel) {
+  const A = actx, f = mtof(m), g = A.createGain();
+  [[1, 1], [4, 0.18], [9.8, 0.04]].forEach(([r, a]) => { const o = A.createOscillator(), og = A.createGain(); o.frequency.value = f * r; og.gain.value = a; o.connect(og).connect(g); o.start(t); o.stop(t + 2); });
+  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.12 * vel, t + 0.004); g.gain.exponentialRampToValueAtTime(0.0001, t + 1.9);
+  g.connect(jazz.vib);
+}
+function bassNote(t, m, vel) {
+  const A = actx, f = mtof(m), o = A.createOscillator(), o2 = A.createOscillator(), lp = A.createBiquadFilter(), g = A.createGain();
+  o.type = 'triangle'; o.frequency.value = f; o2.frequency.value = f * 2; const g2 = A.createGain(); g2.gain.value = 0.25;
+  lp.type = 'lowpass'; lp.frequency.setValueAtTime(1400, t); lp.frequency.exponentialRampToValueAtTime(420, t + 0.25);
+  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.42 * vel, t + 0.012); g.gain.exponentialRampToValueAtTime(0.12 * vel, t + SPB * 0.8); g.gain.exponentialRampToValueAtTime(0.0001, t + SPB * 1.05);
+  o.connect(lp); o2.connect(g2).connect(lp); lp.connect(g).connect(jazz.bassBus);
+  o.start(t); o2.start(t); o.stop(t + SPB * 1.1); o2.stop(t + SPB * 1.1);
+}
+function hitNoise(t, type, freq, q, peak, decay, attack = 0.002) {
+  const A = actx, n = A.createBufferSource(), f = A.createBiquadFilter(), g = A.createGain();
+  n.buffer = noiseBuf(); n.playbackRate.value = 0.8 + Math.random() * 0.4; f.type = type; f.frequency.value = freq; f.Q.value = q;
+  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(peak, t + attack); g.gain.exponentialRampToValueAtTime(0.0001, t + decay);
+  n.connect(f).connect(g).connect(jazz.drum); n.start(t, Math.random() * 0.5); n.stop(t + decay + 0.05);
+}
+function ride(t, vel) {
+  hitNoise(t, 'highpass', 6500, 0.7, 0.07 * vel, 0.45);
+  [3950, 5310].forEach((fq, i) => { const o = actx.createOscillator(), g = actx.createGain(); o.frequency.value = fq; g.gain.setValueAtTime(0.012 * vel / (i + 1), t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.8); o.connect(g).connect(jazz.drum); o.start(t); o.stop(t + 0.85); });
+}
+function kick(t) { const o = actx.createOscillator(), g = actx.createGain(); o.frequency.setValueAtTime(70, t); o.frequency.exponentialRampToValueAtTime(42, t + 0.12); g.gain.setValueAtTime(0.18, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.18); o.connect(g).connect(jazz.drum); o.start(t); o.stop(t + 0.2); }
+function nearest(pc, prev, lo = 31, hi = 50) { let best = null; for (let m = lo; m <= hi; m++) if (((m % 12) + 12) % 12 === ((pc % 12) + 12) % 12 && (best === null || Math.abs(m - prev) < Math.abs(best - prev))) best = m; return best; }
+function scheduleBeat(b, t) {
+  const beat = b % 4, c = chordAt(b), nx = chordAt(b + 1), changes = nx !== c;
+  const firstOfChord = chordAt(b - 1) !== c || b === 0;
+  // walking bass
+  let note;
+  if (firstOfChord) note = nearest(c[0], jazz.bass);
+  else if (changes) note = nearest(nx[0] + (Math.random() < 0.5 ? 1 : -1), jazz.bass);
+  else { const pcs = c[1].map(n => n % 12).concat([c[0] + 7]); note = nearest(pcs[Math.floor(Math.random() * pcs.length)], jazz.bass + (Math.random() < 0.5 ? 3 : -3)); }
+  jazz.bass = note; bassNote(t, note, beat === 0 ? 1 : 0.85);
+  // drums: ride "ding, ding-da ding, ding-da", hat on 2 & 4, brush swish, feathered kick
+  ride(t, beat % 2 ? 1 : 0.75);
+  if (beat % 2) { ride(t + SW * SPB, 0.5); hitNoise(t, 'highpass', 8000, 1, 0.05, 0.06); hitNoise(t, 'bandpass', 2800, 0.7, 0.06, 0.22, 0.03); }
+  kick(t);
+  if (beat !== 0) return;
+  // comping (Rhodes) for the whole bar
+  const bar = PROG[Math.floor(b / 4) % 8];
+  const pats = bar.length === 2 ? [[0, 2], [0, 1 + SW, 2], [SW, 2 + SW]] : [[0, 1 + SW], [1 + SW, 3 + SW], [0, 2 + SW], [0], [SW, 2]];
+  const pat = pats[Math.floor(Math.random() * pats.length)];
+  pat.forEach(off => {
+    const ch = off >= 3.5 ? chordAt(b + 4) : chordAt(b + Math.floor(off)), vel = 0.55 + Math.random() * 0.3, dur = off === 0 ? SPB * 2.4 : SPB * 1.1;
+    ch[1].forEach((m, i) => ep(t + off * SPB + i * 0.007, m, dur, vel));
+  });
+  // vibraphone melody: phrases on, phrases off
+  const barN = Math.floor(b / 4);
+  if (barN < 2 || Math.random() > (barN % 4 < 2 ? 0.88 : 0.25)) return;
+  for (let i = 0; i < 8; i++) {
+    const off = Math.floor(i / 2) + (i % 2 ? SW : 0); if (Math.random() > (i % 2 ? 0.42 : 0.55)) continue;
+    const ch = chordAt(b + Math.floor(off)), pool = [...new Set(ch[1].flatMap(n => [n + 12, n + 24]))].filter(n => n >= 67 && n <= 86).sort((a, b2) => a - b2);
+    jazz.mel = clamp(jazz.mel + [-2, -1, -1, 1, 1, 2][Math.floor(Math.random() * 6)], 0, pool.length - 1);
+    vibes(t + off * SPB, pool[jazz.mel], i % 2 ? 0.7 : 1);
+  }
+}
+function jazzTick() {
+  if (!actx) return;
+  if (jazz.next < actx.currentTime - 0.05) jazz.next = actx.currentTime + 0.05;
+  while (jazz.next < actx.currentTime + 0.3) { scheduleBeat(jazz.beat, jazz.next); jazz.next += SPB; jazz.beat++; }
+}
+const JAZZ_VOL = 0.55;
+function jazzSet(on) {
+  jazz.on = on; try { localStorage.setItem('pizzabox-jazz', on ? '1' : '0'); } catch (e) {}
+  $('#jazzBtn').textContent = on ? '🎷 Jazz: on' : '🎷 Jazz: off'; $('#jazzBtn').classList.toggle('off', !on);
+  if (!actx) return;
+  if (on) {
+    if (!jazz.out) jazzGraph();
+    if (!jazz.timer) { jazz.next = actx.currentTime + 0.1; jazz.timer = setInterval(jazzTick, 40); jazzTick(); }
+    jazz.out.gain.cancelScheduledValues(actx.currentTime); jazz.out.gain.setTargetAtTime(JAZZ_VOL, actx.currentTime, 0.4);
+  } else if (jazz.out) {
+    jazz.out.gain.cancelScheduledValues(actx.currentTime); jazz.out.gain.setTargetAtTime(0, actx.currentTime, 0.2);
+    clearInterval(jazz.timer); jazz.timer = null;
+  }
+}
+function jazzDuck(d) { if (jazz.out && jazz.on) { jazz.out.gain.cancelScheduledValues(actx.currentTime); jazz.out.gain.setTargetAtTime(d ? JAZZ_VOL * 0.3 : JAZZ_VOL, actx.currentTime, 0.3); } }
+$('#jazzBtn').onclick = () => { ensureAudio(); jazzSet(!jazz.on); };
+const kickoff = () => { if (CTRL) return; ensureAudio(); if (jazz.on && !jazz.timer) jazzSet(true); };
+addEventListener('pointerdown', kickoff);
+// buttons never keep focus, so Space always means "flip" and never re-clicks a button
+document.addEventListener('click', e => { const b = e.target.closest('button'); if (b) b.blur(); });
+addEventListener('keyup', e => { if (e.code === 'Space' && !/INPUT|TEXTAREA/.test(document.activeElement.tagName)) e.preventDefault(); }); addEventListener('keydown', kickoff);
+jazzSet(jazz.on);
+
+// ---------- after 30 minutes: the doom goblin can end the game ----------
+const DOOM_AFTER = 30 * 60;
+let gameOver = false, saveClock = 0;
+const guts = [];
+function boomSfx() {
+  if (!actx) return; try {
+    const t = actx.currentTime, n = actx.createBufferSource(); n.buffer = noiseBuf(); n.loop = true;
+    const f = actx.createBiquadFilter(); f.type = 'lowpass'; f.frequency.setValueAtTime(2500, t); f.frequency.exponentialRampToValueAtTime(80, t + 1.6);
+    const g = actx.createGain(); g.gain.setValueAtTime(1.6, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 1.8);
+    n.connect(f).connect(g).connect(actx.destination); n.start(t); n.stop(t + 1.9);
+    tone('sine', 90, 28, 1.2, 0.9);
+    for (let i = 0; i < 9; i++) setTimeout(() => noiseSfx('bandpass', 700 + Math.random() * 600, 250, 0.14, 0.5, 1.2), 250 + Math.random() * 1100);
+  } catch (e) {}
+}
+function startDoom() {
+  const cp = coin.position.clone(), floorY = cp.y - COIN_T / 2;
+  const toC = new THREE.Vector3(-cp.x, 0, -cp.z); if (toC.lengthSq() < 0.01) toC.set(0, 0, 1); toC.normalize();
+  const stand = cp.clone().addScaledVector(toC, -0.85); stand.y = floorY;
+  if (Math.abs(stand.x) < OUT + 0.3 && Math.abs(stand.z) < OUT + 0.3 && (Math.abs(stand.x) > HALF - 0.3 || Math.abs(stand.z) > HALF - 0.3)) stand.copy(cp).addScaledVector(toC, 0.85).setY(floorY);
+  stand.y = (Math.abs(stand.x) < HALF && Math.abs(stand.z) < HALF) ? TOP : 0;
+  const G = buildGoblin({ skin: '#4c8a2a', eye: '#ff1a1a', hat: 'crown', size: 1.45 });
+  scene.add(G.root);
+  const mats = []; G.root.traverse(o => { if (o.isMesh && o.material.emissive) mats.push(o.material); });
+  const yaw = Math.atan2(cp.x - stand.x, cp.z - stand.z);
+  const steps = [], S2 = (d, f, st) => steps.push({ d, f, start: st });
+  let from;
+  showResult('…uh oh. 👺', 'A goblin is here — and he looks hungry.', '#ff1a1a');
+  S2(1.0, u => { G.root.position.set(stand.x, THREE.MathUtils.lerp(15, stand.y, u * u), stand.z); G.root.rotation.y = yaw + (1 - u) * 12; G.arms.forEach(a2 => a2.rotation.x = -2.8); }, wheeSfx);
+  S2(0.35, u => { const k = Math.sin(Math.PI * u); G.arms.forEach(a2 => a2.rotation.x = 0); G.body.scale.set(1 + 0.25 * k, 1 - 0.3 * k, 1 + 0.25 * k); }, thudSfx);
+  S2(1.0, u => { G.jaw.scale.y = 0.32 + 0.6 * Math.abs(Math.sin(u * 20)); G.head.rotation.x = -0.3 * Math.sin(Math.PI * u); }, () => evilLaugh(9, 170));
+  S2(0.55, u => { G.body.rotation.x = 0.75 * ease(u); G.arms[1].rotation.x = -1.1 * ease(u); if (u > 0.6) coin.position.lerp(wpos(G.arms[1].hand), (u - 0.6) / 0.4); if (u >= 1) goblin.hold = true; });
+  S2(0.55, u => { const e = ease(u); G.body.rotation.x = 0.75 * (1 - e); G.arms[1].rotation.x = -1.1 - 1.4 * e; G.arms[1].rotation.z = 0.25 + 0.5 * e; G.jaw.scale.y = 0.32 + 0.8 * e; coin.position.lerpVectors(from, wpos(G.mouthPt), e); }, () => { goblin.hold = false; from = coin.position.clone(); });
+  S2(0.95, u => { G.jaw.scale.y = 0.32 + 0.8 * Math.abs(Math.cos(u * Math.PI * 3)); coin.position.copy(wpos(G.mouthPt)); const sc = Math.max(0.001, 1 - u * 1.25); coin.scale.set(sc, sc, sc); if (u > 0.8) coin.visible = false; }, () => chompSfx(3, 0.3));
+  S2(0.6, u => { G.arms[1].rotation.x = -2.5 * (1 - ease(u)); G.arms[1].rotation.z = 0.75 - 0.5 * ease(u); G.jaw.scale.y = 0.32; }, () => { gulpSfx(); coin.visible = false; showResult('He ate the coin. 😳', 'That was the only coin…', '#ff1a1a'); });
+  // he swells up...
+  S2(2.0, u => {
+    const b = 1 + 1.6 * u * u; G.belly.scale.set(b, b, 0.6 * b); G.body.scale.setScalar(1 + 0.45 * u * u);
+    G.root.position.x = stand.x + (Math.random() - .5) * 0.08 * u; G.root.position.z = stand.z + (Math.random() - .5) * 0.08 * u;
+    G.arms.forEach((a2, i) => a2.rotation.z = (i ? 1 : -1) * (0.25 + 1.2 * u)); G.jaw.scale.y = 0.32 + 0.5 * u;
+    mats.forEach(m => { m.emissive.setRGB(1, 0.1, 0.05); m.emissiveIntensity = 0.9 * u * (0.6 + 0.4 * Math.sin(u * 60)); });
+    shake = Math.max(shake, 0.05 * u);
+  }, () => { tone('sine', 180, 1400, 2.0, 0.25); tone('square', 90, 700, 2.0, 0.05); });
+  // ...KABOOM
+  S2(4.2, () => {}, () => { const c = wpos(G.body); G.root.visible = false; boomSfx(); shake = 0.9; spawnGuts(c); setTimeout(gooScreen, 650); });
+  goblin = { G, steps, i: 0, t: 0, started: false, hold: false, camR: 9, after: () => { coin.visible = false; } };
+  jazzDuck(true); addLog('💀 The doom goblin arrived'); renderUI();
+}
+function spawnGuts(c) {
+  const cols = ['#4c8a2a', '#5fae3a', '#8b0d1a', '#b3123a', '#c2185b', '#e8d0a0', '#3a1f12', '#7a1020'];
+  const toCam = camera.position.clone().sub(c).normalize();
+  for (let i = 0; i < 90; i++) {
+    const m = new THREE.Mesh(new THREE.SphereGeometry(0.05 + Math.random() * 0.13, 8, 6), new THREE.MeshStandardMaterial({ color: cols[Math.floor(Math.random() * cols.length)], roughness: 0.25, metalness: 0.05 }));
+    m.scale.set(1, 0.6 + Math.random() * 0.8, 1 + Math.random() * 1.5); m.position.copy(c); m.castShadow = true; scene.add(m);
+    const v = new THREE.Vector3(Math.random() - .5, Math.random() * 0.9 + 0.2, Math.random() - .5).normalize().multiplyScalar(4 + Math.random() * 9);
+    if (i < 30) v.addScaledVector(toCam, 10 + Math.random() * 6);
+    guts.push({ m, v, spin: new THREE.Vector3(Math.random() * 10, Math.random() * 10, Math.random() * 10), done: false });
+  }
+}
+function stepGuts(dt) {
+  for (const g of guts) {
+    if (g.done) continue;
+    g.v.y -= 20 * dt; g.m.position.addScaledVector(g.v, dt);
+    g.m.rotation.x += g.spin.x * dt; g.m.rotation.y += g.spin.y * dt;
+    const P = g.m.position, inside = Math.abs(P.x) < HALF && Math.abs(P.z) < HALF, fy = inside ? TOP : 0;
+    if (P.y < fy + 0.03) { P.y = fy + 0.03; g.done = true; g.m.scale.y *= 0.3; g.m.scale.x *= 1.5; g.m.scale.z *= 1.5; g.m.rotation.set(0, Math.random() * 6, 0); }
+  }
+}
+function clearGuts() { guts.forEach(g => scene.remove(g.m)); guts.length = 0; }
+// the guts hit the screen and become the game-over screen
+function gooScreen() {
+  gameOver = true; renderUI(); hideResult();
+  const ov = $('#gameover'), cv = $('#goo'), g = cv.getContext('2d');
+  ov.classList.add('on'); ov.classList.remove('card');
+  const W = cv.width = innerWidth * devicePixelRatio, H = cv.height = innerHeight * devicePixelRatio;
+  const cols = ['#3f7d22', '#4f9a2a', '#5fae3a', '#7a0c18', '#9b1022', '#b3123a', '#5a0a14', '#2e5a17'];
+  const splats = [];
+  for (let i = 0; i < 70; i++) splats.push({ t: Math.random() * 1.6 * (i < 12 ? 0.3 : 1), x: Math.random() * W, y: Math.random() * H * 0.95, r: (30 + Math.random() * 140) * devicePixelRatio * (i < 12 ? 2.2 : 1), c: cols[Math.floor(Math.random() * cols.length)], seed: Math.random() * 1e9 | 0, drips: Math.floor(Math.random() * 4), done: false });
+  const t0 = performance.now(), drips = [];
+  function blob(s) {
+    const rnd = mulberry32(s.seed); g.fillStyle = s.c; g.globalAlpha = 0.92;
+    g.beginPath(); const n = 22;
+    for (let k = 0; k <= n; k++) { const a = k / n * Math.PI * 2, rr = s.r * (0.6 + rnd() * 0.55); const x = s.x + Math.cos(a) * rr, y = s.y + Math.sin(a) * rr; k ? g.lineTo(x, y) : g.moveTo(x, y); }
+    g.closePath(); g.fill();
+    for (let k = 0; k < 10; k++) { const a = rnd() * Math.PI * 2, d = s.r * (1 + rnd() * 1.3), rr = s.r * (0.04 + rnd() * 0.12); g.beginPath(); g.arc(s.x + Math.cos(a) * d, s.y + Math.sin(a) * d, rr, 0, Math.PI * 2); g.fill(); }
+    g.globalAlpha = 0.25; g.fillStyle = '#ffffff'; g.beginPath(); g.ellipse(s.x - s.r * 0.25, s.y - s.r * 0.3, s.r * 0.18, s.r * 0.1, -0.5, 0, Math.PI * 2); g.fill(); g.globalAlpha = 1;
+    for (let k = 0; k < s.drips; k++) drips.push({ x: s.x + (rnd() - .5) * s.r, y: s.y + s.r * 0.5, w: (6 + rnd() * 14) * devicePixelRatio, len: 0, max: (80 + rnd() * 400) * devicePixelRatio, sp: (40 + rnd() * 120) * devicePixelRatio, c: s.c });
+  }
+  let last = t0, cardShown = false;
+  (function frame(now) {
+    const t = (now - t0) / 1000, dt = (now - last) / 1000; last = now;
+    splats.forEach(s => { if (!s.done && t >= s.t) { s.done = true; blob(s); if (Math.random() < 0.3) noiseSfx('bandpass', 500 + Math.random() * 500, 200, 0.1, 0.35, 1); } });
+    drips.forEach(d => { if (d.len < d.max) { const add = Math.min(d.sp * dt, d.max - d.len); g.fillStyle = d.c; g.fillRect(d.x - d.w / 2, d.y + d.len, d.w, add + 1); d.len += add; g.beginPath(); g.arc(d.x, d.y + d.len, d.w * 0.75, 0, Math.PI * 2); g.fill(); } });
+    if (t > 1.8 && !cardShown) { cardShown = true; showGameOverCard(); }
+    if (t < 7 && $('#gameover').classList.contains('on')) requestAnimationFrame(frame);
+  })(t0);
+}
+function showGameOverCard() {
+  const mins = Math.floor(state.playTime / 60), secs = Math.floor(state.playTime % 60);
+  const board = state.players.map(p => ({ p, n: state.drinks[p.id] || 0 })).sort((a, b) => b.n - a.n);
+  $('#goStats').innerHTML = `<div class="row"><span>Time played</span><b>${mins}m ${String(secs).padStart(2, '0')}s</b></div>
+    <div class="row"><span>Flips</span><b>${state.rounds}</b></div><div class="row"><span>Rules written</span><b>${state.rules.length}</b></div>
+    <div class="lb">${board.map((r, i) => `<div class="row"><span class="nm" style="color:${lighten(r.p.color)}">${i === 0 && r.n ? '👑 ' : ''}${esc(r.p.name)}</span><b>${r.n} drink${r.n === 1 ? '' : 's'}</b></div>`).join('')}</div>`;
+  $('#gameover').classList.add('card');
+}
+function resetAfterDoom(full) {
+  $('#gameover').classList.remove('on', 'card'); clearGuts(); gameOver = false; shake = 0; jazzDuck(false);
+  if (full) state = { players: [], rules: [], turn: 0, log: [], playTime: 0, rounds: 0, drinks: {}, clockV2: true };
+  else Object.assign(state, { rules: [], turn: 0, log: [], playTime: 0, rounds: 0, drinks: {}, clockV2: true });
+  coin.visible = false; coin.scale.set(1, 1, 1); state.yugoWelcomed = false; drawTop(); save(); renderUI();
+}
+$('#goAgain').onclick = () => resetAfterDoom(false);
+$('#goNew').onclick = () => resetAfterDoom(true);
+
+// ---------- the coin lands on Burger: a hamburger gets built (gone when the next turn starts) ----------
+const burgers = [];
+function plopSfx(i) { tone('sine', 420 - i * 30, 140, 0.16, 0.35); noiseSfx('lowpass', 900, 300, 0.12, 0.25); }
+function makeBurger(p, cx, cz) {
+  const M = (c, r = 0.6) => new THREE.MeshStandardMaterial({ color: c, roughness: r });
+  const sc = clamp(p.r * 1.0, 0.7, 1.6);
+  // sit in the circle, nudged away from the coin
+  const away = new THREE.Vector3(p.x - cx, 0, p.z - cz); const d = away.length();
+  const pos = new THREE.Vector3(p.x, TOP, p.z); if (d < 0.7 * sc) { if (d < 1e-3) away.set(1, 0, 0); away.normalize(); pos.addScaledVector(away, 0.7 * sc - d); }
+  pos.x = clamp(pos.x, -HALF + 0.7 * sc, HALF - 0.7 * sc); pos.z = clamp(pos.z, -HALF + 0.7 * sc, HALF - 0.7 * sc);
+  const g = new THREE.Group(); g.position.copy(pos); g.scale.setScalar(sc); scene.add(g);
+  const layers = [];
+  const L = (mesh, y) => { mesh.castShadow = true; mesh.receiveShadow = true; const h = new THREE.Group(); h.add(mesh); h.visible = false; g.add(h); layers.push({ h, y }); return mesh; };
+  L(new THREE.Mesh(new THREE.CylinderGeometry(0.58, 0.54, 0.18, 32), M('#b8661f', 0.7)), 0.09);
+  L(new THREE.Mesh(new THREE.CylinderGeometry(0.64, 0.64, 0.16, 32), M('#3d1e0c', 0.95)), 0.26);
+  { const ch = new THREE.Mesh(new THREE.BoxGeometry(1.08, 0.035, 1.08), M('#ffaa00', 0.4)); ch.rotation.y = Math.PI / 4 + Math.random() * 0.3; L(ch, 0.355); }
+  { const lt = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 0.68, 0.04, 14), M('#2f8a1c', 0.6)); lt.rotation.y = Math.random(); L(lt, 0.39); }
+  { const tg = new THREE.Group(); [[-0.24, 0.05], [0.25, -0.06], [0, 0.28]].forEach(([x, z]) => { const t = new THREE.Mesh(new THREE.CylinderGeometry(0.26, 0.26, 0.05, 20), M('#c4180f', 0.45)); t.position.set(x, 0, z); t.castShadow = true; tg.add(t); }); L(tg, 0.43); }
+  { const tb = new THREE.Group(), bun = M('#b8661f', 0.5);
+    const dome = new THREE.Mesh(new THREE.SphereGeometry(0.62, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2), bun); dome.scale.y = 0.62; dome.castShadow = true; tb.add(dome);
+    const seed = M('#fff6dc', 0.5);
+    for (let i = 0; i < 18; i++) { const a = Math.random() * Math.PI * 2, r = Math.sqrt(Math.random()) * 0.48, yy = Math.sqrt(Math.max(0, 1 - (r / 0.62) ** 2)) * 0.62 * 0.62; const sd = new THREE.Mesh(new THREE.SphereGeometry(0.03, 6, 4), seed); sd.scale.set(0.6, 0.4, 1.2); sd.position.set(Math.cos(a) * r, yy, Math.sin(a) * r); sd.rotation.y = Math.random() * 3; tb.add(sd); }
+    L(tb, 0.46); }
+  burgers.push({ g, layers, t: 0, dying: -1 });
+}
+function stepBurgers(dt) {
+  for (let i = burgers.length - 1; i >= 0; i--) {
+    const b = burgers[i]; b.t += dt;
+    b.layers.forEach((l, k) => {
+      const t0 = 0.15 + k * 0.32, u = clamp((b.t - t0) / 0.32, 0, 1);
+      if (u <= 0) return;
+      if (!l.h.visible) { l.h.visible = true; l.played = false; }
+      l.h.position.y = l.y + (1 - u * u) * 3.2;
+      const squish = u >= 1 ? Math.max(0, 1 - (b.t - t0 - 0.32) * 5) : 0;
+      l.h.scale.set(1 + 0.15 * squish, 1 - 0.3 * squish, 1 + 0.15 * squish);
+      if (u >= 1 && !l.played) { l.played = true; plopSfx(k); if (k === b.layers.length - 1) dingSfx(); }
+    });
+    if (b.dying >= 0) {
+      b.dying += dt; const u = clamp(b.dying / 0.35, 0, 1), s0 = b.g.userData.s0 || (b.g.userData.s0 = b.g.scale.x);
+      const s2 = s0 * (u < 0.3 ? 1 + u : (1.3) * (1 - (u - 0.3) / 0.7)); b.g.scale.setScalar(Math.max(0.001, s2)); b.g.rotation.y += dt * 8;
+      if (u >= 1) { scene.remove(b.g); burgers.splice(i, 1); }
+    }
+  }
+}
+function clearBurgers() { burgers.forEach(b => { if (b.dying < 0) { b.dying = 0; tone('sine', 900, 1800, 0.12, 0.15); } }); }
+
+// ---------- the coin lands on Josh: the cucumber goblin ----------
+function speak(text, pitch = 0.6, rate = 1.05) {
+  try { const ut = new SpeechSynthesisUtterance(text); ut.lang = 'en-US'; ut.pitch = pitch; ut.rate = rate; const v = speechSynthesis.getVoices().find(v => /^en/i.test(v.lang)); if (v) ut.voice = v; speechSynthesis.speak(ut); } catch (e) {}
+}
+function startJosh(coinPos, josh) {
+  const G = buildGoblin({ skin: SKINS[Math.floor(Math.random() * SKINS.length)], eye: '#ff5a3c', hat: pickOther(['none', 'bandana', 'tophat', 'crown'], ''), size: 1.35 });
+  scene.add(G.root);
+  // the cucumber, hidden behind his back until the reveal
+  const cuc = new THREE.Group(), green = new THREE.MeshStandardMaterial({ color: '#2f6b22', roughness: 0.55 }), bump = new THREE.MeshStandardMaterial({ color: '#5c9c3c', roughness: 0.6 });
+  const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.07, 0.5, 14), green); cuc.add(shaft);
+  [0.25, -0.25].forEach(y => { const c = new THREE.Mesh(new THREE.SphereGeometry(0.073, 12, 8), green); c.position.y = y; c.scale.y = 0.8; cuc.add(c); });
+  for (let i = 0; i < 14; i++) { const a = Math.random() * Math.PI * 2, b2 = new THREE.Mesh(new THREE.SphereGeometry(0.014, 6, 4), bump); b2.position.set(Math.cos(a) * 0.074, (Math.random() - 0.5) * 0.44, Math.sin(a) * 0.074); cuc.add(b2); }
+  cuc.position.set(0, -0.22, 0.03); cuc.visible = false; cuc.traverse(o => { if (o.isMesh) o.castShadow = true; }); G.arms[1].hand.add(cuc);
+  const side = coinPos.x >= 0 ? 1 : -1;
+  const stand = new THREE.Vector3(clamp(coinPos.x + side * 0.9, -HALF + 0.5, HALF - 0.5), TOP, clamp(coinPos.z + 0.4, -HALF + 0.5, HALF - 0.5));
+  const camYaw = () => Math.atan2(camera.position.x - stand.x, camera.position.z - stand.z);
+  const steps = [], S2 = (d, f, st) => steps.push({ d, f, start: st });
+  const bubble = t => { $('#bubble').textContent = t; $('#bubble').classList.add('on'); };
+  let yaw;
+  S2(1.0, u => { G.root.position.set(stand.x, THREE.MathUtils.lerp(15, TOP, u * u), stand.z); G.root.rotation.y = yaw + (1 - u) * 12; G.arms.forEach(a2 => a2.rotation.x = -2.8); }, () => { yaw = camYaw(); wheeSfx(); });
+  S2(0.35, u => { const k = Math.sin(Math.PI * u); G.arms.forEach(a2 => a2.rotation.x = 0); G.body.scale.set(1 + 0.25 * k, 1 - 0.3 * k, 1 + 0.25 * k); G.body.position.y = 0.45 - 0.12 * k; }, thudSfx);
+  S2(0.7, u => { G.jaw.scale.y = 0.32 + 0.6 * Math.abs(Math.sin(u * 20)); G.head.rotation.x = -0.25 * Math.sin(Math.PI * u); }, () => evilLaugh(5, 240));
+  // reach behind his back...
+  S2(0.45, u => { G.arms[1].rotation.x = 1.3 * ease(u); G.body.rotation.y = -0.3 * ease(u); if (u >= 1) cuc.visible = true; });
+  // ...and whip out the cucumber
+  S2(0.4, u => { G.arms[1].rotation.x = 1.3 - 4.0 * ease(u); G.body.rotation.y = -0.3 * (1 - u); }, () => {});
+  S2(0.01, () => {}, () => { dingSfx(); tone('sawtooth', 300, 900, 0.18, 0.08); });
+  // the speech
+  S2(3.6, u => {
+    G.arms[1].rotation.x = -2.6 + 0.35 * Math.sin(u * 26); G.arms[1].rotation.z = 0.25 + 0.3 * Math.sin(u * 19);
+    G.jaw.scale.y = 0.32 + 0.8 * Math.abs(Math.sin(u * 40)); G.body.rotation.x = 0.18 + 0.08 * Math.sin(u * 13); G.head.rotation.z = 0.12 * Math.sin(u * 9);
+    G.arms[0].rotation.x = -0.4 * Math.abs(Math.sin(u * 13));
+  }, () => { bubble('Hey bitch, you fucking bitch, FUCK YOU! 🥒'); try { speechSynthesis.cancel(); } catch (e) {} speak('Hey bitch! You fucking bitch! Fuck you!', 0.55, 1.05); });
+  S2(2.4, u => {
+    G.arms[1].rotation.x = -1.55; G.arms[1].rotation.z = 0.25 + 0.05 * Math.sin(u * 30); G.jaw.scale.y = u < 0.6 ? 0.32 + 0.7 * Math.abs(Math.sin(u * 36)) : 0.32;
+    G.body.rotation.x = 0.1; G.arms[0].rotation.x = -0.2;
+  }, () => {
+    bubble((josh ? josh.name : 'Sucky Ducky') + ' drinks two shots! 🥃🥃'); speak((josh ? josh.name : 'Sucky Ducky') + ' drinks two shots!', 0.6, 1);
+    showResult(`${josh ? josh.name : 'Sucky Ducky'} drinks 2 shots! 🥃🥃`, 'The cucumber goblin has spoken.', josh ? josh.color : null);
+    addLog(`🥒 Cucumber goblin: ${josh ? josh.name : 'Sucky Ducky'} drinks 2 shots`);
+  });
+  // cackle and blast off, cucumber and all
+  S2(0.4, u => { const e = ease(u); G.body.position.y = 0.45 - 0.15 * e; G.legs.forEach(l => l.rotation.x = -0.5 * e); G.arms[0].rotation.x = -2.8 * e; G.arms[1].rotation.x = -2.8; G.body.rotation.x = 0; }, () => { $('#bubble').classList.remove('on'); });
+  S2(1.6, u => { G.root.position.y = TOP + 24 * u * u; G.root.rotation.y += 0.25; G.body.position.y = 0.45; }, () => { fartSfx(); whooshSfx(1.5); evilLaugh(6, 300); });
+  goblin = { G, steps, i: 0, t: 0, started: false, hold: false, bubble: true }; jazzDuck(true); renderUI();
+}
+
+// ---------- first time the coin lands on Yugo: a welcome ----------
+function buildGuy() {
+  const M = (c, r = 0.6) => new THREE.MeshStandardMaterial({ color: c, roughness: r });
+  const pickC = a => a[Math.floor(Math.random() * a.length)];
+  const skin = M(pickC(['#f1c27d', '#e0ac69', '#c68642', '#8d5524', '#ffdbac']), 0.5), shirt = M(pickC(['#e63946', '#2a9d8f', '#457b9d', '#f4a261', '#6a4c93'])), pants = M('#2b3a55', 0.8), shoe = M('#222', 0.5);
+  const hair = M(pickC(['#2b1b10', '#5a3825', '#141414', '#a8742a']), 0.8), black = M('#111', 0.3), lip = M('#7a2a2a', 0.5);
+  const root = new THREE.Group(), body = new THREE.Group(); root.add(body); body.position.y = 0.9;
+  const add = (parent, geo, mat, pos, scl, rot) => { const m = new THREE.Mesh(geo, mat); if (pos) m.position.set(...pos); if (scl) m.scale.set(...scl); if (rot) m.rotation.set(...rot); parent.add(m); return m; };
+  add(body, new THREE.CylinderGeometry(0.3, 0.27, 0.8, 20), shirt, [0, 0.4, 0]);
+  add(body, new THREE.CylinderGeometry(0.275, 0.275, 0.06, 20), M('#3b2a1a'), [0, 0.02, 0]);
+  add(body, new THREE.CylinderGeometry(0.075, 0.085, 0.16, 12), skin, [0, 0.86, 0]);
+  const head = new THREE.Group(); head.position.y = 1.1; body.add(head);
+  add(head, new THREE.SphereGeometry(0.25, 24, 18), skin, null, [1, 1.1, 1]);
+  add(head, new THREE.SphereGeometry(0.262, 24, 12, 0, Math.PI * 2, 0, Math.PI * 0.5), hair, [0, 0.04, -0.015], [1, 1.12, 1.02], [-0.25, 0, 0]);
+  [-1, 1].forEach(sx => {
+    add(head, new THREE.SphereGeometry(0.03, 10, 8), black, [sx * 0.085, 0.04, 0.225]);
+    add(head, new THREE.BoxGeometry(0.08, 0.018, 0.02), hair, [sx * 0.085, 0.11, 0.232], null, [0, 0, -sx * 0.12]);
+    add(head, new THREE.SphereGeometry(0.05, 10, 8), skin, [sx * 0.25, 0, 0], [0.6, 1, 1]);
+  });
+  add(head, new THREE.SphereGeometry(0.035, 10, 8), skin, [0, -0.01, 0.25]);
+  add(head, new THREE.TorusGeometry(0.075, 0.014, 8, 16, Math.PI), lip, [0, -0.08, 0.22], null, [0, 0, Math.PI]);
+  const jaw = add(head, new THREE.SphereGeometry(0.045, 12, 8), M('#4a1414'), [0, -0.1, 0.225], [1.3, 0.25, 0.4]);
+  const headTop = new THREE.Object3D(); headTop.position.y = 0.35; head.add(headTop);
+  const arms = [-1, 1].map(sx => {
+    const sh = new THREE.Group(); sh.position.set(sx * 0.36, 0.7, 0); body.add(sh); sh.rotation.z = sx * 0.1;
+    add(sh, new THREE.CylinderGeometry(0.08, 0.072, 0.38, 12), shirt, [0, -0.17, 0]);
+    add(sh, new THREE.CylinderGeometry(0.06, 0.055, 0.34, 12), skin, [0, -0.52, 0]);
+    sh.hand = add(sh, new THREE.SphereGeometry(0.075, 12, 10), skin, [0, -0.72, 0]);
+    return sh;
+  });
+  const legs = [-1, 1].map(sx => {
+    const hip = new THREE.Group(); hip.position.set(sx * 0.13, 0.9, 0); root.add(hip);
+    add(hip, new THREE.CylinderGeometry(0.11, 0.1, 0.84, 12), pants, [0, -0.42, 0]);
+    add(hip, new THREE.BoxGeometry(0.17, 0.1, 0.32), shoe, [0, -0.86, 0.06]);
+    return hip;
+  });
+  root.traverse(o => { if (o.isMesh) o.castShadow = true; });
+  root.scale.setScalar(1.45);
+  return { root, body, head, jaw, headTop, arms, legs };
+}
+function startWelcome(coinPos) {
+  const G = buildGuy(); scene.add(G.root);
+  const side = coinPos.x >= 0 ? 1 : -1;
+  const spot = new THREE.Vector3(side * (OUT + 1.4), 0, clamp(coinPos.z, -2.5, 3.5));
+  const start = new THREE.Vector3(spot.x, 0, 13), exit = new THREE.Vector3(spot.x, 0, 15);
+  const yawTo = (a, b) => Math.atan2(b.x - a.x, b.z - a.z);
+  const pose = (ph, amt) => { G.legs[0].rotation.x = Math.sin(ph) * 0.5 * amt; G.legs[1].rotation.x = -Math.sin(ph) * 0.5 * amt; G.arms[0].rotation.x = -Math.sin(ph) * 0.45 * amt; G.arms[1].rotation.x = Math.sin(ph) * 0.45 * amt; G.body.position.y = 0.9 + Math.abs(Math.sin(ph)) * 0.04 * amt; };
+  const steps = [], S2 = (d, f, st) => steps.push({ d, f, start: st });
+  const walk = (a, b) => { const d = a.distanceTo(b); S2(d / 3.2, u => { G.root.position.lerpVectors(a, b, u); G.root.rotation.y = yawTo(a, b); pose(u * d * 3, 1); }); };
+  let y0, camYaw;
+  S2(0.01, () => G.root.position.copy(start), () => { tone('sine', 659, 655, 0.6, 0.25); tone('sine', 523, 520, 1.0, 0.25, 0.45); });
+  walk(start, spot);
+  S2(0.4, u => { G.root.rotation.y = lerpAng(y0, camYaw, u * u * (3 - 2 * u)); pose(0, 0); }, () => { y0 = G.root.rotation.y; camYaw = Math.atan2(camera.position.x - spot.x, camera.position.z - spot.z); });
+  // wave + speak
+  S2(3.4, u => {
+    const up = Math.min(1, u * 5);
+    G.arms[1].rotation.x = -0.3 * up; G.arms[1].rotation.z = 0.1 + 2.5 * up + Math.sin(u * 28) * 0.35 * up;
+    G.jaw.scale.y = 0.25 + (u > 0.08 && u < 0.75 ? 0.9 * Math.abs(Math.sin(u * 60)) : 0);
+    G.head.rotation.z = 0.12 * Math.sin(u * 6); G.body.position.y = 0.9 + 0.03 * Math.sin(u * 14);
+  }, () => {
+    $('#bubble').textContent = 'Hey Yugo, welcome to our house! 🏠'; $('#bubble').classList.add('on');
+    try { const ut = new SpeechSynthesisUtterance('Hey Yugo, welcome to our house!'); ut.lang = 'en-US'; ut.rate = 1; ut.pitch = 1.05; const v = speechSynthesis.getVoices().find(v => /^en/i.test(v.lang)); if (v) ut.voice = v; speechSynthesis.cancel(); speechSynthesis.speak(ut); } catch (e) {}
+  });
+  S2(0.5, u => { G.arms[1].rotation.z = 2.6 * (1 - u) + 0.1; G.arms[1].rotation.x = -0.3 * (1 - u); G.body.rotation.x = 0.35 * Math.sin(Math.PI * u); }, () => { $('#bubble').classList.remove('on'); });
+  S2(0.35, u => { G.root.rotation.y = lerpAng(y0, yawTo(spot, exit), u); }, () => { y0 = G.root.rotation.y; });
+  walk(spot, exit);
+  goblin = { G, steps, i: 0, t: 0, started: false, hold: false, camR: 10, bubble: true }; jazzDuck(true);
+  addLog('🏠 Yugo got welcomed to the house'); save(); renderUI();
+}
+function placeBubble() {
+  const b = $('#bubble');
+  if (!goblin || !goblin.bubble || !b.classList.contains('on')) return;
+  const v = wpos(goblin.G.headTop).project(camera);
+  b.style.left = ((v.x + 1) / 2 * innerWidth) + 'px'; b.style.top = ((1 - v.y) / 2 * innerHeight - 10) + 'px';
+}
+
+// ---------- every so often: a message for Yugo ----------
+function sayYugo() {
+  if (CTRL) return;
+  if (goblin || toss) { setTimeout(sayYugo, 5000); return; }
+  const el2 = $('#yugo'); el2.classList.add('on'); setTimeout(() => el2.classList.remove('on'), 4200);
+  jazzDuck(true); setTimeout(() => jazzDuck(false), 4200);
+  try {
+    const u = new SpeechSynthesisUtterance('こんにちは、ユーゴ！元気？大好きだよ！');
+    u.lang = 'ja-JP'; u.rate = 0.95; u.pitch = 1.15;
+    const v = speechSynthesis.getVoices().find(v => /^ja/i.test(v.lang)); if (v) u.voice = v;
+    speechSynthesis.cancel(); speechSynthesis.speak(u);
+  } catch (e) {}
+  scheduleYugo();
+}
+function scheduleYugo() { setTimeout(sayYugo, 45000 + Math.random() * 105000); }
+let yugoArmed = false;
+addEventListener('pointerdown', () => { if (!yugoArmed) { yugoArmed = true; try { speechSynthesis.getVoices(); } catch (e) {} scheduleYugo(); } });
+
+// ---------- loop ----------
+const clock = new THREE.Clock();
+function loop() {
+  if (CTRL) return;
+  const dt = Math.min(clock.getDelta(), 0.05);
+  stepToss(dt); stepAim(dt); stepGoblin(dt); stepBurgers(dt); stepGuts(dt); hostLive(dt);
+  if (!gameOver && state.players.length >= 2) { state.playTime += dt; saveClock += dt; if (saveClock > 5) { saveClock = 0; save(); } } updateCamera(); placeBubble();
+  for (let i = pulses.length - 1; i >= 0; i--) {
+    const p = pulses[i]; p.t += dt; const u = clamp(p.t / 0.9, 0, 1);
+    p.m.visible = p.t >= 0; const s = p.r * (1 + u * 0.35); p.m.scale.set(s, s, s); p.m.material.opacity = 0.9 * (1 - u);
+    if (u >= 1) { scene.remove(p.m); p.m.material.dispose(); pulses.splice(i, 1); }
+  }
+  renderer.render(scene, camera); requestAnimationFrame(loop);
+}
+
+// ---------- phones as controllers (Jackbox-style), over the page's live room ----------
+let liveT = 0, liveLast = '';
+function hostLive(dt) {
+  if (CTRL || !room) return;
+  liveT += dt; if (liveT < 0.066) return; liveT = 0;
+  const r2 = v => Math.round(v * 100) / 100;
+  const a = { h: crosshair.visible ? 1 : 0, x: r2(aim.x), z: r2(aim.z), r: aimRing.visible ? r2(aim.r) : 0,
+    c: coin.visible ? 1 : 0, cx: r2(coin.position.x), cz: r2(coin.position.z), cy: r2(coin.position.y) };
+  const j = JSON.stringify(a); if (j === liveLast) return; liveLast = j;
+  room.presence({ a }).catch(() => {});
+}
+var room = null, roomState = 'connecting', lastResult = null, claimed = new Set();
+const hostSince = Date.now(), lastCmd = {};
+function gamePhase() {
+  if (gameOver) return 'over';
+  if ($('#modal').classList.contains('on')) return 'rule';
+  if (placing) return 'place';
+  if (toss || goblin) return 'busy';
+  if (state.players.length < 2) return 'wait';
+  return aim.mode === 'lock' ? 'lock' : 'aim';
+}
+function hostPublish() {
+  if (CTRL || !room) return;
+  const cur = state.players.length ? current() : null;
+  const g = {
+    role: 'host', since: hostSince, phase: gamePhase(), turn: cur ? cur.id : null,
+    ruleFor: pendingRule ? pendingRule.tosser.id : null,
+    players: state.players.map(p => ({ id: p.id, name: p.name, color: p.color, x: +p.x.toFixed(2), z: +p.z.toFixed(2), r: +p.r.toFixed(2) })),
+    spots: state.rules.map(r => [+r.x.toFixed(2), +r.z.toFixed(2), +r.r.toFixed(2)]).slice(-30), half: HALF, out: OUT,
+    result: lastResult, rules: state.rules.map((r, i) => [i + 1, String(r.text).slice(0, 60), r.by]).slice(-12)
+  };
+  while (JSON.stringify(g).length > 3700 && (g.rules.length || g.spots.length)) { if (g.rules.length > 4) g.rules.shift(); else if (g.spots.length) g.spots.shift(); else g.rules.shift(); }
+  room.presence({ g }).catch(() => {});
+}
+function handleCmd(c, cmd) {
+  const pid = String(c.pid);
+  if (cmd.type === 'flip') { const cur = current(); if (cur && String(cur.id) === pid && !$('#modal').classList.contains('on')) flipPressed(); }
+  else if (cmd.type === 'rule' || cmd.type === 'norule') {
+    if (!pendingRule || String(pendingRule.tosser.id) !== pid) return;
+    if (cmd.type === 'rule') { const t = String(cmd.text || '').trim().slice(0, 70); if (!t) return; $('#ruleText').value = t; $('#saveRule').click(); } else $('#skipRule').click();
+  } else if (cmd.type === 'join') {
+    const name = String(cmd.name || '').trim().slice(0, 16);
+    if (!name || placing || state.players.some(p => p.name.toLowerCase() === name.toLowerCase())) return;
+    placing = { name, color: nextColor() };
+    const x = +cmd.x, z = +cmd.z, r = +cmd.r;
+    if (isFinite(x) && isFinite(z) && isFinite(r)) { const rr = clamp(r, 0.55, 2.1); commitPlayer(clamp(x, -HALF + rr, HALF - rr), clamp(z, -HALF + rr, HALF - rr), rr); } else autoPlace();
+    toast(`📱 ${name} drew their circle from their phone`);
+  }
+}
+function onHostPeers(peers) {
+  const ctrls = peers.filter(p => !p.sameTab && p.presence && p.presence.g && p.presence.g.role === 'ctrl');
+  for (const p of ctrls) {
+    const c = p.presence.g, cmd = c.cmd;
+    if (!cmd || typeof cmd.n !== 'number') { if (lastCmd[p.peer] === undefined) lastCmd[p.peer] = 0; continue; }
+    if (lastCmd[p.peer] === undefined) { lastCmd[p.peer] = cmd.n; continue; } // don't replay old presses
+    if (cmd.n > lastCmd[p.peer]) { lastCmd[p.peer] = cmd.n; handleCmd(c, cmd); }
+  }
+  const nowClaimed = new Set(ctrls.map(p => String(p.presence.g.pid)).filter(x => x && x !== 'null'));
+  const changed = nowClaimed.size !== claimed.size || [...nowClaimed].some(x => !claimed.has(x));
+  claimed = nowClaimed;
+  const ph = $('#phones'); ph.textContent = `📱 ${ctrls.length} phone${ctrls.length === 1 ? '' : 's'}`; ph.classList.toggle('on', ctrls.length > 0);
+  if (changed) renderUI();
+}
+
+// ----- standalone: a tiny peer-to-peer "room" (PeerJS) with the same presence/onPeers shape -----
+const CODE_CH = 'ABCDEFGHJKMNPQRSTUVWXYZ';
+const newCode = () => Array.from({ length: 4 }, () => CODE_CH[Math.floor(Math.random() * CODE_CH.length)]).join('');
+function standaloneRoom() {
+  return new Promise(resolve => {
+    const go = () => resolve(makePeerRoom());
+    if (window.Peer) return go();
+    const sc = document.createElement('script'); sc.src = 'https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js';
+    sc.onload = go; sc.onerror = () => resolve(null); document.head.appendChild(sc);
+  });
+}
+function makePeerRoom() {
+  const subs = [], others = {}; let mine = {};
+  const merge = (obj, patch) => { for (const k in patch) { if (patch[k] === null) delete obj[k]; else obj[k] = patch[k]; } };
+  const snap = () => [{ peer: 'me', sameTab: true, isMe: true, presence: mine }, ...Object.keys(others).map(k => ({ peer: k, sameTab: false, isMe: false, presence: others[k] }))];
+  const fire = () => { const ps = snap(); subs.forEach(f => { try { f({ peers: ps }); } catch (e) {} }); };
+  const api = { onPeers: f => { subs.push(f); setTimeout(fire, 0); return () => {}; }, peers: snap, emit: async () => {}, on: () => () => {}, connected: () => true };
+  if (!CTRL) {
+    // the main screen hosts the room under its code
+    const conns = new Set();
+    api.presence = async patch => { merge(mine, patch); conns.forEach(c => { if (c.open) try { c.send({ t: 'patch', patch }); } catch (e) {} }); };
+    const start = tries => {
+      let code = ROOM_CODE; if (!code) { try { code = localStorage.getItem('pizzabox-code'); } catch (e) {} }
+      code = code || newCode(); ROOM_CODE = code; try { localStorage.setItem('pizzabox-code', code); } catch (e) {}
+      const peer = new Peer('pizzabox-' + code.toLowerCase());
+      peer.on('open', () => setRoomCode(code));
+      peer.on('connection', c => {
+        c.on('open', () => { conns.add(c); try { c.send({ t: 'full', presence: mine }); } catch (e) {} });
+        c.on('data', d => { if (d && d.t === 'p' && d.presence && typeof d.presence === 'object') { others[c.peer] = d.presence; fire(); } });
+        c.on('close', () => { conns.delete(c); delete others[c.peer]; fire(); });
+        c.on('error', () => {});
+      });
+      peer.on('error', e => {
+        if (e && e.type === 'unavailable-id' && tries < 6) { try { peer.destroy(); } catch (_) {} ROOM_CODE = newCode(); try { localStorage.setItem('pizzabox-code', ROOM_CODE); } catch (_) {} setTimeout(() => start(tries + 1), 400); }
+      });
+      peer.on('disconnected', () => setTimeout(() => { try { peer.reconnect(); } catch (e) {} }, 1500));
+    };
+    start(0);
+  } else {
+    // phones join the host's code
+    if (!ROOM_CODE) { try { ROOM_CODE = localStorage.getItem('pizzabox-join'); } catch (e) {} }
+    let conn = null, host = {}, retry = null;
+    const peer = new Peer();
+    const pushMine = () => { if (conn && conn.open) try { conn.send({ t: 'p', presence: mine }); } catch (e) {} };
+    api.presence = async patch => { merge(mine, patch); pushMine(); };
+    const connect = () => {
+      clearTimeout(retry); if (!ROOM_CODE || !peer.open) return;
+      if (conn) { try { conn.close(); } catch (e) {} }
+      const c = conn = peer.connect('pizzabox-' + ROOM_CODE.toLowerCase(), { reliable: true });
+      c.on('open', () => { if (c === conn) pushMine(); });
+      c.on('data', d => { if (c !== conn || !d) return; if (d.t === 'full') host = Object.assign({}, d.presence || {}); else if (d.t === 'patch') merge(host, d.patch || {}); others.host = Object.assign({}, host); fire(); });
+      c.on('close', () => { if (c !== conn) return; delete others.host; fire(); retry = setTimeout(connect, 2000); });
+      c.on('error', () => {});
+    };
+    api.join = code => { ROOM_CODE = code; try { localStorage.setItem('pizzabox-join', code); } catch (e) {} delete others.host; fire(); connect(); };
+    peer.on('open', connect);
+    peer.on('error', e => { if (e && e.type === 'peer-unavailable') { delete others.host; fire(); retry = setTimeout(connect, 3000); } });
+    peer.on('disconnected', () => setTimeout(() => { try { peer.reconnect(); } catch (e) {} }, 1500));
+  }
+  return api;
+}
+function setRoomCode(code) {
+  const el = $('#roomCode'); if (el) { el.textContent = `Room ${code}`; el.classList.add('on'); }
+  qrMade = false; if ($('#invite').classList.contains('on')) $('#inviteBtn').onclick();
+}
+
+// ----- the phone side -----
+const me = { pid: null, n: 0, cmd: null, joining: null };
+try { me.pid = localStorage.getItem('pizzabox-pid'); } catch (e) {}
+let lastGJ = null, H = null, A = null, cDraft = '', cWasMine = false, cName = '', cPlace = null;
+// live top-down view of the game for phones (no goblins, just the box, circles, crosshair and coin)
+const LV = { x: 0, z: 0, r: 0, cx: 0, cz: 0, cy: 0 };
+function liveMap() {
+  requestAnimationFrame(liveMap);
+  const cv = $('#cLive'); if (!cv || !cv.classList.contains('on') || !H) return;
+  const dpr = Math.min(devicePixelRatio || 1, 2), w = cv.clientWidth; if (!w) return;
+  const S = Math.round(Math.min(w, cv.clientHeight || w) * dpr); if (cv.width !== S) { cv.width = cv.height = S; }
+  const g = cv.getContext('2d'), R = 7.6, k = S / (2 * R), P = v => (v + R) * k;
+  const half = H.half || 4.94, out = H.out || 5;
+  if (A) { const f = 0.35; LV.x += (A.x - LV.x) * f; LV.z += (A.z - LV.z) * f; LV.r += (A.r - LV.r) * 0.5; LV.cx += (A.cx - LV.cx) * 0.5; LV.cz += (A.cz - LV.cz) * 0.5; LV.cy += (A.cy - LV.cy) * 0.5; }
+  // table, lid, box
+  g.fillStyle = '#3b2617'; g.fillRect(0, 0, S, S);
+  g.fillStyle = 'rgba(0,0,0,.18)'; for (let y = 0; y < S; y += 26 * dpr) g.fillRect(0, y, S, 2 * dpr);
+  g.fillStyle = '#b48a58'; g.fillRect(P(-out), P(-out - 2.6), 2 * out * k, 2.6 * k);
+  g.fillStyle = 'rgba(90,60,30,.6)'; g.font = `700 ${11 * dpr}px Inter, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('LID', P(0), P(-out - 1.3));
+  g.fillStyle = '#9c7446'; g.fillRect(P(-out), P(-out), 2 * out * k, 2 * out * k);
+  g.fillStyle = '#d6b07c'; g.fillRect(P(-half), P(-half), 2 * half * k, 2 * half * k);
+  // rule spots, player circles
+  g.setLineDash([4 * dpr, 4 * dpr]); g.lineWidth = 2 * dpr; g.strokeStyle = 'rgba(70,45,20,.7)';
+  (H.spots || []).forEach(([x, z, r]) => { g.beginPath(); g.arc(P(x), P(z), r * k, 0, Math.PI * 2); g.stroke(); });
+  g.setLineDash([]);
+  (H.players || []).forEach(p => {
+    if (p.x == null) return; const mine = String(p.id) === String(me.pid), turn = String(p.id) === String(H.turn);
+    g.lineWidth = (turn ? 4.5 : 3) * dpr; g.strokeStyle = p.color; g.beginPath(); g.arc(P(p.x), P(p.z), p.r * k, 0, Math.PI * 2); g.stroke();
+    if (mine) { g.fillStyle = p.color + '33'; g.fill(); }
+    g.fillStyle = p.color; g.font = `${Math.max(10, p.r * k / dpr * 0.42) * dpr}px "Permanent Marker", cursive`; g.fillText(p.name, P(p.x), P(p.z), p.r * k * 1.7);
+  });
+  if (!A) return;
+  // aim circle + crosshair
+  if (A.h) {
+    if (LV.r > 0.05) { g.fillStyle = 'rgba(255,216,74,.18)'; g.strokeStyle = '#ffd84a'; g.lineWidth = 2.5 * dpr; g.beginPath(); g.arc(P(LV.x), P(LV.z), LV.r * k, 0, Math.PI * 2); g.fill(); g.stroke(); }
+    const cx = P(LV.x), cz = P(LV.z), cr = 0.33 * k; g.strokeStyle = '#ff2a2a'; g.lineWidth = 2.5 * dpr;
+    g.beginPath(); g.arc(cx, cz, cr, 0, Math.PI * 2); g.stroke();
+    g.beginPath(); g.moveTo(cx - cr * 1.8, cz); g.lineTo(cx - cr * 0.6, cz); g.moveTo(cx + cr * 0.6, cz); g.lineTo(cx + cr * 1.8, cz); g.moveTo(cx, cz - cr * 1.8); g.lineTo(cx, cz - cr * 0.6); g.moveTo(cx, cz + cr * 0.6); g.lineTo(cx, cz + cr * 1.8); g.stroke();
+  }
+  // the coin (bigger + shadow while it's in the air)
+  if (A.c) {
+    const lift = Math.max(0, LV.cy - 0.1), sc = 1 + lift * 0.12, cr = 0.38 * k * sc;
+    if (lift > 0.2) { g.fillStyle = 'rgba(0,0,0,.3)'; g.beginPath(); g.ellipse(P(LV.cx) + lift * k * 0.15, P(LV.cz) + lift * k * 0.15, 0.38 * k, 0.3 * k, 0, 0, Math.PI * 2); g.fill(); }
+    const gr = g.createRadialGradient(P(LV.cx) - cr * 0.3, P(LV.cz) - cr * 0.3, cr * 0.1, P(LV.cx), P(LV.cz), cr);
+    gr.addColorStop(0, '#fff1b8'); gr.addColorStop(0.6, '#e5b84a'); gr.addColorStop(1, '#9c7420');
+    g.fillStyle = gr; g.strokeStyle = '#6b4c10'; g.lineWidth = 1.5 * dpr; g.beginPath(); g.arc(P(LV.cx), P(LV.cz), cr, 0, Math.PI * 2); g.fill(); g.stroke();
+  }
+}
+if (CTRL) requestAnimationFrame(liveMap);
+// top-down map of the box where a new player taps (and drags) to draw their circle
+function drawPlacer(body, players) {
+  body.innerHTML = `<div class="c-card"><h3>Draw your circle, ${esc(cName)}</h3><p>Tap the box where your circle goes. Drag to make it bigger or smaller. (Top of the map = the lid.)</p></div>
+    <canvas id="cMap"></canvas>
+    <div class="c-row"><button class="c-btn c-ghost" id="cBack">Back</button><button class="c-btn c-ghost" id="cRand">Random spot</button><button class="c-btn" id="cPut" style="flex:1" disabled>Put my circle here</button></div>`;
+  const cv = $('#cMap'), half = H.half || 4.94, dpr = Math.min(devicePixelRatio || 1, 2);
+  const size = Math.min(body.clientWidth || 340, 520); cv.style.width = cv.style.height = size + 'px'; cv.width = cv.height = size * dpr;
+  cv.style.touchAction = 'none'; cv.style.borderRadius = '14px'; cv.style.alignSelf = 'center';
+  const k = size * dpr / (2 * half), toPx = v => (v + half) * k, toW = px => px / k - half;
+  const draw = () => {
+    const g = cv.getContext('2d'); g.fillStyle = '#d2ac78'; g.fillRect(0, 0, cv.width, cv.height);
+    g.fillStyle = 'rgba(120,80,40,.25)'; g.fillRect(0, 0, cv.width, 10 * dpr); g.fillStyle = '#7a5530'; g.font = `${11 * dpr}px Inter, sans-serif`; g.textAlign = 'center'; g.fillText('▲ lid', cv.width / 2, 22 * dpr);
+    (H.spots || []).forEach(([x, z, r]) => { g.strokeStyle = 'rgba(80,50,20,.5)'; g.setLineDash([4 * dpr, 4 * dpr]); g.lineWidth = 2 * dpr; g.beginPath(); g.arc(toPx(x), toPx(z), r * k, 0, Math.PI * 2); g.stroke(); });
+    g.setLineDash([]);
+    players.forEach(p => { if (p.x == null) return; g.strokeStyle = p.color; g.lineWidth = 3 * dpr; g.beginPath(); g.arc(toPx(p.x), toPx(p.z), p.r * k, 0, Math.PI * 2); g.stroke(); g.fillStyle = p.color; g.font = `${Math.max(10, p.r * k / dpr * 0.42) * dpr}px "Permanent Marker", cursive`; g.textBaseline = 'middle'; g.fillText(p.name, toPx(p.x), toPx(p.z), p.r * k * 1.6); });
+    if (cPlace.x != null) { const r = cPlace.r; g.fillStyle = 'rgba(255,216,74,.25)'; g.strokeStyle = '#ffd84a'; g.lineWidth = 4 * dpr; g.beginPath(); g.arc(toPx(cPlace.x), toPx(cPlace.z), r * k, 0, Math.PI * 2); g.fill(); g.stroke(); g.fillStyle = '#5a3a10'; g.font = `${Math.max(11, r * k / dpr * 0.42) * dpr}px "Permanent Marker", cursive`; g.fillText(cName, toPx(cPlace.x), toPx(cPlace.z), r * k * 1.6); }
+    $('#cPut').disabled = cPlace.x == null;
+  };
+  const pos = e => { const b = cv.getBoundingClientRect(); return { x: toW((e.clientX - b.left) * dpr), z: toW((e.clientY - b.top) * dpr) }; };
+  const fit = () => { const r = cPlace.r; cPlace.x = clamp(cPlace.x, -half + r, half - r); cPlace.z = clamp(cPlace.z, -half + r, half - r); };
+  let down = null;
+  cv.onpointerdown = e => { e.preventDefault(); cv.setPointerCapture(e.pointerId); const q = pos(e); down = { x: q.x, z: q.z, moved: false }; cPlace.x = q.x; cPlace.z = q.z; fit(); draw(); };
+  cv.onpointermove = e => { if (!down) return; const q = pos(e), d = Math.hypot(q.x - down.x, q.z - down.z); if (d > 0.25) down.moved = true; if (down.moved) { cPlace.r = clamp(d, 0.55, 2.1); cPlace.x = down.x; cPlace.z = down.z; fit(); draw(); } };
+  cv.onpointerup = cv.onpointercancel = () => { down = null; };
+  $('#cBack').onclick = () => { cPlace = null; renderCtrl(); };
+  $('#cRand').onclick = () => { me.joining = cName; cSend('join', { name: cName }); cPlace = null; renderCtrl(); };
+  $('#cPut').onclick = () => { if (cPlace.x == null) return; me.joining = cName; cSend('join', { name: cName, x: +cPlace.x.toFixed(2), z: +cPlace.z.toFixed(2), r: +cPlace.r.toFixed(2) }); cPlace = null; renderCtrl(); };
+  draw();
+}
+function sendCtrl() { if (room) room.presence({ g: { role: 'ctrl', pid: me.pid, cmd: me.cmd } }).catch(() => {}); }
+function cSend(type, extra) { me.n++; me.cmd = Object.assign({ n: me.n, type }, extra || {}); sendCtrl(); }
+function setPid(id) { me.pid = id == null ? null : String(id); try { if (me.pid) localStorage.setItem('pizzabox-pid', me.pid); else localStorage.removeItem('pizzabox-pid'); } catch (e) {} sendCtrl(); renderCtrl(); }
+function onCtrlPeers(peers) {
+  const hosts = peers.filter(p => !p.sameTab && p.presence && p.presence.g && p.presence.g.role === 'host').sort((a, b) => (a.presence.g.since || 0) - (b.presence.g.since || 0));
+  H = hosts.length ? hosts[0].presence.g : null; A = hosts.length ? hosts[0].presence.a || null : null;
+  if (H && me.joining) { const f = (H.players || []).find(p => p.name.toLowerCase() === me.joining.toLowerCase()); if (f) { me.joining = null; setPid(f.id); return; } }
+  // only rebuild the controls when the game state changed (not on every crosshair move)
+  const gj = H ? JSON.stringify(H) : ''; if (gj === lastGJ) return; lastGJ = gj;
+  renderCtrl();
+}
+const SUGS_C = ['Drink with your other hand', 'Waterfall — everyone drinks', 'Give out 3 sips', 'Pick a drinking buddy', 'Speak in an accent till your next turn', 'No first names allowed', 'Rhyme your next sentence', 'Swap seats with someone'];
+function renderCtrl() {
+  if (!CTRL) return;
+  if (cPlace && document.getElementById('cMap') && H) return;
+  const body = $('#cBody'), meEl = $('#cMe');
+  const focusedRule = document.activeElement && document.activeElement.id === 'cRule';
+  if (focusedRule) { const r = $('#cRule'); if (r) cDraft = r.value; }
+  const focusedName = document.activeElement && document.activeElement.id === 'cNew'; if ($('#cNew')) cName = $('#cNew').value;
+  if (roomState === 'failed' || roomState === 'connecting' || !H) $('#cLive').classList.remove('on');
+  if (roomState === 'failed') { meEl.textContent = ''; body.innerHTML = `<div class="c-card"><h3>Can't connect 😕</h3><p>${STANDALONE ? 'This phone can\'t reach the game. Check your internet connection and reload.' : 'This phone can\'t reach the live game. Make sure you\'re signed in to Claude and the page has been shared with you, then reload. (Phones can\'t join through a public link.)'}</p></div>`; return; }
+  $('#cHost').style.display = H ? 'none' : '';
+  if (STANDALONE && CTRL && roomState === 'ok' && !ROOM_CODE) {
+    meEl.textContent = '';
+    body.innerHTML = `<div class="c-card"><h3>Enter the room code</h3><p>It's on the main screen (top right).</p></div>
+      <div class="c-row"><input id="cCode" maxlength="4" placeholder="ABCD" autocomplete="off" autocapitalize="characters" style="text-transform:uppercase;letter-spacing:6px;text-align:center;font-size:28px"><button class="c-btn" id="cGo">Join</button></div>`;
+    const go = () => { const v = $('#cCode').value.trim().toUpperCase(); if (/^[A-Z]{4}$/.test(v)) { room.join(v); renderCtrl(); } };
+    $('#cGo').onclick = go; $('#cCode').onkeydown = e => { if (e.key === 'Enter') go(); };
+    return;
+  }
+  if (STANDALONE && CTRL && roomState === 'ok' && !H) {
+    meEl.textContent = '';
+    body.innerHTML = `<div class="c-card"><h3>Looking for room ${esc(ROOM_CODE)}…</h3><p>Make sure the main screen is open. This can take a few seconds.</p></div><button class="c-btn c-ghost" id="cRecode">Wrong code? Enter it again</button>`;
+    $('#cRecode').onclick = () => { ROOM_CODE = null; try { localStorage.removeItem('pizzabox-join'); } catch (e) {} renderCtrl(); };
+    return;
+  }
+  if (roomState === 'connecting' || !H) { meEl.textContent = ''; body.innerHTML = `<div class="c-card"><h3>${roomState === 'connecting' ? 'Connecting…' : 'Waiting for the main screen…'}</h3><p>Open this page on the computer that shows the pizza box. It'll appear here automatically.</p></div>`; return; }
+  const players = H.players || [], mine = players.find(p => String(p.id) === String(me.pid));
+  if (!mine) {
+    $('#cLive').classList.remove('on');
+    meEl.textContent = '';
+    body.innerHTML = `<div class="c-card"><h3>Who are you?</h3><p>Tap your name.</p></div>
+      <div class="c-names">${players.map(p => `<button data-pick="${p.id}" style="background:${p.color}">${esc(p.name)}</button>`).join('')}</div>
+      <div class="c-card"><h3>Not on the box yet?</h3><div class="c-row"><input id="cNew" maxlength="16" placeholder="Your name" autocomplete="off" value="${esc(cName)}"><button class="c-btn" id="cJoin">Next</button></div>${me.joining ? `<p style="margin-top:8px">Drawing ${esc(me.joining)}'s circle…</p>` : ''}</div>`;
+    body.querySelectorAll('[data-pick]').forEach(b => b.onclick = () => setPid(b.dataset.pick));
+    const next = () => { const v = $('#cNew').value.trim(); if (!v) return; const f = players.find(p => p.name.toLowerCase() === v.toLowerCase()); if (f) return setPid(f.id); cName = v; cPlace = { x: null, z: null, r: 1 }; renderCtrl(); };
+    $('#cJoin').onclick = next; $('#cNew').onkeydown = e => { if (e.key === 'Enter') next(); };
+    if (cPlace && cName && !me.joining) drawPlacer(body, players);
+    else if (focusedName) { const i = $('#cNew'); i.focus(); i.setSelectionRange(i.value.length, i.value.length); }
+    return;
+  }
+  meEl.innerHTML = `<span class="dot" style="background:${mine.color}"></span>${esc(mine.name)}`;
+  $('#cLive').classList.add('on');
+  const myTurn = String(H.turn) === String(mine.id), turnP = players.find(p => String(p.id) === String(H.turn));
+  if (myTurn && !cWasMine) { try { navigator.vibrate && navigator.vibrate([120, 60, 120]); } catch (e) {} }
+  cWasMine = myTurn;
+  let html = '';
+  if (H.phase === 'over') html += `<div class="c-card c-result" style="border-color:#d7263d"><div class="t" style="color:#ff3b4f">GAME OVER 💀</div><p>The goblin ate the coin and exploded. Check the main screen.</p></div>`;
+  else if (H.phase === 'rule' && String(H.ruleFor) === String(mine.id)) {
+    html += `<div class="c-card"><h3>Empty spot! ✍️</h3><p>Write a rule — whoever lands on it next has to do it.</p></div>
+      <textarea id="cRule" maxlength="70" placeholder="e.g. Drink with your left hand"></textarea>
+      <div class="sugs">${SUGS_C.map(t => `<button type="button" data-sug="${esc(t)}">${esc(t)}</button>`).join('')}</div>
+      <div class="c-row"><button class="c-btn c-ghost" id="cNoRule">No rule</button><button class="c-btn" id="cWrite" style="flex:1">Write it on the box</button></div>`;
+  } else if (myTurn) {
+    const lock = H.phase === 'lock', busy = !['aim', 'lock'].includes(H.phase);
+    html += `<div class="c-status"><b style="color:${lighten(mine.color)}">Your turn!</b></div>
+      <button class="c-big mine ${lock ? 'lock' : ''}" id="cFlip" ${busy ? 'disabled' : ''}>${busy ? (H.phase === 'busy' ? '🪙 In the air…' : 'Hold on…') : lock ? '🪙 TAP TO<br>THROW!' : '🎯 TAP TO<br>FREEZE'}</button>
+      <p class="c-status" style="font-size:13px">${lock ? 'Throw when the yellow circle is small!' : 'Freeze the crosshair where you want to aim.'}</p>`;
+  } else {
+    html += `<div class="c-status">${H.phase === 'rule' ? 'Someone is writing a rule…' : turnP ? `Up next: <b style="color:${lighten(turnP.color)}">${esc(turnP.name)}</b>` : 'Waiting for players…'}</div>
+      <button class="c-big" disabled>⏳ Not your turn</button>`;
+  }
+  if (H.result) html += `<div class="c-card c-result" style="border-color:${H.result.c || 'var(--line)'}"><div class="t" style="color:${H.result.c ? lighten(H.result.c) : 'var(--ink)'}">${esc(H.result.t)}</div><p>${esc(H.result.s || '')}</p></div>`;
+  if (H.rules && H.rules.length) html += `<div class="c-card"><h3>Rules on the box</h3><ol class="c-rules">${H.rules.map(r => `<li value="${r[0]}">${esc(r[1])} <span style="color:var(--muted)">— ${esc(r[2] || '')}</span></li>`).join('')}</ol></div>`;
+  body.innerHTML = html;
+  const fl = $('#cFlip'); if (fl) fl.addEventListener('pointerdown', e => { e.preventDefault(); if (!fl.disabled) { cSend('flip'); fl.style.transform = 'scale(.96)'; setTimeout(() => fl.style.transform = '', 120); } });
+  const rt = $('#cRule');
+  if (rt) {
+    rt.value = cDraft; if (focusedRule) rt.focus();
+    rt.oninput = () => cDraft = rt.value;
+    body.querySelectorAll('[data-sug]').forEach(b => b.onclick = () => { rt.value = cDraft = b.dataset.sug; });
+    $('#cWrite').onclick = () => { const t = rt.value.trim(); if (!t) return rt.focus(); cSend('rule', { text: t }); cDraft = ''; };
+    $('#cNoRule').onclick = () => { cSend('norule'); cDraft = ''; };
+  }
+}
+$('#cSwitch').onclick = () => { me.joining = null; setPid(null); };
+function setMode(ctrl) { try { localStorage.setItem('pizzabox-mode', ctrl ? 'ctrl' : 'host'); } catch (e) {} location.hash = ctrl ? '#controller' : '#host'; location.reload(); }
+$('#cHost').onclick = () => setMode(false);
+$('#asCtrl').onclick = () => setMode(true);
+if (CTRL) { document.body.classList.add('ctrl'); renderCtrl(); }
+
+// connect to the room (works for signed-in people the page is shared with)
+(async () => {
+  try { room = STANDALONE ? await standaloneRoom() : window.claude && typeof window.claude.use === 'function' ? await window.claude.use('room') : null; } catch (e) { room = null; }
+  if (!room) { roomState = 'failed'; renderCtrl(); if (!CTRL) $('#phoneHelp').textContent = STANDALONE ? 'Couldn\'t start the phone room — check the internet connection and reload.' : 'Phone controllers need the live room, which isn\'t available in this view.'; return; }
+  roomState = 'ok';
+  room.onPeers(ch => { if (CTRL) onCtrlPeers(ch.peers); else onHostPeers(ch.peers); }, () => { roomState = 'failed'; renderCtrl(); });
+  if (CTRL) { sendCtrl(); renderCtrl(); } else hostPublish();
+})();
+
+// ---------- invite phones: QR code + link to this game ----------
+const gameUrl = () => STANDALONE ? location.origin + location.pathname + (ROOM_CODE ? '#join-' + ROOM_CODE : '') : 'https://claude.ai/artifact/WvSstj18skaj7x9jYEnd9j';
+var qrMade = false;
+if (STANDALONE) $('#phoneHelp').textContent = 'This computer is the main screen. Friends join on their phones with the room code (top right) or the QR code under 📱 Invite phones — no account needed.';
+if (STANDALONE) $('.inv-steps').innerHTML = `<li><b>Scan the code</b> with your phone camera — or go to <b>${esc(location.host)}</b> and type the room code.</li><li>Tap your name, or draw your circle if you're new.</li><li>No account needed. Everyone watches this screen.</li>`;
+$('#inviteBtn').onclick = () => {
+  const GAME_URL = gameUrl();
+  $('#invUrl').textContent = GAME_URL.replace('https://', '');
+  $('#invite').classList.add('on');
+  if (STANDALONE && ROOM_CODE) $('#invite h3').textContent = `Join room ${ROOM_CODE} 📱`;
+  if (!qrMade) { qrMade = true; $('#qr').innerHTML = ''; try { new QRCode($('#qr'), { text: GAME_URL, width: 480, height: 480, colorDark: '#1b1410', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M }); } catch (e) { $('#qr').textContent = GAME_URL; } }
+};
+$('#inviteClose').onclick = () => $('#invite').classList.remove('on');
+$('#invite').onclick = e => { if (e.target.id === 'invite') $('#invite').classList.remove('on'); };
+$('#copyLink').onclick = async () => { try { await navigator.clipboard.writeText(gameUrl()); $('#copyLink').textContent = 'Copied ✓'; } catch (e) { $('#copyLink').textContent = 'Select & copy ↑'; const r = document.createRange(); r.selectNodeContents($('#invUrl')); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r); } setTimeout(() => $('#copyLink').textContent = 'Copy link', 2000); };
+
+// fonts first so the marker writing renders correctly
+const fontsReady = document.fonts ? Promise.race([Promise.all([document.fonts.load('80px "Permanent Marker"'), document.fonts.load('900 80px Inter'), document.fonts.load('700 40px Inter')]), new Promise(r => setTimeout(r, 3000))]) : Promise.resolve();
+fontsReady.catch(() => {}).then(() => { makeBase(); makeLid(); drawTop(); });
+renderUI(); loop();
+if (!state.players.length) setTimeout(() => $('#nameInput').focus({ preventScroll: true }), 300);
+})();
+</script>
+</body>
+</html>
