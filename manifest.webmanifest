@@ -1,0 +1,14 @@
+{
+  "name": "Pizza Box",
+  "short_name": "Pizza Box",
+  "description": "The pizza box coin-toss drinking game. Phones are the controllers.",
+  "start_url": "./#host",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#1b1410",
+  "theme_color": "#1b1410",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

@@ -4,6 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Pizza Box Coin Toss</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#1b1410">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-192.png">
 <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
 <style>
   body{--off:157px}
@@ -141,6 +146,8 @@
   #roomCode{display:none;background:#ffd84a;color:#2a1606;padding:10px 12px;border-radius:14px;font-size:14px;font-weight:900;letter-spacing:2px;white-space:nowrap}
   #roomCode.on{display:block}
   .ph{font-size:12px;margin-left:2px}
+  #installBtn{display:none;position:fixed;top:14px;right:282px;z-index:8;background:var(--card);color:var(--ink);border:1px solid var(--line);padding:9px 13px;font-size:13px;font-weight:700}
+  body.ctrl #installBtn{display:none!important}
   #inviteBtn{position:fixed;top:14px;right:128px;z-index:8;background:linear-gradient(180deg,#ffd76a,#e8962a);color:#2a1606;border:0;padding:9px 13px;font-size:13px;font-weight:800}
   #invite{position:fixed;inset:0;background:rgba(10,6,3,.6);display:none;align-items:center;justify-content:center;z-index:25;padding:16px}
   #invite.on{display:flex}
@@ -252,6 +259,7 @@
 </div>
 <button id="jazzBtn">🎷 Jazz: on</button>
 <button id="inviteBtn">📱 Invite phones</button>
+<button id="installBtn">⬇️ Install app</button>
 <div id="invite"><div class="card">
   <button id="inviteClose" class="x" style="position:absolute;top:12px;right:14px;font-size:22px">×</button>
   <h3>Join on your phone 📱</h3>
@@ -2133,6 +2141,30 @@ $('#startBtn').onclick = () => {
   state.started = true; save(); renderUI(); renderLobby(); ensureAudio();
   showResult('Game on! 🍕', state.lobby.length ? 'Everyone draw your circle — on your phone, or ✏️ / 🎲 next to your name here.' : 'Flip the coin!');
 };
+
+// ---------- installable app + automatic updates (website version only) ----------
+const BUILD = '1794614147';
+if (STANDALONE) {
+  try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
+  let deferredInstall = null;
+  addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferredInstall = e; if (!CTRL) $('#installBtn').style.display = 'block'; });
+  $('#installBtn').onclick = async () => { if (!deferredInstall) return; deferredInstall.prompt(); try { await deferredInstall.userChoice; } catch (e) {} deferredInstall = null; $('#installBtn').style.display = 'none'; };
+  addEventListener('appinstalled', () => { $('#installBtn').style.display = 'none'; toast('Installed! Open Pizza Box from your desktop/dock 🍕'); });
+  // check for a new version now and then; reload itself at a safe moment (never mid-throw)
+  let updatePending = false;
+  const checkUpdate = async () => { try { const r = await fetch('version.json?t=' + Date.now(), { cache: 'no-store' }); const v = await r.json(); if (/^\d+$/.test(BUILD) && v.build && String(v.build) !== BUILD) {
+    let last = ''; try { last = sessionStorage.getItem('pizzabox-reloadfor') || ''; } catch (e) {}
+    const [lb, lt] = last.split(':'); if (lb === String(v.build) && Date.now() - (+lt || 0) < 300000) return; // just reloaded for this one; give GitHub's cache a few minutes
+    updatePending = String(v.build);
+  } } catch (e) {} };
+  setTimeout(checkUpdate, 4000); setInterval(checkUpdate, 120000); addEventListener('focus', checkUpdate);
+  const safeToReload = () => CTRL
+    ? !(document.activeElement && /INPUT|TEXTAREA/.test(document.activeElement.tagName)) && !document.getElementById('cMap')
+    : !toss && !goblin && !placing && !gameOver && aim.mode !== 'lock' && !$('#modal').classList.contains('on') && !$('#invite').classList.contains('on');
+  setInterval(() => { if (updatePending && safeToReload()) { try { save(); sessionStorage.setItem('pizzabox-updated', '1'); sessionStorage.setItem('pizzabox-reloadfor', updatePending + ':' + Date.now()); } catch (e) {} location.reload(); } }, 1500);
+  try { if (sessionStorage.getItem('pizzabox-updated')) { sessionStorage.removeItem('pizzabox-updated'); setTimeout(() => toast('Updated! 🍕 New stuff is in'), 1500); } } catch (e) {}
+  addEventListener('pagehide', () => { try { save(); } catch (e) {} });
+}
 
 // ---------- invite phones: QR code + link to this game ----------
 const gameUrl = () => STANDALONE ? location.origin + location.pathname + (ROOM_CODE ? '#join-' + ROOM_CODE : '') : 'https://claude.ai/artifact/WvSstj18skaj7x9jYEnd9j';
