@@ -153,6 +153,26 @@
   .inv-steps{text-align:left;margin:10px 0 0;padding-left:20px;color:#e6d8c3;font-size:14px;line-height:1.5}
   body.ctrl #inviteBtn,body.ctrl #invite{display:none!important}
   @media (max-width:760px){#inviteBtn{top:12px;right:118px}}
+  #lobby{position:fixed;inset:0;z-index:15;display:none;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 30%,rgba(40,26,16,.82),rgba(12,8,5,.94));padding:20px;overflow:auto}
+  body.lobby #lobby{display:flex}
+  body.lobby #hud,body.lobby #help{display:none}
+  .lb-card{width:min(720px,100%);text-align:center}
+  .lb-card h1{font-family:"Permanent Marker",cursive;font-weight:400;font-size:clamp(44px,7vw,80px);margin:0}
+  #lbJoin{font-size:18px;color:#e6d8c3;margin:6px 0 14px;line-height:1.5}
+  #lbJoin b.code{display:inline-block;background:#ffd84a;color:#2a1606;font-size:34px;letter-spacing:6px;padding:4px 16px;border-radius:14px;margin:6px 0;font-weight:900}
+  .lb-qr{display:inline-block;background:#fff;padding:10px;border-radius:14px}
+  .lb-qr:empty{display:none}
+  .lb-qr img,.lb-qr canvas{display:block;width:170px;height:170px}
+  .lb-card h2{font-size:12px;letter-spacing:1.6px;text-transform:uppercase;color:var(--muted);margin:18px 0 10px}
+  #lbList{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;min-height:52px}
+  #lbList .chip{font-family:"Permanent Marker",cursive;font-size:22px;padding:8px 18px;border-radius:999px;color:#fff;animation:pop .4s cubic-bezier(.2,1.6,.4,1)}
+  #lbList .empty{margin:0}
+  #lbAdd{display:flex;gap:8px;max-width:380px;margin:14px auto 0}
+  #lbAdd input{flex:1;min-width:0;background:rgba(255,255,255,.07);border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:10px 12px;font:inherit;outline:none}
+  #lbAdd button{background:rgba(255,255,255,.1);color:var(--ink);border:1px solid var(--line);padding:0 14px;font-weight:700}
+  #startBtn{margin-top:18px;background:linear-gradient(180deg,#9be15d,#4f9a2a);color:#10230a;font-weight:900;font-size:24px;padding:16px 40px;border-radius:18px;box-shadow:0 10px 30px rgba(80,180,60,.35)}
+  #startBtn:disabled{filter:grayscale(.8) brightness(.6)}
+  .lb-note{color:var(--muted);font-size:13px;margin-top:10px}
   #yugo{position:fixed;left:50%;top:40%;transform:translate(-50%,-50%) scale(.6);z-index:40;pointer-events:none;opacity:0;font-family:'Hiragino Maru Gothic ProN','Yu Gothic','Noto Sans JP',sans-serif;font-weight:800;font-size:clamp(26px,5vw,52px);line-height:1.25;text-align:center;color:#fff;background:linear-gradient(135deg,#ff5fa2,#ff9a3c);padding:22px 34px;border-radius:28px;box-shadow:0 18px 50px rgba(255,80,150,.45);transition:opacity .35s,transform .45s cubic-bezier(.2,1.6,.4,1)}
   #yugo.on{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(-3deg)}
   #toast{position:fixed;left:50%;bottom:100px;transform:translateX(calc(-50% + var(--off)));background:#000c;color:#fff;padding:9px 14px;border-radius:10px;font-size:13.5px;opacity:0;transition:opacity .25s;pointer-events:none;z-index:30}
@@ -254,6 +274,16 @@
     <div class="go-btns"><button id="goAgain">Play again — same crew</button><button id="goNew">New game</button></div>
   </div>
 </div>
+<div id="lobby"><div class="lb-card">
+  <h1>🍕 Pizza Box</h1>
+  <div id="lbJoin"></div>
+  <div class="lb-qr" id="lbQr"></div>
+  <h2>Who's playing <span id="lbCount"></span></h2>
+  <div id="lbList"></div>
+  <form id="lbAdd" autocomplete="off"><input id="lbName" maxlength="16" placeholder="No phone? Add a name here"><button type="submit">Add</button></form>
+  <button id="startBtn">Start game ▶</button>
+  <p class="lb-note">After you start, everyone draws their circle — on their phone, or right here.</p>
+</div></div>
 <div id="yugo">こんにちは、ユーゴ！<br>元気？ 大好きだよ！💖</div>
 
 <div id="modal">
@@ -321,6 +351,8 @@ function fixRules() { state.rules.forEach(r => { r.r = Math.min(r.r || 0.5, rule
 fixRules();
 state.playTime = state.playTime || 0; state.rounds = state.rounds || 0; state.drinks = state.drinks || {};
 if (!state.clockV2) { if (state.players.length >= 2) state.playTime = Math.max(state.playTime, 30 * 60); state.clockV2 = true; }
+state.lobby = state.lobby || [];
+if (state.started === undefined) state.started = state.players.length > 0;
 const drink = (p, n = 1) => { if (p) state.drinks[p.id] = (state.drinks[p.id] || 0) + n; };
 const save = () => { try { localStorage.setItem('pizzabox-v1', JSON.stringify(state)); } catch (e) {} };
 
@@ -655,15 +687,27 @@ el.addEventListener('wheel', e => { e.preventDefault(); goal.r = clamp(goal.r * 
 // ---------- players ----------
 let placing = null;
 function showPreview() { const r = placeDrag.r; preview.visible = true; preview.material.color.set(placing.color); preview.scale.set(r, r, r); preview.position.set(clamp(placeDrag.x, -HALF + r, HALF - r), TOP + 0.01, clamp(placeDrag.z, -HALF + r, HALF - r)); }
-function nextColor() { const used = new Set(state.players.map(p => p.color)); return COLORS.find(c => !used.has(c)) || COLORS[state.players.length % COLORS.length]; }
+function nextColor() { const used = new Set([...state.players, ...state.lobby].map(p => p.color)); return COLORS.find(c => !used.has(c)) || COLORS[state.players.length % COLORS.length]; }
 $('#addForm').addEventListener('submit', e => {
   e.preventDefault(); const name = $('#nameInput').value.trim(); if (!name) return;
-  if (state.players.some(p => p.name.toLowerCase() === name.toLowerCase())) return toast('That name is already on the box');
+  if (nameTaken(name)) return toast('That name is already in the game');
+  if (!state.started) { addToLobby(name); $('#nameInput').value = ''; return; }
   placing = { name, color: nextColor() }; $('#nameInput').value = ''; $('#nameInput').blur();
   document.body.classList.add('placing'); $('#panel').classList.remove('open'); hideResult();
   $('#hint span').innerHTML = `Draw <b style="color:${placing.color}">${esc(name)}</b>'s circle — tap the box, or drag to size it`;
   $('#hint').classList.add('on');
 });
+function nameTaken(n) { n = n.toLowerCase(); return [...state.players, ...state.lobby].some(p => p.name.toLowerCase() === n); }
+function addToLobby(name) { state.lobby.push({ id: newId(), name, color: nextColor() }); addLog(`👋 ${name} joined`); save(); renderUI(); renderLobby(); }
+// a lobby player (joined but no circle yet) gets drawn: on the computer, or at a random spot
+function drawLobbyPlayer(id, random) {
+  const q = state.lobby.find(p => p.id === id); if (!q || placing) return;
+  placing = { id: q.id, name: q.name, color: q.color };
+  if (random) return autoPlace();
+  document.body.classList.add('placing'); $('#panel').classList.remove('open'); hideResult();
+  $('#hint span').innerHTML = `Draw <b style="color:${placing.color}">${esc(q.name)}</b>'s circle — tap the box, or drag to size it`;
+  $('#hint').classList.add('on');
+}
 function endPlacing() { placing = null; preview.visible = false; document.body.classList.remove('placing'); $('#hint').classList.remove('on'); }
 $('#cancelBtn').onclick = endPlacing;
 $('#autoBtn').onclick = () => autoPlace();
@@ -678,7 +722,8 @@ function autoPlace() {
 }
 function commitPlayer(x, z, r) {
   if (!placing) return;
-  const p = { id: newId(), name: placing.name, color: placing.color, r, x: clamp(x, -HALF + r, HALF - r), z: clamp(z, -HALF + r, HALF - r) };
+  if (placing.id) state.lobby = state.lobby.filter(q => q.id !== placing.id);
+  const p = { id: placing.id || newId(), name: placing.name, color: placing.color, r, x: clamp(x, -HALF + r, HALF - r), z: clamp(z, -HALF + r, HALF - r) };
   state.players.push(p); fixRules(); endPlacing(); drawTop(); addLog(`✍️ ${p.name} joined`); save(); renderUI();
 }
 function removePlayer(id) {
@@ -693,7 +738,7 @@ function current() { return state.players[state.turn % Math.max(1, state.players
 function addLog(t) { state.log.unshift(t); state.log = state.log.slice(0, 40); }
 function renderUI() {
   const cur = current();
-  $('#playerList').innerHTML = state.players.length ? state.players.map(p =>
+  $('#playerList').innerHTML = (state.players.length || state.lobby.length) ? state.lobby.map(p => `<li class="player"><span class="dot" style="background:${p.color};opacity:.5"></span><span class="nm" style="opacity:.75">${esc(p.name)}${claimed.has(String(p.id)) ? ' <span class="ph">📱</span>' : ''}</span>${state.started ? `<button class="x" data-draw="${p.id}" title="Draw their circle here">✏️</button><button class="x" data-rand="${p.id}" title="Random spot">🎲</button>` : '<span class="tag" style="color:var(--muted)">in lobby</span>'}<button class="x" data-l="${p.id}" title="Remove">×</button></li>`).join('') + state.players.map(p =>
     `<li class="player ${cur && p.id === cur.id && state.players.length > 1 ? 'up' : ''}"><span class="dot" style="background:${p.color}"></span><span class="nm" style="color:${p.color === '#1f2937' ? '#e8e2d8' : p.color};filter:brightness(1.6)">${esc(p.name)}${claimed.has(String(p.id)) ? ' <span class="ph">📱</span>' : ''}</span>${cur && p.id === cur.id && state.players.length > 1 ? '<span class="tag">flipping</span>' : ''}<button class="x" data-p="${p.id}" title="Remove">×</button></li>`).join('')
     : '<p class="empty">No one in the box yet. Add names, then tap inside the box to circle them.</p>';
   $('#ruleList').innerHTML = state.rules.length ? state.rules.map(r =>
@@ -705,9 +750,14 @@ function renderUI() {
   $('#turn').innerHTML = ok ? `Up next: <b>${esc(cur.name)}</b>` : 'Add at least 2 players';
   $('#tossBtn').disabled = !ok || !!toss || !!goblin;
   $('#tossBtn').innerHTML = (aim.mode === 'lock' ? '🪙 Throw!' : '🎯 Flip the coin') + ' <kbd>Space</kbd>';
-  hostPublish();
+  hostPublish(); if (typeof renderLobby === 'function') renderLobby();
 }
-$('#playerList').onclick = e => { const b = e.target.closest('[data-p]'); if (b) removePlayer(+b.dataset.p); };
+$('#playerList').onclick = e => {
+  const b = e.target.closest('[data-p]'); if (b) return removePlayer(+b.dataset.p);
+  const d = e.target.closest('[data-draw]'); if (d) return drawLobbyPlayer(+d.dataset.draw, false);
+  const r = e.target.closest('[data-rand]'); if (r) return drawLobbyPlayer(+r.dataset.rand, true);
+  const l = e.target.closest('[data-l]'); if (l) { state.lobby = state.lobby.filter(p => p.id !== +l.dataset.l); save(); renderUI(); renderLobby(); }
+};
 $('#ruleList').onclick = e => { const b = e.target.closest('[data-r]'); if (b) removeRule(+b.dataset.r); };
 const mobile = () => innerWidth <= 760;
 function setPanel(open) { document.body.classList.toggle('panel-closed', !open); try { localStorage.setItem('pizzabox-panel', open ? '1' : '0'); } catch (e) {} }
@@ -724,7 +774,7 @@ let armed = 0;
 $('#newGame').onclick = e => {
   const b = e.currentTarget;
   if (Date.now() - armed > 2500) { armed = Date.now(); b.textContent = 'Tap again'; b.classList.add('warn'); setTimeout(() => { b.textContent = 'New game'; b.classList.remove('warn'); }, 2500); return; }
-  state = { players: [], rules: [], turn: 0, log: [], playTime: 0, rounds: 0, drinks: {}, clockV2: true }; clearGuts(); coin.visible = false; hideResult(); drawTop(); save(); renderUI();
+  state = { players: [], rules: [], turn: 0, log: [], playTime: 0, rounds: 0, drinks: {}, clockV2: true, lobby: [], started: false }; clearGuts(); coin.visible = false; hideResult(); drawTop(); save(); renderUI();
   b.textContent = 'New game'; b.classList.remove('warn'); armed = 0;
 };
 let toastT;
@@ -949,7 +999,7 @@ const aimRing = new THREE.Group(); scene.add(aimRing);
   flat.add(overlay(new THREE.Mesh(new THREE.RingGeometry(0.965, 1, 96), new THREE.MeshBasicMaterial({ color: '#ffd84a', opacity: 0.95 }))));
   flat.add(overlay(new THREE.Mesh(new THREE.CircleGeometry(1, 64), new THREE.MeshBasicMaterial({ color: '#ffd84a', opacity: 0.13 }))));
 }
-const canAim = () => !gameOver && state.players.length >= 2 && !toss && !goblin && !placing && !$('#modal').classList.contains('on');
+const canAim = () => !gameOver && state.started && state.players.length >= 2 && !toss && !goblin && !placing && !$('#modal').classList.contains('on');
 function stepAim(dt) {
   const ok = canAim();
   if (!ok && aim.mode === 'lock' && !toss) { aim.mode = 'wander'; }
@@ -1519,7 +1569,7 @@ function showGameOverCard() {
 }
 function resetAfterDoom(full) {
   $('#gameover').classList.remove('on', 'card'); clearGuts(); gameOver = false; shake = 0; jazzDuck(false);
-  if (full) state = { players: [], rules: [], turn: 0, log: [], playTime: 0, rounds: 0, drinks: {}, clockV2: true };
+  if (full) state = { players: [], rules: [], turn: 0, log: [], playTime: 0, rounds: 0, drinks: {}, clockV2: true, lobby: [], started: false };
   else Object.assign(state, { rules: [], turn: 0, log: [], playTime: 0, rounds: 0, drinks: {}, clockV2: true });
   coin.visible = false; coin.scale.set(1, 1, 1); state.yugoWelcomed = false; drawTop(); save(); renderUI();
 }
@@ -1754,7 +1804,8 @@ function hostPublish() {
   const cur = state.players.length ? current() : null;
   const g = {
     role: 'host', since: hostSince, phase: gamePhase(), turn: cur ? cur.id : null,
-    ruleFor: pendingRule ? pendingRule.tosser.id : null,
+    ruleFor: pendingRule ? pendingRule.tosser.id : null, started: !!state.started,
+    lobby: state.lobby.map(p => ({ id: p.id, name: p.name, color: p.color })),
     players: state.players.map(p => ({ id: p.id, name: p.name, color: p.color, x: +p.x.toFixed(2), z: +p.z.toFixed(2), r: +p.r.toFixed(2) })),
     spots: state.rules.map(r => [+r.x.toFixed(2), +r.z.toFixed(2), +r.r.toFixed(2)]).slice(-30), half: HALF, out: OUT,
     result: lastResult, rules: state.rules.map((r, i) => [i + 1, String(r.text).slice(0, 60), r.by]).slice(-12)
@@ -1768,9 +1819,16 @@ function handleCmd(c, cmd) {
   else if (cmd.type === 'rule' || cmd.type === 'norule') {
     if (!pendingRule || String(pendingRule.tosser.id) !== pid) return;
     if (cmd.type === 'rule') { const t = String(cmd.text || '').trim().slice(0, 70); if (!t) return; $('#ruleText').value = t; $('#saveRule').click(); } else $('#skipRule').click();
+  } else if (cmd.type === 'place') {
+    const q = state.lobby.find(p => String(p.id) === pid); if (!q || !state.started || placing) return;
+    placing = { id: q.id, name: q.name, color: q.color };
+    const x = +cmd.x, z = +cmd.z, r = +cmd.r;
+    if (isFinite(x) && isFinite(z) && isFinite(r)) { const rr = clamp(r, 0.55, 2.1); commitPlayer(clamp(x, -HALF + rr, HALF - rr), clamp(z, -HALF + rr, HALF - rr), rr); } else autoPlace();
   } else if (cmd.type === 'join') {
     const name = String(cmd.name || '').trim().slice(0, 16);
-    if (!name || placing || state.players.some(p => p.name.toLowerCase() === name.toLowerCase())) return;
+    if (!name || nameTaken(name)) return;
+    if (!state.started) { addToLobby(name); toast(`📱 ${name} joined`); return; }
+    if (placing) return;
     placing = { name, color: nextColor() };
     const x = +cmd.x, z = +cmd.z, r = +cmd.r;
     if (isFinite(x) && isFinite(z) && isFinite(r)) { const rr = clamp(r, 0.55, 2.1); commitPlayer(clamp(x, -HALF + rr, HALF - rr), clamp(z, -HALF + rr, HALF - rr), rr); } else autoPlace();
@@ -1854,6 +1912,7 @@ function makePeerRoom() {
   return api;
 }
 function setRoomCode(code) {
+  setTimeout(() => renderLobby(), 0);
   const el = $('#roomCode'); if (el) { el.textContent = `Room ${code}`; el.classList.add('on'); }
   qrMade = false; if ($('#invite').classList.contains('on')) $('#inviteBtn').onclick();
 }
@@ -1931,9 +1990,9 @@ function drawPlacer(body, players) {
   cv.onpointerdown = e => { e.preventDefault(); cv.setPointerCapture(e.pointerId); const q = pos(e); down = { x: q.x, z: q.z, moved: false }; cPlace.x = q.x; cPlace.z = q.z; fit(); draw(); };
   cv.onpointermove = e => { if (!down) return; const q = pos(e), d = Math.hypot(q.x - down.x, q.z - down.z); if (d > 0.25) down.moved = true; if (down.moved) { cPlace.r = clamp(d, 0.55, 2.1); cPlace.x = down.x; cPlace.z = down.z; fit(); draw(); } };
   cv.onpointerup = cv.onpointercancel = () => { down = null; };
-  $('#cBack').onclick = () => { cPlace = null; renderCtrl(); };
-  $('#cRand').onclick = () => { me.joining = cName; cSend('join', { name: cName }); cPlace = null; renderCtrl(); };
-  $('#cPut').onclick = () => { if (cPlace.x == null) return; me.joining = cName; cSend('join', { name: cName, x: +cPlace.x.toFixed(2), z: +cPlace.z.toFixed(2), r: +cPlace.r.toFixed(2) }); cPlace = null; renderCtrl(); };
+  $('#cBack').style.display = cPlace.lobbyId ? 'none' : ''; $('#cBack').onclick = () => { cPlace = null; renderCtrl(); };
+  $('#cRand').onclick = () => { if (cPlace.lobbyId) { cSend('place', {}); cPlace = null; return; } me.joining = cName; cSend('join', { name: cName }); cPlace = null; renderCtrl(); };
+  $('#cPut').onclick = () => { if (cPlace.x == null) return; if (cPlace.lobbyId) { cSend('place', { x: +cPlace.x.toFixed(2), z: +cPlace.z.toFixed(2), r: +cPlace.r.toFixed(2) }); cPlace = null; return; } me.joining = cName; cSend('join', { name: cName, x: +cPlace.x.toFixed(2), z: +cPlace.z.toFixed(2), r: +cPlace.r.toFixed(2) }); cPlace = null; renderCtrl(); };
   draw();
 }
 function sendCtrl() { if (room) room.presence({ g: { role: 'ctrl', pid: me.pid, cmd: me.cmd } }).catch(() => {}); }
@@ -1942,7 +2001,7 @@ function setPid(id) { me.pid = id == null ? null : String(id); try { if (me.pid)
 function onCtrlPeers(peers) {
   const hosts = peers.filter(p => !p.sameTab && p.presence && p.presence.g && p.presence.g.role === 'host').sort((a, b) => (a.presence.g.since || 0) - (b.presence.g.since || 0));
   H = hosts.length ? hosts[0].presence.g : null; A = hosts.length ? hosts[0].presence.a || null : null;
-  if (H && me.joining) { const f = (H.players || []).find(p => p.name.toLowerCase() === me.joining.toLowerCase()); if (f) { me.joining = null; setPid(f.id); return; } }
+  if (H && me.joining) { const f = [...(H.players || []), ...(H.lobby || [])].find(p => p.name.toLowerCase() === me.joining.toLowerCase()); if (f) { me.joining = null; setPid(f.id); return; } }
   // only rebuild the controls when the game state changed (not on every crosshair move)
   const gj = H ? JSON.stringify(H) : ''; if (gj === lastGJ) return; lastGJ = gj;
   renderCtrl();
@@ -1950,6 +2009,7 @@ function onCtrlPeers(peers) {
 const SUGS_C = ['Drink with your other hand', 'Waterfall — everyone drinks', 'Give out 3 sips', 'Pick a drinking buddy', 'Speak in an accent till your next turn', 'No first names allowed', 'Rhyme your next sentence', 'Swap seats with someone'];
 function renderCtrl() {
   if (!CTRL) return;
+  if (cPlace && cPlace.lobbyId && H && !(H.lobby || []).some(p => String(p.id) === String(cPlace.lobbyId))) cPlace = null; // got drawn already
   if (cPlace && document.getElementById('cMap') && H) return;
   const body = $('#cBody'), meEl = $('#cMe');
   const focusedRule = document.activeElement && document.activeElement.id === 'cRule';
@@ -1973,15 +2033,31 @@ function renderCtrl() {
     return;
   }
   if (roomState === 'connecting' || !H) { meEl.textContent = ''; body.innerHTML = `<div class="c-card"><h3>${roomState === 'connecting' ? 'Connecting…' : 'Waiting for the main screen…'}</h3><p>Open this page on the computer that shows the pizza box. It'll appear here automatically.</p></div>`; return; }
-  const players = H.players || [], mine = players.find(p => String(p.id) === String(me.pid));
+  const players = H.players || [], lobbyL = H.lobby || [], mine = players.find(p => String(p.id) === String(me.pid));
+  const inLobby = !mine && lobbyL.find(p => String(p.id) === String(me.pid));
+  if (inLobby) {
+    meEl.innerHTML = `<span class="dot" style="background:${inLobby.color}"></span>${esc(inLobby.name)}`;
+    if (!H.started) {
+      $('#cLive').classList.remove('on');
+      const all = [...lobbyL, ...players];
+      body.innerHTML = `<div class="c-card" style="text-align:center"><h3>You're in! 🎉</h3><p>Waiting for the host to start the game…</p></div>
+        <div class="c-card"><h3>Who's playing</h3><div style="display:flex;flex-wrap:wrap;gap:8px">${all.map(p => `<span style="background:${p.color};color:#fff;border-radius:999px;padding:6px 14px;font-family:'Permanent Marker',cursive;font-size:18px">${esc(p.name)}</span>`).join('')}</div></div>`;
+      return;
+    }
+    // game started: draw your circle
+    $('#cLive').classList.remove('on');
+    if (!cPlace || cName !== inLobby.name) { cName = inLobby.name; cPlace = { x: null, z: null, r: 1, lobbyId: inLobby.id }; }
+    drawPlacer(body, players);
+    return;
+  }
   if (!mine) {
     $('#cLive').classList.remove('on');
     meEl.textContent = '';
     body.innerHTML = `<div class="c-card"><h3>Who are you?</h3><p>Tap your name.</p></div>
-      <div class="c-names">${players.map(p => `<button data-pick="${p.id}" style="background:${p.color}">${esc(p.name)}</button>`).join('')}</div>
-      <div class="c-card"><h3>Not on the box yet?</h3><div class="c-row"><input id="cNew" maxlength="16" placeholder="Your name" autocomplete="off" value="${esc(cName)}"><button class="c-btn" id="cJoin">Next</button></div>${me.joining ? `<p style="margin-top:8px">Drawing ${esc(me.joining)}'s circle…</p>` : ''}</div>`;
+      <div class="c-names">${[...players, ...lobbyL].map(p => `<button data-pick="${p.id}" style="background:${p.color}">${esc(p.name)}</button>`).join('')}</div>
+      <div class="c-card"><h3>${H.started ? 'Not on the box yet?' : 'New here? Join the game'}</h3><div class="c-row"><input id="cNew" maxlength="16" placeholder="Your name" autocomplete="off" value="${esc(cName)}"><button class="c-btn" id="cJoin">${H.started ? 'Next' : 'Join'}</button></div>${me.joining ? `<p style="margin-top:8px">Adding ${esc(me.joining)}…</p>` : ''}</div>`;
     body.querySelectorAll('[data-pick]').forEach(b => b.onclick = () => setPid(b.dataset.pick));
-    const next = () => { const v = $('#cNew').value.trim(); if (!v) return; const f = players.find(p => p.name.toLowerCase() === v.toLowerCase()); if (f) return setPid(f.id); cName = v; cPlace = { x: null, z: null, r: 1 }; renderCtrl(); };
+    const next = () => { const v = $('#cNew').value.trim(); if (!v) return; const f = [...players, ...lobbyL].find(p => p.name.toLowerCase() === v.toLowerCase()); if (f) return setPid(f.id); if (!H.started) { me.joining = v; cSend('join', { name: v }); renderCtrl(); return; } cName = v; cPlace = { x: null, z: null, r: 1 }; renderCtrl(); };
     $('#cJoin').onclick = next; $('#cNew').onkeydown = e => { if (e.key === 'Enter') next(); };
     if (cPlace && cName && !me.joining) drawPlacer(body, players);
     else if (focusedName) { const i = $('#cNew'); i.focus(); i.setSelectionRange(i.value.length, i.value.length); }
@@ -2035,6 +2111,28 @@ if (CTRL) { document.body.classList.add('ctrl'); renderCtrl(); }
   room.onPeers(ch => { if (CTRL) onCtrlPeers(ch.peers); else onHostPeers(ch.peers); }, () => { roomState = 'failed'; renderCtrl(); });
   if (CTRL) { sendCtrl(); renderCtrl(); } else hostPublish();
 })();
+
+// ---------- lobby (before the host starts the game) ----------
+let lbQrFor = null;
+function renderLobby() {
+  if (CTRL) return;
+  document.body.classList.toggle('lobby', !state.started);
+  if (state.started) return;
+  const all = [...state.lobby, ...state.players];
+  $('#lbCount').textContent = all.length ? `(${all.length})` : '';
+  $('#lbList').innerHTML = all.length ? all.map(p => `<span class="chip" style="background:${p.color}">${esc(p.name)}${claimed.has(String(p.id)) ? ' 📱' : ''}</span>`).join('') : '<p class="empty">Nobody yet — join on your phone!</p>';
+  $('#startBtn').disabled = all.length < 2;
+  const url = gameUrl();
+  if (STANDALONE) $('#lbJoin').innerHTML = ROOM_CODE ? `Join on your phone at <b>${esc(location.host)}</b> with room code<br><b class="code">${esc(ROOM_CODE)}</b><br>or scan:` : 'Starting the room…';
+  else $('#lbJoin').innerHTML = 'Open this same page on your phone to join (it must be shared with you on claude.ai), or scan:';
+  if (lbQrFor !== url && window.QRCode && (!STANDALONE || ROOM_CODE)) { lbQrFor = url; $('#lbQr').innerHTML = ''; try { new QRCode($('#lbQr'), { text: url, width: 340, height: 340, colorDark: '#1b1410', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M }); } catch (e) {} }
+}
+$('#lbAdd').addEventListener('submit', e => { e.preventDefault(); const n = $('#lbName').value.trim(); if (!n) return; if (nameTaken(n)) return toast('That name is already in the game'); addToLobby(n); $('#lbName').value = ''; });
+$('#startBtn').onclick = () => {
+  if ([...state.lobby, ...state.players].length < 2) return;
+  state.started = true; save(); renderUI(); renderLobby(); ensureAudio();
+  showResult('Game on! 🍕', state.lobby.length ? 'Everyone draw your circle — on your phone, or ✏️ / 🎲 next to your name here.' : 'Flip the coin!');
+};
 
 // ---------- invite phones: QR code + link to this game ----------
 const gameUrl = () => STANDALONE ? location.origin + location.pathname + (ROOM_CODE ? '#join-' + ROOM_CODE : '') : 'https://claude.ai/artifact/WvSstj18skaj7x9jYEnd9j';
