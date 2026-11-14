@@ -121,6 +121,9 @@
   .c-card p{margin:0;color:#e6d8c3;font-size:15px;line-height:1.45}
   .c-status{text-align:center;font-size:17px;color:#e6d8c3}
   .c-status b{font-family:"Permanent Marker",cursive;font-weight:400;font-size:24px}
+  #cTurn{text-align:center;font-family:"Permanent Marker",cursive;font-size:clamp(28px,8vw,40px);line-height:1.1}
+  #cTurn:empty{display:none}
+  #cTurn small{display:block;font-family:Inter,sans-serif;font-size:14px;color:var(--muted);margin-top:4px}
   #cLive{display:none;width:100%;aspect-ratio:1/1;max-height:46vh;border-radius:16px;align-self:center;object-fit:contain}
   #cLive.on{display:block}
   .c-big{width:100%;min-height:24vh;border-radius:28px;font-size:clamp(30px,9vw,46px);font-weight:900;color:#2a1606;background:linear-gradient(180deg,#ffd76a,#e8962a);box-shadow:0 14px 40px rgba(232,150,42,.4),inset 0 -6px 0 rgba(0,0,0,.18);touch-action:manipulation;-webkit-user-select:none;user-select:none;line-height:1.1}
@@ -208,9 +211,10 @@
 <div id="scene"></div>
 <div id="ctrl">
   <div class="c-top"><span class="c-logo">🍕 Pizza Box</span><span id="cMe"></span></div>
+  <div id="cTurn"></div>
   <canvas id="cLive"></canvas>
   <div id="cBody"></div>
-  <div class="c-foot"><button id="cSwitch" class="c-link">Change player</button><button id="cHost" class="c-link">Use this device as the main screen</button></div>
+  <div class="c-foot"><button id="cSwitch" class="c-link" style="display:none">Change player</button><button id="cHost" class="c-link">Use this device as the main screen</button></div>
 </div>
 
 <button id="menuBtn">☰ Pizza Box</button>
@@ -732,7 +736,8 @@ function commitPlayer(x, z, r) {
   if (!placing) return;
   if (placing.id) state.lobby = state.lobby.filter(q => q.id !== placing.id);
   const p = { id: placing.id || newId(), name: placing.name, color: placing.color, r, x: clamp(x, -HALF + r, HALF - r), z: clamp(z, -HALF + r, HALF - r) };
-  state.players.push(p); fixRules(); endPlacing(); drawTop(); addLog(`✍️ ${p.name} joined`); save(); renderUI();
+  state.players.push(p); fixRules(); endPlacing(); drawTop();
+  if (!state.lobby.length && lastResult && /^Game on/.test(lastResult.t)) hideResult(); addLog(`✍️ ${p.name} joined`); save(); renderUI();
 }
 function removePlayer(id) {
   const i = state.players.findIndex(p => p.id === id); if (i < 0) return;
@@ -1797,7 +1802,7 @@ function hostLive(dt) {
   const j = JSON.stringify(a); if (j === liveLast) return; liveLast = j;
   room.presence({ a }).catch(() => {});
 }
-var room = null, roomState = 'connecting', lastResult = null, claimed = new Set();
+var room = null, roomState = 'connecting', lastResult = null, claimed = new Set(), owners = {};
 const hostSince = Date.now(), lastCmd = {};
 function gamePhase() {
   if (gameOver) return 'over';
@@ -1812,7 +1817,7 @@ function hostPublish() {
   const cur = state.players.length ? current() : null;
   const g = {
     role: 'host', since: hostSince, phase: gamePhase(), turn: cur ? cur.id : null,
-    ruleFor: pendingRule ? pendingRule.tosser.id : null, started: !!state.started,
+    ruleFor: pendingRule ? pendingRule.tosser.id : null, started: !!state.started, owners,
     lobby: state.lobby.map(p => ({ id: p.id, name: p.name, color: p.color })),
     players: state.players.map(p => ({ id: p.id, name: p.name, color: p.color, x: +p.x.toFixed(2), z: +p.z.toFixed(2), r: +p.r.toFixed(2) })),
     spots: state.rules.map(r => [+r.x.toFixed(2), +r.z.toFixed(2), +r.r.toFixed(2)]).slice(-30), half: HALF, out: OUT,
@@ -1823,6 +1828,7 @@ function hostPublish() {
 }
 function handleCmd(c, cmd) {
   const pid = String(c.pid);
+  if (cmd.type !== 'join' && owners[pid] !== String(c.cid)) return; // not this phone's player
   if (cmd.type === 'flip') { const cur = current(); if (cur && String(cur.id) === pid && !$('#modal').classList.contains('on')) flipPressed(); }
   else if (cmd.type === 'rule' || cmd.type === 'norule') {
     if (!pendingRule || String(pendingRule.tosser.id) !== pid) return;
@@ -1845,6 +1851,12 @@ function handleCmd(c, cmd) {
 }
 function onHostPeers(peers) {
   const ctrls = peers.filter(p => !p.sameTab && p.presence && p.presence.g && p.presence.g.role === 'ctrl');
+  // one phone per player: the first phone to claim a player keeps it while it's connected
+  const present = new Set(ctrls.map(p => String(p.presence.g.cid)));
+  let ownChanged = false;
+  for (const pid in owners) if (!present.has(owners[pid])) { delete owners[pid]; ownChanged = true; }
+  for (const p of ctrls) { const c = p.presence.g, pid = String(c.pid); if (c.pid != null && pid !== 'null' && c.cid && !owners[pid]) { owners[pid] = String(c.cid); ownChanged = true; } }
+  if (ownChanged) setTimeout(hostPublish, 0);
   for (const p of ctrls) {
     const c = p.presence.g, cmd = c.cmd;
     if (!cmd || typeof cmd.n !== 'number') { if (lastCmd[p.peer] === undefined) lastCmd[p.peer] = 0; continue; }
@@ -1926,9 +1938,10 @@ function setRoomCode(code) {
 }
 
 // ----- the phone side -----
-const me = { pid: null, n: 0, cmd: null, joining: null };
+const me = { pid: null, n: 0, cmd: null, joining: null, cid: null };
+try { me.cid = localStorage.getItem('pizzabox-cid'); if (!me.cid) { me.cid = Math.random().toString(36).slice(2, 12); localStorage.setItem('pizzabox-cid', me.cid); } } catch (e) { me.cid = Math.random().toString(36).slice(2, 12); }
 try { me.pid = localStorage.getItem('pizzabox-pid'); } catch (e) {}
-let lastGJ = null, H = null, A = null, cDraft = '', cWasMine = false, cName = '', cPlace = null;
+let cErr = '', lastGJ = null, H = null, A = null, cDraft = '', cWasMine = false, cName = '', cPlace = null;
 // live top-down view of the game for phones (no goblins, just the box, circles, crosshair and coin)
 const LV = { x: 0, z: 0, r: 0, cx: 0, cz: 0, cy: 0 };
 function liveMap() {
@@ -2003,13 +2016,15 @@ function drawPlacer(body, players) {
   $('#cPut').onclick = () => { if (cPlace.x == null) return; if (cPlace.lobbyId) { cSend('place', { x: +cPlace.x.toFixed(2), z: +cPlace.z.toFixed(2), r: +cPlace.r.toFixed(2) }); cPlace = null; return; } me.joining = cName; cSend('join', { name: cName, x: +cPlace.x.toFixed(2), z: +cPlace.z.toFixed(2), r: +cPlace.r.toFixed(2) }); cPlace = null; renderCtrl(); };
   draw();
 }
-function sendCtrl() { if (room) room.presence({ g: { role: 'ctrl', pid: me.pid, cmd: me.cmd } }).catch(() => {}); }
+function sendCtrl() { if (room) room.presence({ g: { role: 'ctrl', pid: me.pid, cid: me.cid, cmd: me.cmd } }).catch(() => {}); }
 function cSend(type, extra) { me.n++; me.cmd = Object.assign({ n: me.n, type }, extra || {}); sendCtrl(); }
 function setPid(id) { me.pid = id == null ? null : String(id); try { if (me.pid) localStorage.setItem('pizzabox-pid', me.pid); else localStorage.removeItem('pizzabox-pid'); } catch (e) {} sendCtrl(); renderCtrl(); }
 function onCtrlPeers(peers) {
   const hosts = peers.filter(p => !p.sameTab && p.presence && p.presence.g && p.presence.g.role === 'host').sort((a, b) => (a.presence.g.since || 0) - (b.presence.g.since || 0));
   H = hosts.length ? hosts[0].presence.g : null; A = hosts.length ? hosts[0].presence.a || null : null;
-  if (H && me.joining) { const f = [...(H.players || []), ...(H.lobby || [])].find(p => p.name.toLowerCase() === me.joining.toLowerCase()); if (f) { me.joining = null; setPid(f.id); return; } }
+  if (H && me.joining) { const f = [...(H.players || []), ...(H.lobby || [])].find(p => p.name.toLowerCase() === me.joining.toLowerCase()); if (f) { me.joining = null; const ow = H.owners && H.owners[String(f.id)]; if (ow && ow !== me.cid) { cErr = `"${f.name}" is already in the game — pick a different name.`; } else { setPid(f.id); return; } } }
+  // lost the player to another phone? start over
+  if (H && me.pid && H.owners && H.owners[String(me.pid)] && H.owners[String(me.pid)] !== me.cid) { me.pid = null; try { localStorage.removeItem('pizzabox-pid'); } catch (e) {} cErr = 'That player is being used on another phone.'; sendCtrl(); }
   // only rebuild the controls when the game state changed (not on every crosshair move)
   const gj = H ? JSON.stringify(H) : ''; if (gj === lastGJ) return; lastGJ = gj;
   renderCtrl();
@@ -2024,6 +2039,7 @@ function renderCtrl() {
   if (focusedRule) { const r = $('#cRule'); if (r) cDraft = r.value; }
   const focusedName = document.activeElement && document.activeElement.id === 'cNew'; if ($('#cNew')) cName = $('#cNew').value;
   if (roomState === 'failed' || roomState === 'connecting' || !H) $('#cLive').classList.remove('on');
+  $('#cTurn').innerHTML = '';
   if (roomState === 'failed') { meEl.textContent = ''; body.innerHTML = `<div class="c-card"><h3>Can't connect 😕</h3><p>${STANDALONE ? 'This phone can\'t reach the game. Check your internet connection and reload.' : 'This phone can\'t reach the live game. Make sure you\'re signed in to Claude and the page has been shared with you, then reload. (Phones can\'t join through a public link.)'}</p></div>`; return; }
   $('#cHost').style.display = H ? 'none' : '';
   if (STANDALONE && CTRL && roomState === 'ok' && !ROOM_CODE) {
@@ -2061,22 +2077,24 @@ function renderCtrl() {
   if (!mine) {
     $('#cLive').classList.remove('on');
     meEl.textContent = '';
-    body.innerHTML = `<div class="c-card"><h3>Who are you?</h3><p>Tap your name.</p></div>
-      <div class="c-names">${[...players, ...lobbyL].map(p => `<button data-pick="${p.id}" style="background:${p.color}">${esc(p.name)}</button>`).join('')}</div>
-      <div class="c-card"><h3>${H.started ? 'Not on the box yet?' : 'New here? Join the game'}</h3><div class="c-row"><input id="cNew" maxlength="16" placeholder="Your name" autocomplete="off" value="${esc(cName)}"><button class="c-btn" id="cJoin">${H.started ? 'Next' : 'Join'}</button></div>${me.joining ? `<p style="margin-top:8px">Adding ${esc(me.joining)}…</p>` : ''}</div>`;
-    body.querySelectorAll('[data-pick]').forEach(b => b.onclick = () => setPid(b.dataset.pick));
-    const next = () => { const v = $('#cNew').value.trim(); if (!v) return; const f = [...players, ...lobbyL].find(p => p.name.toLowerCase() === v.toLowerCase()); if (f) return setPid(f.id); if (!H.started) { me.joining = v; cSend('join', { name: v }); renderCtrl(); return; } cName = v; cPlace = { x: null, z: null, r: 1 }; renderCtrl(); };
+    body.innerHTML = `<div class="c-card"><h3>Join the game</h3>${cErr ? `<p style="color:#ff8a7a;margin-bottom:8px">${esc(cErr)}</p>` : ''}<div class="c-row"><input id="cNew" maxlength="16" placeholder="Your name" autocomplete="off" value="${esc(cName)}"><button class="c-btn" id="cJoin">${H.started ? 'Next' : 'Join'}</button></div>${me.joining ? `<p style="margin-top:8px">Adding ${esc(me.joining)}…</p>` : `<p style="margin-top:8px">${H.started ? 'Type your name, then draw your circle on the box.' : 'Type your name. You\'ll draw your circle when the game starts.'}</p>`}</div>`;
+    const next = () => { const v = $('#cNew').value.trim(); if (!v) return; const f = [...players, ...lobbyL].find(p => p.name.toLowerCase() === v.toLowerCase()); if (f) { cErr = `"${v}" is already in the game — pick a different name.`; cName = ''; renderCtrl(); return; } cErr = ''; if (!H.started) { me.joining = v; cSend('join', { name: v }); renderCtrl(); return; } cName = v; cPlace = { x: null, z: null, r: 1 }; renderCtrl(); };
     $('#cJoin').onclick = next; $('#cNew').onkeydown = e => { if (e.key === 'Enter') next(); };
     if (cPlace && cName && !me.joining) drawPlacer(body, players);
     else if (focusedName) { const i = $('#cNew'); i.focus(); i.setSelectionRange(i.value.length, i.value.length); }
     return;
   }
   meEl.innerHTML = `<span class="dot" style="background:${mine.color}"></span>${esc(mine.name)}`;
-  $('#cLive').classList.add('on');
+  $('#cLive').classList.toggle('on', !(H.phase === 'rule' && String(H.ruleFor) === String(mine.id)) && H.phase !== 'over');
   const myTurn = String(H.turn) === String(mine.id), turnP = players.find(p => String(p.id) === String(H.turn));
   if (myTurn && !cWasMine) { try { navigator.vibrate && navigator.vibrate([120, 60, 120]); } catch (e) {} }
   cWasMine = myTurn;
   let html = '';
+  const tEl = $('#cTurn');
+  if (H.phase === 'over' || (H.phase === 'rule' && String(H.ruleFor) === String(mine.id))) tEl.innerHTML = '';
+  else if (myTurn) tEl.innerHTML = `<span style="color:${lighten(mine.color)}">🍕 Your turn!</span>`;
+  else if (H.phase === 'rule') { const w = players.find(p => String(p.id) === String(H.ruleFor)); tEl.innerHTML = `<span style="color:${w ? lighten(w.color) : 'var(--ink)'}">✍️ ${w ? esc(w.name) : 'Someone'} is writing a rule…</span>`; }
+  else tEl.innerHTML = turnP ? `<span style="color:${lighten(turnP.color)}">🍕 ${esc(turnP.name)}'s turn</span><small>Watch the main screen — you're up when it buzzes.</small>` : 'Waiting for players…';
   if (H.phase === 'over') html += `<div class="c-card c-result" style="border-color:#d7263d"><div class="t" style="color:#ff3b4f">GAME OVER 💀</div><p>The goblin ate the coin and exploded. Check the main screen.</p></div>`;
   else if (H.phase === 'rule' && String(H.ruleFor) === String(mine.id)) {
     html += `<div class="c-card"><h3>Empty spot! ✍️</h3><p>Write a rule — whoever lands on it next has to do it.</p></div>
@@ -2085,15 +2103,12 @@ function renderCtrl() {
       <div class="c-row"><button class="c-btn c-ghost" id="cNoRule">No rule</button><button class="c-btn" id="cWrite" style="flex:1">Write it on the box</button></div>`;
   } else if (myTurn) {
     const lock = H.phase === 'lock', busy = !['aim', 'lock'].includes(H.phase);
-    html += `<div class="c-status"><b style="color:${lighten(mine.color)}">Your turn!</b></div>
-      <button class="c-big mine ${lock ? 'lock' : ''}" id="cFlip" ${busy ? 'disabled' : ''}>${busy ? (H.phase === 'busy' ? '🪙 In the air…' : 'Hold on…') : lock ? '🪙 TAP TO<br>THROW!' : '🎯 TAP TO<br>FREEZE'}</button>
+    html += `<button class="c-big mine ${lock ? 'lock' : ''}" id="cFlip" ${busy ? 'disabled' : ''}>${busy ? (H.phase === 'busy' ? '🪙 In the air…' : 'Hold on…') : lock ? '🪙 TAP TO<br>THROW!' : '🎯 TAP TO<br>FREEZE'}</button>
       <p class="c-status" style="font-size:13px">${lock ? 'Throw when the yellow circle is small!' : 'Freeze the crosshair where you want to aim.'}</p>`;
-  } else {
-    html += `<div class="c-status">${H.phase === 'rule' ? 'Someone is writing a rule…' : turnP ? `Up next: <b style="color:${lighten(turnP.color)}">${esc(turnP.name)}</b>` : 'Waiting for players…'}</div>
-      <button class="c-big" disabled>⏳ Not your turn</button>`;
   }
-  if (H.result) html += `<div class="c-card c-result" style="border-color:${H.result.c || 'var(--line)'}"><div class="t" style="color:${H.result.c ? lighten(H.result.c) : 'var(--ink)'}">${esc(H.result.t)}</div><p>${esc(H.result.s || '')}</p></div>`;
-  if (H.rules && H.rules.length) html += `<div class="c-card"><h3>Rules on the box</h3><ol class="c-rules">${H.rules.map(r => `<li value="${r[0]}">${esc(r[1])} <span style="color:var(--muted)">— ${esc(r[2] || '')}</span></li>`).join('')}</ol></div>`;
+  const focusTurn = myTurn && H.phase !== 'over' && !(H.phase === 'rule' && String(H.ruleFor) === String(mine.id));
+  if (H.result && !focusTurn) html += `<div class="c-card c-result" style="border-color:${H.result.c || 'var(--line)'}"><div class="t" style="color:${H.result.c ? lighten(H.result.c) : 'var(--ink)'}">${esc(H.result.t)}</div><p>${esc(H.result.s || '')}</p></div>`;
+  if (H.rules && H.rules.length && !focusTurn) html += `<div class="c-card"><h3>Rules on the box</h3><ol class="c-rules">${H.rules.map(r => `<li value="${r[0]}">${esc(r[1])} <span style="color:var(--muted)">— ${esc(r[2] || '')}</span></li>`).join('')}</ol></div>`;
   body.innerHTML = html;
   const fl = $('#cFlip'); if (fl) fl.addEventListener('pointerdown', e => { e.preventDefault(); if (!fl.disabled) { cSend('flip'); fl.style.transform = 'scale(.96)'; setTimeout(() => fl.style.transform = '', 120); } });
   const rt = $('#cRule');
@@ -2143,7 +2158,7 @@ $('#startBtn').onclick = () => {
 };
 
 // ---------- installable app + automatic updates (website version only) ----------
-const BUILD = '1794614147';
+const BUILD = '1794615628';
 if (STANDALONE) {
   try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
   let deferredInstall = null;
