@@ -197,6 +197,17 @@
   #splat.on{opacity:1;transform:translate(-50%,-50%) scale(1);transition:transform .12s cubic-bezier(.2,1.8,.4,1)}
   #splat.fade{opacity:0;transform:translate(-50%,-40%) scale(1.05);transition:opacity 1.2s,transform 1.2s}
   body.ctrl #splat{display:none}
+  #slot{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:13;width:min(720px,88vw);display:none;text-align:center;background:linear-gradient(180deg,#b3123a,#6b0a1e);border:6px solid #ffd84a;border-radius:26px;padding:16px 18px 22px;box-shadow:0 20px 60px rgba(0,0,0,.6),inset 0 0 0 3px #6b0a1e}
+  #slot.on{display:block;animation:pop .4s cubic-bezier(.2,1.6,.4,1)}
+  .slot-top{font-family:"Permanent Marker",cursive;font-size:clamp(26px,3.4vw,40px);color:#ffd84a;text-shadow:0 3px 0 #4a0410;margin-bottom:10px}
+  .slot-win{background:#fff8e6;border-radius:14px;min-height:120px;display:flex;align-items:center;justify-content:center;padding:14px 20px;box-shadow:inset 0 6px 14px rgba(0,0,0,.35)}
+  #slotText{font-family:"Permanent Marker",cursive;font-size:clamp(24px,3vw,38px);color:#2a1606;line-height:1.2}
+  #slot.landed .slot-win{animation:pop .5s cubic-bezier(.2,1.8,.4,1);background:#fff3b0}
+  #roundRule{position:fixed;left:50%;bottom:86px;transform:translateX(calc(-50% + var(--off)));z-index:6;display:none;background:rgba(40,24,6,.92);border:2px solid #ffd84a;color:#fff3c4;border-radius:14px;padding:8px 16px;font-size:14px;font-weight:700;max-width:min(640px,80vw);text-align:center}
+  #roundRule.on{display:block}
+  #roundRule b{color:#ffd84a}
+  body.ctrl #slot,body.ctrl #roundRule{display:none!important}
+  body.mini #result{display:none!important}
   #flash{position:fixed;inset:0;z-index:45;background:#fff;opacity:0;pointer-events:none}
   #flash.on{animation:flash .7s ease-out}
   @keyframes flash{0%{opacity:.95}100%{opacity:0}}
@@ -278,7 +289,7 @@
     <p class="empty" id="phoneHelp">This computer is the main screen. Everyone else opens this same page on their phone (share it from its page on claude.ai) — phones are controllers: draw your circle, take your turn, write your rules.</p>
     <button id="asCtrl" class="c-link" style="margin-top:6px">Use this device as a controller instead</button>
     <div><button id="introBtn2" class="c-link">▶ Watch the rules intro</button></div>
-    <div><button id="tryHot" class="c-link">🔥 Play Hot Goblin now</button> <button id="tryBoss" class="c-link">👹 Play Boss Fight now</button></div>
+    <div><button id="tryHot" class="c-link">🔥 Play Hot Goblin now</button> <button id="tryBoss" class="c-link">👹 Play Boss Fight now</button> <button id="tryRoul" class="c-link">🎰 Play Rule Roulette now</button></div>
   </section>
   <footer>
     <button id="clearRules">Wipe rules</button>
@@ -337,6 +348,8 @@
 <div id="flash"></div>
 <div id="mini"><div id="miniTitle"></div><div id="miniSub"></div></div>
 <div id="miniCount"></div>
+<div id="slot"><div class="slot-top">🎰 RULE ROULETTE 🎰</div><div class="slot-win"><div id="slotText"></div></div></div>
+<div id="roundRule"></div>
 <div id="bossBar"><div class="bb-top"><span>👹 THE GOBLIN KING</span><span id="bossTime">10.0s</span></div><div class="bb-bar"><div id="bossFill"></div><span id="bossHp"></span></div></div>
 <div id="yugo">こんにちは、ユーゴ！<br>元気？ 大好きだよ！💖</div>
 
@@ -831,8 +844,10 @@ function renderUI() {
   const ok = state.players.length >= 2;
   $('#turn').innerHTML = ok ? `Up next: <b>${esc(cur.name)}</b>` : 'Add at least 2 players';
   $('#tossBtn').disabled = !ok || !!toss || !!goblin;
-  $('#tossBtn').innerHTML = (mini ? (mini.type === 'hot' ? '🔥 Pass it!' : '👊 Hit!') : aim.mode === 'lock' ? '🪙 Throw!' : '🎯 Flip the coin') + ' <kbd>Space</kbd>';
-  if (mini) $('#tossBtn').disabled = mini.stage !== 'play';
+  document.body.classList.toggle('mini', !!mini);
+  $('#tossBtn').innerHTML = (mini ? (mini.type === 'hot' ? '🔥 Pass it!' : mini.type === 'roulette' ? '🎰 Spinning…' : '👊 Hit!') : aim.mode === 'lock' ? '🪙 Throw!' : '🎯 Flip the coin') + ' <kbd>Space</kbd>';
+  if (mini) $('#tossBtn').disabled = mini.stage !== 'play' || mini.type === 'roulette';
+  const rr = $('#roundRule'); if (rr) { if (state.roundRule && !mini) { rr.innerHTML = `🎰 This round, everyone: <b>${esc(state.roundRule.text)}</b> · ${state.roundRule.left} turn${state.roundRule.left === 1 ? '' : 's'} left`; rr.classList.add('on'); } else rr.classList.remove('on'); }
   hostPublish(); if (typeof renderLobby === 'function') renderLobby();
 }
 $('#playerList').onclick = e => {
@@ -1033,7 +1048,11 @@ function evaluate(x, z) {
     advance();
   } else openRuleModal(x, z, tosser);
 }
-function advance() { if (state.players.length) state.turn = (state.turn + 1) % state.players.length; save(); renderUI(); }
+function advance() {
+  if (state.players.length) state.turn = (state.turn + 1) % state.players.length;
+  if (state.roundRule) { state.roundRule.left--; if (state.roundRule.left <= 0) { addLog(`🎰 Round rule over: ${state.roundRule.text}`); toast('🎰 The round rule is over!'); state.roundRule = null; } }
+  save(); renderUI();
+}
 
 // ---------- rule modal ----------
 let pendingRule = null;
@@ -2068,20 +2087,22 @@ function maybeStartMini() {
 }
 function startMini(type) {
   if (mini || goblin || toss) return;
-  type = type || pickOther(['hot', 'boss'], state.lastMini); state.lastMini = type;
+  type = type || pickOther(['hot', 'boss', 'roulette'], state.lastMini); state.lastMini = type;
   hideResult(); clearPoop(); clearBurgers(); coin.visible = false; ensureAudio();
   mini = { type, stage: 'intro', t: 0, holder: null, hp: 0, max: 0, left: 10, G: null, hits: {}, flinch: 0, hitSnd: 0 };
   jazzDuck(true);
   if (type === 'hot') miniBanner('🔥 HOT GOBLIN! 🔥', 'Pass him before he blows! &nbsp;📱 tap <b>PASS</b> · 💻 <b>Space</b>');
+  else if (type === 'roulette') miniBanner('🎰 RULE ROULETTE! 🎰', 'One rule for EVERYONE — for a whole round');
   else miniBanner('👹 GOBLIN BOSS FIGHT! 👹', 'Mash <b>HIT</b> on your phones (or <b>Space</b>) — beat him in 10 seconds!');
   [0, 0.18, 0.36, 0.7].forEach((d, i) => tone('square', i === 3 ? 880 : 660, i === 3 ? 880 : 660, 0.14, 0.12, d));
-  addLog(type === 'hot' ? '🔥 Mini-game: Hot Goblin!' : '👹 Mini-game: Goblin Boss Fight!');
+  addLog(type === 'hot' ? '🔥 Mini-game: Hot Goblin!' : type === 'roulette' ? '🎰 Mini-game: Rule Roulette!' : '👹 Mini-game: Goblin Boss Fight!');
   renderUI(); hostPublish();
 }
 function circleSpot(p) { return new THREE.Vector3(p.x, TOP, p.z); }
 function beginMiniPlay() {
   const ps = miniPlayers();
   $('#miniCount').textContent = ''; mini.stage = 'play'; mini.t = 0;
+  if (mini.type === 'roulette') { spinRoulette(); renderUI(); hostPublish(); return; }
   if (mini.type === 'hot') {
     const G = buildGoblin({ skin: '#d9542a', eye: '#fff36b', hat: 'none', size: 1.25 }); scene.add(G.root); mini.G = G;
     mini.mats = []; G.root.traverse(o => { if (o.isMesh && o.material.emissive) mini.mats.push(o.material); });
@@ -2144,10 +2165,38 @@ function bossEnd(won) {
 }
 function endMini() {
   if (!mini) return;
+  $('#slot').classList.remove('on');
   if (mini.G) scene.remove(mini.G.root);
   $('#mini').classList.remove('on'); $('#bossBar').classList.remove('on'); $('#miniCount').textContent = '';
   mini = null; state.miniAt = state.rounds + 5 + Math.floor(Math.random() * 4); save();
   jazzDuck(false); renderUI(); hostPublish();
+}
+const ROULETTE_RULES = ['Everyone talks like a pirate', "No saying anyone's name — drink if you do", 'Drink with your other hand', 'Compliment the thrower before every throw', 'Narrate every throw like a sports commentator', 'Say "GOBLIN!" before you throw — or drink', 'No swearing — drink if you do', 'Everyone speaks in rhymes', 'Drink every time someone lands on cardboard', 'No pointing — drink if you do', 'Last person to touch their nose drinks after every throw', 'The thrower picks a drinking buddy'];
+function spinRoulette() {
+  const pool = [...new Set([...state.rules.map(r => r.text), ...ROULETTE_RULES])];
+  const pick = pool[Math.floor(Math.random() * pool.length)];
+  const slot = $('#slot'), txt = $('#slotText'); slot.classList.add('on'); slot.classList.remove('landed');
+  mini.stage = 'play'; mini.t = 0; miniBanner('🎰 RULE ROULETTE! 🎰', 'Spinning…');
+  let i = Math.floor(Math.random() * pool.length), delay = 55, elapsed = 0;
+  const tick = () => {
+    if (!mini || mini.type !== 'roulette') return;
+    elapsed += delay;
+    if (elapsed > 3200 && pool[i % pool.length] === pick) {
+      txt.textContent = pick; slot.classList.add('landed'); dingSfx(); tone('sine', 523, 523, 0.15, 0.15); tone('sine', 784, 784, 0.4, 0.15, 0.15);
+      spawnParts(new THREE.Vector3(0, TOP + 4, 0), 70, { colors: ['#ffd84a', '#ff4d6d', '#06d6a0', '#118ab2', '#ffffff'], size: 0.06, shape: 'plane', speed: 2, up: 0, life: 3.5, gravity: 2.2 });
+      state.roundRule = { text: pick, left: state.players.length }; save();
+      showResult('🎰 Rule for this round!', pick + ' — applies to EVERYONE until everyone has had a turn.', '#ffd84a');
+      miniBanner('🎰 This round: everyone must…', esc(pick));
+      addLog(`🎰 Round rule: ${pick}`);
+      mini.stage = 'done'; mini.t = 0; renderUI(); hostPublish();
+      setTimeout(() => slot.classList.remove('on'), 3400);
+      return;
+    }
+    i++; txt.textContent = pool[i % pool.length]; tone('square', 1200, 1200, 0.025, 0.06);
+    if (elapsed > 1800) delay = Math.min(420, delay * 1.13);
+    setTimeout(tick, delay);
+  };
+  tick();
 }
 function miniKey() { if (!mini || mini.stage !== 'play') return; if (mini.type === 'hot') passHot(); else bossHit(1, null); }
 function stepMini(dt) {
@@ -2160,6 +2209,7 @@ function stepMini(dt) {
     return;
   }
   const G = mini.G;
+  if (mini.type === 'roulette') { if (mini.stage === 'done' && mini.t > 3.8) endMini(); return; }
   if (mini.type === 'hot') {
     if (mini.stage === 'play') {
       const frac = Math.min(1, mini.t / mini.fuse);
@@ -2282,6 +2332,7 @@ function startIntro(after) {
 }
 const previewIntro = () => { ensureAudio(); if (toss || goblin || placing) return toast('Wait for the current turn to finish'); $('#invite').classList.remove('on'); startIntro(() => { renderLobby(); }); };
 $('#tryHot').onclick = () => { if (!canAim() && !mini) return toast('Start a game with 2+ players first (and wait for the turn to finish)'); startMini('hot'); };
+$('#tryRoul').onclick = () => { if (!canAim() && !mini) return toast('Start a game with 2+ players first (and wait for the turn to finish)'); startMini('roulette'); };
 $('#tryBoss').onclick = () => { if (!canAim() && !mini) return toast('Start a game with 2+ players first (and wait for the turn to finish)'); startMini('boss'); };
 $('#introBtn').onclick = previewIntro; $('#introBtn2').onclick = previewIntro;
 $('#skipIntro').onclick = () => {
@@ -2467,7 +2518,7 @@ function hostPublish() {
   const cur = state.players.length ? current() : null;
   const g = {
     role: 'host', since: hostSince, phase: gamePhase(), turn: cur ? cur.id : null,
-    ruleFor: pendingRule ? pendingRule.tosser.id : null, started: !!state.started, owners,
+    ruleFor: pendingRule ? pendingRule.tosser.id : null, started: !!state.started, owners, roundRule: state.roundRule ? [String(state.roundRule.text).slice(0, 80), state.roundRule.left] : null,
     mini: mini ? { type: mini.type, stage: mini.stage, holder: mini.holder ? mini.holder.id : null, hp: mini.hp, max: mini.max, left: Math.ceil(mini.left) } : null,
     lobby: state.lobby.map(p => ({ id: p.id, name: p.name, color: p.color })),
     players: state.players.map(p => ({ id: p.id, name: p.name, color: p.color, x: +p.x.toFixed(2), z: +p.z.toFixed(2), r: +p.r.toFixed(2) })),
@@ -2600,7 +2651,9 @@ function renderMiniCtrl(body, mine, players) {
   body.dataset.mk = key;
   const holder = players.find(p => String(p.id) === String(M.holder));
   let html = '';
-  if (M.type === 'hot') {
+  if (M.type === 'roulette') {
+    html = M.stage === 'done' && H.result ? `<div class="c-card c-result" id="cMini" style="border-color:#ffd84a"><div class="t" style="color:#ffd84a">🎰 This round, everyone:</div><p style="font-size:20px;font-weight:800;color:#fff">${esc((H.result.s || '').split(' — ')[0])}</p></div>` : `<div class="c-card" id="cMini" style="text-align:center"><h3>🎰 RULE ROULETTE! 🎰</h3><p>Watch the big screen… spinning!</p></div>`;
+  } else if (M.type === 'hot') {
     if (M.stage === 'intro') html = `<div class="c-card" id="cMini" style="text-align:center"><h3>🔥 HOT GOBLIN! 🔥</h3><p>When he lands on you, tap <b>PASS</b> fast — before he blows!</p></div>`;
     else if (M.stage === 'play' && holder && String(holder.id) === String(mine.id)) { html = `<div id="cMini"></div><button class="c-big hot" id="cPass">🔥 PASS IT! 🔥</button>`; try { navigator.vibrate && navigator.vibrate([200, 80, 200]); } catch (e) {} }
     else if (M.stage === 'play') html = `<div class="c-card" id="cMini" style="text-align:center"><h3>😬 ${holder ? esc(holder.name) : 'Someone'} has the hot goblin…</h3><p>Pray he doesn't come to you.</p></div><button class="c-big" disabled>🙏 Not you… yet</button>`;
@@ -2779,7 +2832,7 @@ function renderCtrl() {
   const myTurn = String(H.turn) === String(mine.id), turnP = players.find(p => String(p.id) === String(H.turn));
   if (myTurn && !cWasMine) { try { navigator.vibrate && navigator.vibrate([120, 60, 120]); } catch (e) {} }
   cWasMine = myTurn;
-  let html = '';
+  let html = H.roundRule ? `<div class="c-card" style="border-color:#ffd84a;background:rgba(60,40,8,.9)"><p style="margin:0;color:#fff3c4">🎰 <b style="color:#ffd84a">This round, everyone:</b> ${esc(H.roundRule[0])} <span style="color:var(--muted)">(${H.roundRule[1]} turn${H.roundRule[1] === 1 ? '' : 's'} left)</span></p></div>` : '';
   const tEl = $('#cTurn');
   if (H.phase === 'over' || (H.phase === 'rule' && String(H.ruleFor) === String(mine.id))) tEl.innerHTML = '';
   else if (myTurn) tEl.innerHTML = `<span style="color:${lighten(mine.color)}">🍕 Your turn!</span>`;
@@ -2848,7 +2901,7 @@ $('#startBtn').onclick = () => {
 };
 
 // ---------- installable app + automatic updates (website version only) ----------
-const BUILD = '1794657537';
+const BUILD = '1794658539';
 if (STANDALONE) {
   try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
   let deferredInstall = null;
