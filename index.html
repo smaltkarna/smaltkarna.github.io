@@ -2158,7 +2158,7 @@ $('#startBtn').onclick = () => {
 };
 
 // ---------- installable app + automatic updates (website version only) ----------
-const BUILD = '1794615628';
+const BUILD = '1794615919';
 if (STANDALONE) {
   try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
   let deferredInstall = null;
@@ -2184,6 +2184,12 @@ if (STANDALONE) {
 // ---------- invite phones: QR code + link to this game ----------
 const gameUrl = () => STANDALONE ? location.origin + location.pathname + (ROOM_CODE ? '#join-' + ROOM_CODE : '') : 'https://claude.ai/artifact/WvSstj18skaj7x9jYEnd9j';
 var qrMade = false;
+if (!STANDALONE) {
+  const note = document.createElement('p'); note.className = 'inv-steps'; note.style.cssText = 'list-style:none;padding:10px 12px;background:rgba(255,216,74,.12);border:1px solid rgba(255,216,74,.4);border-radius:12px;margin-top:12px';
+  note.innerHTML = '<b>Friends without a Claude account?</b> Open <a href="https://smaltkarna.github.io" target="_blank" rel="noopener" style="color:#ffd84a">smaltkarna.github.io</a> on this computer instead — its QR code works for everyone.';
+  $('#invite .card').appendChild(note);
+  const n2 = document.createElement('p'); n2.className = 'lb-note'; n2.innerHTML = 'No Claude account? Host from <a href="https://smaltkarna.github.io" target="_blank" rel="noopener" style="color:#ffd84a">smaltkarna.github.io</a> instead.'; $('.lb-card').appendChild(n2);
+}
 if (STANDALONE) $('#phoneHelp').textContent = 'This computer is the main screen. Friends join on their phones with the room code (top right) or the QR code under 📱 Invite phones — no account needed.';
 if (STANDALONE) $('.inv-steps').innerHTML = `<li><b>Scan the code</b> with your phone camera — or go to <b>${esc(location.host)}</b> and type the room code.</li><li>Tap your name, or draw your circle if you're new.</li><li>No account needed. Everyone watches this screen.</li>`;
 $('#inviteBtn').onclick = () => {
