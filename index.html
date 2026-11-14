@@ -206,7 +206,15 @@
   #roundRule{position:fixed;left:50%;bottom:86px;transform:translateX(calc(-50% + var(--off)));z-index:6;display:none;background:rgba(40,24,6,.92);border:2px solid #ffd84a;color:#fff3c4;border-radius:14px;padding:8px 16px;font-size:14px;font-weight:700;max-width:min(640px,80vw);text-align:center}
   #roundRule.on{display:block}
   #roundRule b{color:#ffd84a}
-  body.ctrl #slot,body.ctrl #roundRule{display:none!important}
+  body.ctrl #slot,body.ctrl #roundRule,body.ctrl #cupPanel{display:none!important}
+  #cupPanel{position:fixed;left:50%;bottom:86px;transform:translateX(calc(-50% + var(--off)));z-index:13;display:none;background:rgba(20,10,4,.92);border:2px solid #ffd84a;border-radius:16px;padding:10px 14px;max-height:40vh;overflow:auto}
+  #cupPanel.on{display:block}
+  .cp-top{font-weight:800;font-size:13px;color:#fff3c4;margin-bottom:6px;display:flex;justify-content:space-between;gap:16px}
+  #cupTime{color:#ffd84a;font-size:16px}
+  .cup-row{display:flex;align-items:center;gap:6px;margin:4px 0}
+  .cup-row .nm{flex:1;font-family:"Permanent Marker",cursive;font-size:18px;min-width:110px}
+  .cup-row button{width:38px;height:34px;background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.25);font-weight:900}
+  .cup-row button.sel{background:#ffd84a;color:#2a1606}
   body.mini #result{display:none!important}
   #flash{position:fixed;inset:0;z-index:45;background:#fff;opacity:0;pointer-events:none}
   #flash.on{animation:flash .7s ease-out}
@@ -225,6 +233,9 @@
   body.ctrl #mini,body.ctrl #miniCount,body.ctrl #bossBar,body.ctrl #flash{display:none!important}
   .c-big.hot{background:linear-gradient(180deg,#ff8c42,#d7263d);color:#fff;animation:throb .45s ease-in-out infinite}
   .c-big.hit{background:linear-gradient(180deg,#ff5a3c,#8b0d1a);color:#fff;min-height:40vh}
+  .c-cups{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+  .c-cups button{min-height:26vh;border-radius:22px;background:linear-gradient(180deg,#e2453c,#8b0d1a);color:#fff;font-size:34px;font-weight:900;line-height:1.3}
+  .c-cups button.sel{background:linear-gradient(180deg,#ffd76a,#e8962a);color:#2a1606;outline:4px solid #fff}
   .c-hp{height:22px;background:rgba(0,0,0,.5);border:2px solid #ffd84a;border-radius:12px;overflow:hidden;margin-top:6px}
   #cHpFill{height:100%;background:linear-gradient(180deg,#ff5a3c,#b3123a);transition:width .15s}
   #yugo{position:fixed;left:50%;top:40%;transform:translate(-50%,-50%) scale(.6);z-index:40;pointer-events:none;opacity:0;font-family:'Hiragino Maru Gothic ProN','Yu Gothic','Noto Sans JP',sans-serif;font-weight:800;font-size:clamp(26px,5vw,52px);line-height:1.25;text-align:center;color:#fff;background:linear-gradient(135deg,#ff5fa2,#ff9a3c);padding:22px 34px;border-radius:28px;box-shadow:0 18px 50px rgba(255,80,150,.45);transition:opacity .35s,transform .45s cubic-bezier(.2,1.6,.4,1)}
@@ -289,7 +300,7 @@
     <p class="empty" id="phoneHelp">This computer is the main screen. Everyone else opens this same page on their phone (share it from its page on claude.ai) — phones are controllers: draw your circle, take your turn, write your rules.</p>
     <button id="asCtrl" class="c-link" style="margin-top:6px">Use this device as a controller instead</button>
     <div><button id="introBtn2" class="c-link">▶ Watch the rules intro</button></div>
-    <div><button id="tryHot" class="c-link">🔥 Play Hot Goblin now</button> <button id="tryBoss" class="c-link">👹 Play Boss Fight now</button> <button id="tryRoul" class="c-link">🎰 Play Rule Roulette now</button></div>
+    <div><button id="tryHot" class="c-link">🔥 Play Hot Goblin now</button> <button id="tryBoss" class="c-link">👹 Play Boss Fight now</button> <button id="tryRoul" class="c-link">🎰 Play Rule Roulette now</button> <button id="tryCups" class="c-link">🥤 Play Coin Under the Cup now</button> <button id="tryHolo" class="c-link">💠 Show Yugo's hologram</button></div>
   </section>
   <footer>
     <button id="clearRules">Wipe rules</button>
@@ -350,6 +361,7 @@
 <div id="miniCount"></div>
 <div id="slot"><div class="slot-top">🎰 RULE ROULETTE 🎰</div><div class="slot-win"><div id="slotText"></div></div></div>
 <div id="roundRule"></div>
+<div id="cupPanel"><div class="cp-top">Pick for players without a phone <span id="cupTime"></span></div><div id="cupRows"></div></div>
 <div id="bossBar"><div class="bb-top"><span>👹 THE GOBLIN KING</span><span id="bossTime">10.0s</span></div><div class="bb-bar"><div id="bossFill"></div><span id="bossHp"></span></div></div>
 <div id="yugo">こんにちは、ユーゴ！<br>元気？ 大好きだよ！💖</div>
 
@@ -643,17 +655,18 @@ const plain = new THREE.MeshStandardMaterial({ color: '#a77d4e', roughness: 1 })
 const topMat = new THREE.MeshStandardMaterial({ map: topTex, roughness: 0.93 });
 
 const T = OUT - HALF;   // wall thickness
+const worldObjs = [], posterGroups = [];
 const floor = new THREE.Mesh(new THREE.BoxGeometry(HALF * 2, TOP, HALF * 2), [plain, plain, topMat, plain, plain, plain]);
-floor.position.y = TOP / 2; floor.receiveShadow = true; scene.add(floor);
+floor.position.y = TOP / 2; floor.receiveShadow = true; scene.add(floor); worldObjs.push(floor);
 [[0, -OUT + T / 2, OUT * 2, T], [0, OUT - T / 2, OUT * 2, T], [-OUT + T / 2, 0, T, OUT * 2 - 2 * T], [OUT - T / 2, 0, T, OUT * 2 - 2 * T]].forEach(([x, z, w, d], i) => {
   const wall = new THREE.Mesh(new THREE.BoxGeometry(w, WALL_H, d), i % 2 ? sideMat : sideMat2);
-  wall.position.set(x, WALL_H / 2, z); wall.castShadow = wall.receiveShadow = true; scene.add(wall);
+  wall.position.set(x, WALL_H / 2, z); wall.castShadow = wall.receiveShadow = true; scene.add(wall); worldObjs.push(wall);
 });
 // lid, hinged at the back edge and propped open
 const lidOutMat = new THREE.MeshStandardMaterial({ map: lidOutTex, roughness: 0.93 });
 const lidInMat = new THREE.MeshStandardMaterial({ map: lidInTex, roughness: 0.95 });
 const LID = OUT + 0.06;
-const hinge = new THREE.Group(); hinge.position.set(0, WALL_H, -OUT); scene.add(hinge);
+const hinge = new THREE.Group(); hinge.position.set(0, WALL_H, -OUT); scene.add(hinge); worldObjs.push(hinge);
 const lidPanel = new THREE.Mesh(new THREE.BoxGeometry(LID * 2, 0.05, LID * 2), [sideMat, sideMat, lidOutMat, lidInMat, sideMat2, sideMat2]);
 lidPanel.position.set(0, 0.025, LID); lidPanel.castShadow = lidPanel.receiveShadow = true; hinge.add(lidPanel);
 const lip = new THREE.Mesh(new THREE.BoxGeometry(LID * 2, 0.8, 0.05), sideMat2);
@@ -680,7 +693,7 @@ const POSTERS = [{"src": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wB
     const tex = new THREE.TextureLoader().load(pz.src); tex.encoding = THREE.sRGBEncoding; tex.anisotropy = maxAniso;
     const pic = new THREE.Mesh(new THREE.PlaneGeometry(w, H), new THREE.MeshStandardMaterial({ map: tex, roughness: 0.55 })); pic.position.z = 0.11; g.add(pic);
     const glass = new THREE.Mesh(new THREE.PlaneGeometry(w, H), new THREE.MeshStandardMaterial({ color: '#ffffff', transparent: true, opacity: 0.06, roughness: 0.05, metalness: 0.9, envMap: window.__env, depthWrite: false })); glass.position.z = 0.12; g.add(glass);
-    g.position.set(x, 2.6, -9.45); g.rotation.y = -x * 0.01; scene.add(g);
+    g.position.set(x, 2.6, -9.45); g.rotation.y = -x * 0.01; scene.add(g); posterGroups.push(g);
     const lamp = new THREE.PointLight(0xffd9a0, 0.55, 9, 2); lamp.position.set(x, 5.6, -8.3); scene.add(lamp);
   });
 }
@@ -845,8 +858,8 @@ function renderUI() {
   $('#turn').innerHTML = ok ? `Up next: <b>${esc(cur.name)}</b>` : 'Add at least 2 players';
   $('#tossBtn').disabled = !ok || !!toss || !!goblin;
   document.body.classList.toggle('mini', !!mini);
-  $('#tossBtn').innerHTML = (mini ? (mini.type === 'hot' ? '🔥 Pass it!' : mini.type === 'roulette' ? '🎰 Spinning…' : '👊 Hit!') : aim.mode === 'lock' ? '🪙 Throw!' : '🎯 Flip the coin') + ' <kbd>Space</kbd>';
-  if (mini) $('#tossBtn').disabled = mini.stage !== 'play' || mini.type === 'roulette';
+  $('#tossBtn').innerHTML = (mini ? (mini.type === 'hot' ? '🔥 Pass it!' : mini.type === 'roulette' ? '🎰 Spinning…' : mini.type === 'cups' ? '🥤 Pick a cup' : '👊 Hit!') : aim.mode === 'lock' ? '🪙 Throw!' : '🎯 Flip the coin') + ' <kbd>Space</kbd>';
+  if (mini) $('#tossBtn').disabled = mini.stage !== 'play' || mini.type === 'roulette' || mini.type === 'cups';
   const rr = $('#roundRule'); if (rr) { if (state.roundRule && !mini) { rr.innerHTML = `🎰 This round, everyone: <b>${esc(state.roundRule.text)}</b> · ${state.roundRule.left} turn${state.roundRule.left === 1 ? '' : 's'} left`; rr.classList.add('on'); } else rr.classList.remove('on'); }
   hostPublish(); if (typeof renderLobby === 'function') renderLobby();
 }
@@ -2073,6 +2086,131 @@ function clearBurgers() { burgers.forEach(b => { if (b.dying < 0) { b.dying = 0;
 function speak(text, pitch = 0.6, rate = 1.05) {
   try { const ut = new SpeechSynthesisUtterance(text); ut.lang = 'en-US'; ut.pitch = pitch; ut.rate = rate; const v = speechSynthesis.getVoices().find(v => /^en/i.test(v.lang)); if (v) ut.voice = v; speechSynthesis.speak(ut); } catch (e) {}
 }
+// ---------- world registry (so the boss can wreck it and it can be rebuilt) ----------
+function saveOrig(o) { if (!o.userData.orig) o.userData.orig = { p: o.position.clone(), r: o.rotation.clone(), s: o.scale.clone(), v: o.visible }; }
+function restoreObj(o) { const g = o.userData.orig; if (!g) return; o.position.copy(g.p); o.rotation.copy(g.r); o.scale.copy(g.s); o.visible = true; delete o.userData.orig; delete o.userData.wrecked; }
+// ---------- Coin Under the Cup ----------
+const CUP_X = [-2.6, 0, 2.6], CUP_Z = 0.6;
+let cupGeo = null;
+function makeShellCup() {
+  if (!cupGeo) cupGeo = new THREE.LatheGeometry([[0, 0], [0.5, 0], [0.52, 0.04], [0.72, 1.55], [0.76, 1.62], [0.79, 1.64]].map(([x, y]) => new THREE.Vector2(x, y)), 40);
+  const g = new THREE.Group();
+  const outer = new THREE.Mesh(cupGeo, new THREE.MeshStandardMaterial({ color: '#c41d24', roughness: 0.4, side: THREE.DoubleSide })); outer.castShadow = true; g.add(outer);
+  const inner = new THREE.Mesh(cupGeo, new THREE.MeshStandardMaterial({ color: '#f3efe8', roughness: 0.5, side: THREE.BackSide })); inner.scale.set(0.97, 1, 0.97); g.add(inner);
+  // upside down: rim on the floor
+  g.rotation.x = Math.PI; g.scale.setScalar(0.85); return g;
+}
+function numSprite(n) {
+  const c = document.createElement('canvas'); c.width = c.height = 128; const x = c.getContext('2d');
+  x.fillStyle = '#ffd84a'; x.beginPath(); x.arc(64, 64, 58, 0, Math.PI * 2); x.fill(); x.lineWidth = 8; x.strokeStyle = '#2a1606'; x.stroke();
+  x.fillStyle = '#2a1606'; x.font = '900 78px Inter, sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(String(n), 64, 70);
+  const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding;
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, depthTest: false })); s.scale.set(0.8, 0.8, 1); s.renderOrder = 11; return s;
+}
+function cupsBegin() {
+  mini.cups = [0, 1, 2].map(i => { const c = makeShellCup(); c.position.set(CUP_X[i], TOP + 1.39 + 1.3, CUP_Z); scene.add(c); return c; });
+  mini.labels = [0, 1, 2].map(i => { const s = numSprite(i + 1); s.position.set(CUP_X[i], TOP + 0.35, CUP_Z + 1.25); scene.add(s); return s; });
+  mini.slotOf = [0, 1, 2]; mini.coinCup = Math.floor(Math.random() * 3); mini.picks = {};
+  coin.visible = true; coin.scale.set(1, 1, 1); coin.rotation.set(0, 0, 0); coin.position.set(CUP_X[mini.coinCup], TOP + COIN_T / 2, CUP_Z);
+  mini.sub = 'show'; mini.st = 0; mini.swaps = 9 + Math.floor(Math.random() * 5); mini.swapI = 0; mini.swap = null;
+  miniBanner('🥤 Watch the coin… 👀', 'It goes under one of the cups');
+}
+const cupY = up => TOP + 1.39 * 0.85 + up; // rim on the floor when up = 0
+function stepCups(dt) {
+  mini.st += dt;
+  const C = mini.cups;
+  if (mini.sub === 'show') { C.forEach(c => c.position.y = cupY(1.3)); if (mini.st > 1.4) { mini.sub = 'lower'; mini.st = 0; } }
+  else if (mini.sub === 'lower') { const u = Math.min(1, mini.st / 0.6); C.forEach(c => c.position.y = cupY(1.3 * (1 - ease(u)))); if (u >= 1) { thudSfx(0.6); coin.visible = false; mini.sub = 'shuffle'; mini.st = 0; miniBanner('🥤 Shuffling…', 'Keep your eyes on the right cup!'); } }
+  else if (mini.sub === 'shuffle') {
+    if (!mini.swap) {
+      if (mini.swapI >= mini.swaps) { mini.sub = 'pick'; mini.st = 0; mini.pickLeft = 9; miniBanner('🥤 Where\'s the coin?', 'Pick 1, 2 or 3 on your phone · no phone? click your pick below'); renderCupPanel(); renderUI(); hostPublish(); return; }
+      let a = Math.floor(Math.random() * 3), b = (a + 1 + Math.floor(Math.random() * 2)) % 3;
+      const dur = Math.max(0.2, 0.55 - mini.swapI * 0.035);
+      mini.swap = { a, b, sa: mini.slotOf[a], sb: mini.slotOf[b], t: 0, d: dur }; mini.swapI++; tone('triangle', 500 + Math.random() * 200, 420, 0.12, 0.06);
+    }
+    const s = mini.swap; s.t += dt; const u = Math.min(1, s.t / s.d), e = ease(u);
+    C[s.a].position.x = CUP_X[s.sa] + (CUP_X[s.sb] - CUP_X[s.sa]) * e; C[s.a].position.z = CUP_Z + 1.0 * Math.sin(Math.PI * e);
+    C[s.b].position.x = CUP_X[s.sb] + (CUP_X[s.sa] - CUP_X[s.sb]) * e; C[s.b].position.z = CUP_Z - 1.0 * Math.sin(Math.PI * e);
+    if (u >= 1) { mini.slotOf[s.a] = s.sb; mini.slotOf[s.b] = s.sa; mini.swap = null; }
+  }
+  else if (mini.sub === 'pick') {
+    mini.pickLeft = Math.max(0, 9 - mini.st);
+    if (Math.floor(mini.pickLeft) !== mini.lastSec) { mini.lastSec = Math.floor(mini.pickLeft); $('#cupTime').textContent = Math.ceil(mini.pickLeft) + 's'; if (mini.pickLeft < 4) tone('square', 900, 900, 0.05, 0.08); hostPublishSoon(); }
+    if (mini.pickLeft <= 0) cupsReveal();
+  }
+  else if (mini.sub === 'reveal') { const u = Math.min(1, mini.st / 0.7); C.forEach(c => c.position.y = cupY(1.4 * ease(u))); coin.rotation.y += dt * 3; }
+}
+function renderCupPanel() {
+  const el = $('#cupPanel'); if (!mini || mini.type !== 'cups' || mini.sub !== 'pick') { el.classList.remove('on'); return; }
+  el.classList.add('on');
+  $('#cupRows').innerHTML = state.players.map(p => {
+    const pk = mini.picks[String(p.id)];
+    return `<div class="cup-row"><span class="nm" style="color:${lighten(p.color)}">${esc(p.name)}${claimed.has(String(p.id)) ? ' 📱' : ''}</span>${[1, 2, 3].map(n => `<button data-cp="${p.id}" data-n="${n}" class="${pk === n ? 'sel' : ''}">${n}</button>`).join('')}</div>`;
+  }).join('');
+}
+function cupPick(pid, n) { if (!mini || mini.type !== 'cups' || mini.sub !== 'pick') return; n = clamp(Math.round(+n) || 0, 1, 3); mini.picks[String(pid)] = n; tone('sine', 700 + n * 100, 700 + n * 100, 0.06, 0.08); renderCupPanel(); hostPublishSoon(); }
+function cupsReveal() {
+  mini.sub = 'reveal'; mini.st = 0; $('#cupPanel').classList.remove('on');
+  const win = mini.slotOf[mini.coinCup] + 1;
+  coin.position.set(CUP_X[win - 1], TOP + COIN_T / 2, CUP_Z); coin.visible = true;
+  setTimeout(() => { dingSfx(); spawnParts(coin.position.clone().setY(TOP + 1), 30, { colors: ['#ffd84a', '#ffffff'], size: 0.05, shape: 'box', speed: 2, up: 3, life: 1.5, gravity: 9 }); }, 500);
+  const losers = state.players.filter(p => mini.picks[String(p.id)] !== win);
+  losers.forEach(p => drink(p)); state.rounds++;
+  const names = losers.map(p => p.name);
+  showResult(`🥤 It was cup #${win}!`, losers.length ? `Drink: ${names.join(', ')}` : 'Everyone got it — nobody drinks!', '#ffd84a');
+  miniBanner(`🥤 Cup #${win}!`, losers.length ? `Drink: <b>${names.map(esc).join(', ')}</b>` : 'Everyone got it — nobody drinks!');
+  addLog(`🥤 Coin under cup #${win}${losers.length ? ' — ' + names.join(', ') + ' drank' : ''}`);
+  mini.stage = 'done'; mini.t = 0; renderUI(); hostPublish();
+}
+function cupsCleanup() { (mini.cups || []).forEach(c => scene.remove(c)); (mini.labels || []).forEach(s => scene.remove(s)); $('#cupPanel').classList.remove('on'); coin.visible = false; }
+
+// ---------- boss: stomps around wrecking stuff ----------
+function bossDestroy() {
+  const G = mini.G, fl = mini.flying || (mini.flying = []), wreck = mini.wrecked || (mini.wrecked = []);
+  const cupsLeft = cups.filter(c => c.visible && !c.userData.wrecked), postersLeft = posterGroups.filter(p => p.visible && !p.userData.wrecked);
+  const doPoster = postersLeft.length && (!cupsLeft.length || Math.random() < 0.45);
+  mini.swing = 1; tone('sawtooth', 160, 70, 0.5, 0.18); if (Math.random() < 0.5) evilLaugh(4, 120);
+  if (doPoster) {
+    const p = postersLeft[Math.floor(Math.random() * postersLeft.length)]; saveOrig(p); p.userData.wrecked = true; wreck.push(p);
+    fl.push({ obj: p, mode: 'fall', t: 0 }); thudSfx(1); shake = Math.max(shake, 0.4);
+  } else if (cupsLeft.length) {
+    const c = cupsLeft[Math.floor(Math.random() * cupsLeft.length)]; saveOrig(c); c.userData.wrecked = true; wreck.push(c);
+    const away = c.position.clone().sub(G.root.position).setY(0).normalize();
+    fl.push({ obj: c, mode: 'fly', t: 0, v: away.multiplyScalar(9 + Math.random() * 5).setY(9 + Math.random() * 4), spin: new THREE.Vector3(Math.random() * 12, Math.random() * 12, Math.random() * 12) });
+    whooshSfx(0.7); setTimeout(() => noiseSfx('highpass', 3000, 900, 0.3, 0.6, 1), 900);
+  }
+}
+function stepFlying(dt) {
+  if (!mini || !mini.flying) return;
+  for (const f of mini.flying) {
+    if (f.done) continue; f.t += dt; const o = f.obj;
+    if (f.mode === 'fly') { f.v.y -= 20 * dt; o.position.addScaledVector(f.v, dt); o.rotation.x += f.spin.x * dt; o.rotation.z += f.spin.z * dt; if (f.t > 1.6) { o.visible = false; f.done = true; } }
+    else { const u = Math.min(1, f.t / 0.6), g = o.userData.orig; o.rotation.x = g.r.x + 1.35 * u * u; o.position.y = g.p.y - (g.p.y - 0.35) * u * u; o.position.z = g.p.z + 0.9 * u;
+      if (u >= 1) { f.done = true; thudSfx(1); noiseSfx('highpass', 5000, 2000, 0.4, 0.8, 1); spawnParts(o.position.clone().setY(0.5), 22, { colors: ['#ff6a3d', '#efe6d6', '#15100c', '#cfe9ff'], size: 0.07, shape: 'box', speed: 3, up: 2, life: 2, gravity: 14 }); } }
+  }
+}
+function bossBlowAll() {
+  const all = [...worldObjs, ...cups, ...posterGroups];
+  screenFlash(); boomSfx(); setTimeout(boomSfx, 250); shake = 1.5; tone('sawtooth', 50, 25, 2.5, 0.4);
+  for (const o of all) {
+    if (!o.visible && !o.userData.wrecked) continue; saveOrig(o); o.userData.blown = true;
+    const p = new THREE.Vector3(); o.getWorldPosition(p);
+    const cols = cups.includes(o) ? ['#c41d24', '#f3efe8'] : posterGroups.includes(o) ? ['#ff6a3d', '#efe6d6', '#15100c'] : ['#c9a271', '#9c7446', '#b8915e', '#d6b07c'];
+    spawnParts(p.clone().setY(Math.max(p.y, 0.5)), cups.includes(o) ? 10 : 26, { colors: cols, size: 0.14, shape: 'box', speed: 9, up: 7, life: 3.2, gravity: 14 });
+    o.visible = false;
+  }
+  for (let i = 0; i < 30; i++) spawnGas(new THREE.Vector3((Math.random() - .5) * 8, TOP + Math.random() * 2, (Math.random() - .5) * 8), true, ['#ff8c42', '#ffb347', '#777777', '#9acd32'][i % 4]);
+  if (mini.G) mini.G.root.visible = false; coin.visible = false;
+  mini.blown = all;
+}
+function rebuildAll(u) {
+  // pop everything back in
+  (mini.blown || []).forEach(o => { const g = o.userData.orig; if (!g) return; o.visible = true; o.position.copy(g.p); o.rotation.copy(g.r); o.scale.copy(g.s).multiplyScalar(Math.max(0.001, ease(u))); });
+}
+function restoreWorld() {
+  const list = [...worldObjs, ...cups, ...posterGroups]; list.forEach(o => { if (o.userData.orig) restoreObj(o); delete o.userData.blown; });
+}
+
 // ---------- mini-games between turns: Hot Goblin + Goblin Boss Fight ----------
 var mini = null, lastResultAt = 0, lastTaps = {}, miniPubT = null;
 function miniBanner(html, sub) { $('#miniTitle').innerHTML = html; $('#miniSub').innerHTML = sub || ''; $('#mini').classList.add('on'); }
@@ -2087,15 +2225,16 @@ function maybeStartMini() {
 }
 function startMini(type) {
   if (mini || goblin || toss) return;
-  type = type || pickOther(['hot', 'boss', 'roulette'], state.lastMini); state.lastMini = type;
+  type = type || pickOther(['hot', 'boss', 'roulette', 'cups'], state.lastMini); state.lastMini = type;
   hideResult(); clearPoop(); clearBurgers(); coin.visible = false; ensureAudio();
   mini = { type, stage: 'intro', t: 0, holder: null, hp: 0, max: 0, left: 10, G: null, hits: {}, flinch: 0, hitSnd: 0 };
   jazzDuck(true);
   if (type === 'hot') miniBanner('🔥 HOT GOBLIN! 🔥', 'Pass him before he blows! &nbsp;📱 tap <b>PASS</b> · 💻 <b>Space</b>');
   else if (type === 'roulette') miniBanner('🎰 RULE ROULETTE! 🎰', 'One rule for EVERYONE — for a whole round');
+  else if (type === 'cups') miniBanner('🥤 COIN UNDER THE CUP! 🥤', 'Follow the coin… then pick the right cup');
   else miniBanner('👹 GOBLIN BOSS FIGHT! 👹', 'Mash <b>HIT</b> on your phones (or <b>Space</b>) — beat him in 10 seconds!');
   [0, 0.18, 0.36, 0.7].forEach((d, i) => tone('square', i === 3 ? 880 : 660, i === 3 ? 880 : 660, 0.14, 0.12, d));
-  addLog(type === 'hot' ? '🔥 Mini-game: Hot Goblin!' : type === 'roulette' ? '🎰 Mini-game: Rule Roulette!' : '👹 Mini-game: Goblin Boss Fight!');
+  addLog(type === 'cups' ? '🥤 Mini-game: Coin Under the Cup!' : type === 'hot' ? '🔥 Mini-game: Hot Goblin!' : type === 'roulette' ? '🎰 Mini-game: Rule Roulette!' : '👹 Mini-game: Goblin Boss Fight!');
   renderUI(); hostPublish();
 }
 function circleSpot(p) { return new THREE.Vector3(p.x, TOP, p.z); }
@@ -2103,6 +2242,7 @@ function beginMiniPlay() {
   const ps = miniPlayers();
   $('#miniCount').textContent = ''; mini.stage = 'play'; mini.t = 0;
   if (mini.type === 'roulette') { spinRoulette(); renderUI(); hostPublish(); return; }
+  if (mini.type === 'cups') { cupsBegin(); renderUI(); hostPublish(); return; }
   if (mini.type === 'hot') {
     const G = buildGoblin({ skin: '#d9542a', eye: '#fff36b', hat: 'none', size: 1.25 }); scene.add(G.root); mini.G = G;
     mini.mats = []; G.root.traverse(o => { if (o.isMesh && o.material.emissive) mini.mats.push(o.material); });
@@ -2113,9 +2253,9 @@ function beginMiniPlay() {
     const G = buildGoblin({ skin: '#3f7a2a', eye: '#ff2020', hat: 'crown', size: 3.3 }); scene.add(G.root); mini.G = G;
     mini.mats = []; G.root.traverse(o => { if (o.isMesh && o.material.emissive) mini.mats.push(o.material); });
     G.root.position.set(0, TOP, -0.6); G.root.rotation.y = Math.atan2(camera.position.x, camera.position.z + 0.6);
-    mini.max = mini.hp = 40 * Math.max(2, ps.length); mini.left = 10;
+    mini.max = mini.hp = 70 * Math.max(2, ps.length); mini.left = 12; mini.nextAct = 1.6; mini.flying = []; mini.wrecked = [];
     $('#bossBar').classList.add('on'); evilLaugh(7, 120); thudSfx(1); shake = 0.5;
-    miniBanner('👊 HIT HIM! 👊', 'Mash <b>HIT</b> on your phone · <b>Space</b> on the computer');
+    miniBanner('👊 HIT HIM! 👊', 'Mash <b>HIT</b> on your phone · <b>Space</b> on the computer — before he wrecks the place!');
   }
   renderUI(); hostPublish();
 }
@@ -2166,6 +2306,8 @@ function bossEnd(won) {
 function endMini() {
   if (!mini) return;
   $('#slot').classList.remove('on');
+  if (mini.type === 'cups') cupsCleanup();
+  if (mini.type === 'boss') restoreWorld();
   if (mini.G) scene.remove(mini.G.root);
   $('#mini').classList.remove('on'); $('#bossBar').classList.remove('on'); $('#miniCount').textContent = '';
   mini = null; state.miniAt = state.rounds + 5 + Math.floor(Math.random() * 4); save();
@@ -2198,7 +2340,7 @@ function spinRoulette() {
   };
   tick();
 }
-function miniKey() { if (!mini || mini.stage !== 'play') return; if (mini.type === 'hot') passHot(); else bossHit(1, null); }
+function miniKey() { if (!mini || mini.stage !== 'play') return; if (mini.type === 'hot') passHot(); else if (mini.type === 'boss') bossHit(1, null); }
 function stepMini(dt) {
   if (!mini) { maybeStartMini(); return; }
   mini.t += dt;
@@ -2210,6 +2352,7 @@ function stepMini(dt) {
   }
   const G = mini.G;
   if (mini.type === 'roulette') { if (mini.stage === 'done' && mini.t > 3.8) endMini(); return; }
+  if (mini.type === 'cups') { stepCups(dt); if (mini.stage === 'done' && mini.t > 4.2) endMini(); return; }
   if (mini.type === 'hot') {
     if (mini.stage === 'play') {
       const frac = Math.min(1, mini.t / mini.fuse);
@@ -2230,19 +2373,32 @@ function stepMini(dt) {
       if (mini.t >= mini.fuse) explodeHot();
     } else if (mini.t > 3.4) endMini();
   } else {
+    stepFlying(dt);
     if (mini.stage === 'play') {
-      mini.left = Math.max(0, 10 - mini.t);
+      mini.left = Math.max(0, 12 - mini.t);
+      // stomp around the box
+      if (!mini.walk || mini.walk.t >= mini.walk.d) { const to = new THREE.Vector3((Math.random() * 2 - 1) * 2.6, TOP, (Math.random() * 2 - 1) * 2.0 - 0.4); mini.walk = { from: G.root.position.clone(), to, t: 0, d: Math.max(0.9, to.distanceTo(G.root.position) / 2.0) }; }
+      mini.walk.t += dt; { const u = Math.min(1, mini.walk.t / mini.walk.d), dx = mini.walk.to.x - mini.walk.from.x, dz = mini.walk.to.z - mini.walk.from.z; G.root.position.lerpVectors(mini.walk.from, mini.walk.to, u); if (Math.hypot(dx, dz) > 0.1) G.root.rotation.y = lerpAng(G.root.rotation.y, Math.atan2(dx, dz), 0.08); }
+      const ph = mini.t * 5.5; G.legs[0].rotation.x = Math.sin(ph) * 0.5; G.legs[1].rotation.x = -Math.sin(ph) * 0.5;
+      if (Math.floor(ph / Math.PI) !== mini.step) { mini.step = Math.floor(ph / Math.PI); thudSfx(0.9); shake = Math.max(shake, 0.22); }
+      if (mini.t > mini.nextAct) { mini.nextAct = mini.t + 2.0 + Math.random() * 1.2; bossDestroy(); }
+      mini.swing = (mini.swing || 0) * Math.exp(-4 * dt);
       mini.flinch *= Math.exp(-10 * dt);
       G.body.scale.setScalar(1 + 0.03 * Math.sin(mini.t * 3)); G.head.rotation.z = 0.25 * mini.flinch * Math.sin(mini.t * 60); G.body.rotation.x = -0.15 * mini.flinch;
-      G.arms.forEach((a2, i) => { a2.rotation.x = -1.2 + 0.4 * Math.sin(mini.t * 2 + i); a2.rotation.z = (i ? 1 : -1) * 0.5; }); G.jaw.scale.y = 0.32 + 0.4 * Math.abs(Math.sin(mini.t * 4));
+      G.arms.forEach((a2, i) => { a2.rotation.x = -1.2 + 0.4 * Math.sin(mini.t * 2 + i) - 1.6 * (mini.swing || 0) * (i ? 1 : 0.4); a2.rotation.z = (i ? 1 : -1) * 0.5; }); G.jaw.scale.y = 0.32 + 0.4 * Math.abs(Math.sin(mini.t * 4)) + 0.6 * (mini.swing || 0);
       mini.mats.forEach(m => { m.emissive.setRGB(1, 0, 0); m.emissiveIntensity = 0.7 * mini.flinch; });
       $('#bossFill').style.width = (100 * mini.hp / mini.max) + '%'; $('#bossHp').textContent = `${mini.hp} / ${mini.max}`; $('#bossTime').textContent = mini.left.toFixed(1) + 's';
       if (Math.floor(mini.t * 2) !== mini.pubTick) { mini.pubTick = Math.floor(mini.t * 2); hostPublishSoon(); }
       if (mini.left <= 0) bossEnd(false);
     } else {
       if (mini.won) { const u = Math.min(1, mini.t / 0.9); G.root.rotation.x = -Math.PI / 2 * u * u; G.root.position.y = TOP - 1.2 * Math.max(0, mini.t - 1.4); }
-      else { G.body.position.y = 0.45 + 0.12 * Math.abs(Math.sin(mini.t * 7)); if (Math.floor(mini.t * 2.3) !== mini.st) { mini.st = Math.floor(mini.t * 2.3); thudSfx(1); shake = Math.max(shake, 0.5); } G.jaw.scale.y = 0.32 + 0.8 * Math.abs(Math.sin(mini.t * 14)); }
-      if (mini.t > 3.8) endMini();
+      else {
+        if (mini.t < 1.6) { G.body.position.y = 0.45 + 0.12 * Math.abs(Math.sin(mini.t * 7)); if (Math.floor(mini.t * 2.3) !== mini.st) { mini.st = Math.floor(mini.t * 2.3); thudSfx(1); shake = Math.max(shake, 0.5); } G.jaw.scale.y = 0.32 + 0.8 * Math.abs(Math.sin(mini.t * 14)); G.body.scale.setScalar(1 + 0.25 * mini.t / 1.6); mini.mats.forEach(m => { m.emissive.setRGB(1, 0.2, 0); m.emissiveIntensity = mini.t / 1.6; }); }
+        else if (!mini.blownUp) { mini.blownUp = true; bossBlowAll(); miniBanner('💥 HE BLEW UP EVERYTHING! 💥', 'Everyone drinks! 🍻'); }
+        else if (mini.t > 4.6 && mini.t < 5.4) { if (!mini.rebuildSnd) { mini.rebuildSnd = true; tone('sine', 300, 1200, 0.6, 0.15); dingSfx(); miniBanner('✨ …the pizza box rebuilds itself ✨', 'Everyone drinks! 🍻'); } rebuildAll((mini.t - 4.6) / 0.8); }
+        else if (mini.t >= 5.4 && !mini.rebuilt) { mini.rebuilt = true; rebuildAll(1); }
+      }
+      if (mini.t > (mini.won ? 3.8 : 6.2)) endMini();
     }
   }
 }
@@ -2332,6 +2488,9 @@ function startIntro(after) {
 }
 const previewIntro = () => { ensureAudio(); if (toss || goblin || placing) return toast('Wait for the current turn to finish'); $('#invite').classList.remove('on'); startIntro(() => { renderLobby(); }); };
 $('#tryHot').onclick = () => { if (!canAim() && !mini) return toast('Start a game with 2+ players first (and wait for the turn to finish)'); startMini('hot'); };
+$('#cupRows').onclick = e => { const b = e.target.closest('[data-cp]'); if (b) cupPick(b.dataset.cp, b.dataset.n); };
+$('#tryHolo').onclick = () => sayYugo(true);
+$('#tryCups').onclick = () => { if (!canAim() && !mini) return toast('Start a game with 2+ players first (and wait for the turn to finish)'); startMini('cups'); };
 $('#tryRoul').onclick = () => { if (!canAim() && !mini) return toast('Start a game with 2+ players first (and wait for the turn to finish)'); startMini('roulette'); };
 $('#tryBoss').onclick = () => { if (!canAim() && !mini) return toast('Start a game with 2+ players first (and wait for the turn to finish)'); startMini('boss'); };
 $('#introBtn').onclick = previewIntro; $('#introBtn2').onclick = previewIntro;
@@ -2458,19 +2617,81 @@ function placeBubble() {
   b.style.left = ((v.x + 1) / 2 * innerWidth) + 'px'; b.style.top = ((1 - v.y) / 2 * innerHeight - 10) + 'px';
 }
 
-// ---------- every so often: a message for Yugo ----------
-function sayYugo() {
+// ---------- every so often: a message for Yugo — as a hologram projected out of the box ----------
+let holo = null;
+function holoCanvas() {
+  const c = document.createElement('canvas'); c.width = 1024; c.height = 512; return c;
+}
+function drawHoloText(c, t) {
+  const x = c.getContext('2d'); x.clearRect(0, 0, c.width, c.height);
+  x.textAlign = 'center'; x.textBaseline = 'middle';
+  const F = "800 92px 'Hiragino Maru Gothic ProN','Yu Gothic','Noto Sans JP',sans-serif", F2 = "800 52px 'Hiragino Maru Gothic ProN','Yu Gothic','Noto Sans JP',sans-serif";
+  const lines = [[F, 'こんにちは、ユーゴ！', 150], [F, '元気？ 大好きだよ！', 280], [F2, 'Hello Yugo · how are you · I love you 💖', 400]];
+  for (const pass of [0, 1]) for (const [f, s, y] of lines) {
+    x.font = f; x.shadowColor = '#3ff6ff'; x.shadowBlur = pass ? 6 : 34; x.fillStyle = pass ? '#e8feff' : '#5ff8ff';
+    const jit = Math.random() < 0.06 ? (Math.random() - .5) * 40 : 0;
+    x.fillText(s, 512 + jit, y);
+  }
+  x.shadowBlur = 0;
+  // frame corners
+  x.strokeStyle = 'rgba(95,248,255,.8)'; x.lineWidth = 5;
+  [[30, 30, 1, 1], [994, 30, -1, 1], [30, 482, 1, -1], [994, 482, -1, -1]].forEach(([a, b, sx, sy]) => { x.beginPath(); x.moveTo(a + 70 * sx, b); x.lineTo(a, b); x.lineTo(a, b + 50 * sy); x.stroke(); });
+  // scanlines
+  x.globalCompositeOperation = 'destination-out'; x.fillStyle = 'rgba(0,0,0,.45)';
+  const off = (t * 60) % 6; for (let y = off; y < 512; y += 6) x.fillRect(0, y, 1024, 2.4);
+  // a rolling interference band
+  const by = ((t * 180) % 700) - 100; x.fillStyle = 'rgba(0,0,0,.35)'; x.fillRect(0, by, 1024, 26);
+  x.globalCompositeOperation = 'source-over';
+}
+function sayYugo(force) {
   if (CTRL) return;
-  if (goblin || toss) { setTimeout(sayYugo, 5000); return; }
-  const el2 = $('#yugo'); el2.classList.add('on'); setTimeout(() => el2.classList.remove('on'), 4200);
-  jazzDuck(true); setTimeout(() => jazzDuck(false), 4200);
-  try {
+  if (!force && (goblin || toss || mini || holo)) { setTimeout(sayYugo, 5000); if (!force) return; }
+  if (holo) return;
+  const root = new THREE.Group(); root.position.set(0, TOP, 0.2); scene.add(root);
+  // projector puck
+  const puck = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.65, 0.18, 32), new THREE.MeshStandardMaterial({ color: '#1d2329', metalness: 0.8, roughness: 0.3 }));
+  puck.position.y = 0.09; puck.castShadow = true; root.add(puck);
+  const lens = new THREE.Mesh(new THREE.CircleGeometry(0.32, 32), new THREE.MeshBasicMaterial({ color: '#7ffcff' })); lens.rotation.x = -Math.PI / 2; lens.position.y = 0.185; root.add(lens);
+  // light cone
+  const cg = document.createElement('canvas'); cg.width = 4; cg.height = 128; const cx = cg.getContext('2d'); const gr = cx.createLinearGradient(0, 0, 0, 128);
+  gr.addColorStop(0, 'rgba(95,248,255,0)'); gr.addColorStop(1, 'rgba(95,248,255,.55)'); cx.fillStyle = gr; cx.fillRect(0, 0, 4, 128);
+  const coneMat = new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(cg), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide });
+  const cone = new THREE.Mesh(new THREE.CylinderGeometry(3.4, 0.3, 3.2, 40, 1, true), coneMat); cone.position.y = 1.8; root.add(cone);
+  // the projection
+  const can = holoCanvas(), tex = new THREE.CanvasTexture(can);
+  const pm = new THREE.MeshBasicMaterial({ map: tex, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, opacity: 0 });
+  const panel = new THREE.Mesh(new THREE.PlaneGeometry(6.4, 3.2), pm); panel.position.y = 4.4; panel.renderOrder = 12; root.add(panel);
+  const glow = new THREE.PointLight('#5ff8ff', 0, 9); glow.position.y = 2; root.add(glow);
+  holo = { root, puck, cone, coneMat, panel, pm, tex, can, glow, t: 0, dur: 6 };
+  spawnParts(new THREE.Vector3(0, TOP + 0.3, 0.2), 30, { colors: ['#5ff8ff', '#e8feff'], size: 0.04, shape: 'box', speed: 1.5, up: 4, life: 1.6, gravity: -1 });
+  tone('sine', 180, 1400, 0.7, 0.1); noiseSfx('bandpass', 400, 3000, 0.6, 0.15, 3);
+  holo.hum = (() => { try { if (!actx) return null; const o = actx.createOscillator(), gn = actx.createGain(); o.type = 'sawtooth'; o.frequency.value = 62; gn.gain.setValueAtTime(0, actx.currentTime); o.connect(gn).connect(actx.destination); o.start(); gn.gain.linearRampToValueAtTime(0.035, actx.currentTime + 0.5); return { o, gn }; } catch (e) { return null; } })();
+  jazzDuck(true);
+  setTimeout(() => { try {
     const u = new SpeechSynthesisUtterance('こんにちは、ユーゴ！元気？大好きだよ！');
     u.lang = 'ja-JP'; u.rate = 0.95; u.pitch = 1.15;
     const v = speechSynthesis.getVoices().find(v => /^ja/i.test(v.lang)); if (v) u.voice = v;
     speechSynthesis.cancel(); speechSynthesis.speak(u);
-  } catch (e) {}
-  scheduleYugo();
+  } catch (e) {} }, 700);
+  if (!force) scheduleYugo();
+}
+function stepHolo(dt) {
+  if (!holo) return; const h = holo; h.t += dt; const t = h.t;
+  const inn = Math.min(1, t / 0.6), out = Math.max(0, Math.min(1, (h.dur - t) / 0.6)), v = Math.min(inn, out);
+  const flick = (Math.random() < 0.05 ? 0.35 : 1) * (0.85 + 0.15 * Math.sin(t * 40));
+  h.puck.position.y = 0.09; h.cone.scale.set(1, Math.max(0.01, v), 1); h.cone.position.y = 0.2 + 1.6 * Math.max(0.01, v);
+  h.coneMat.opacity = 0.7 * v * flick; h.glow.intensity = 1.6 * v * flick;
+  h.panel.position.y = 3.6 + 0.8 * ease(inn) + 0.12 * Math.sin(t * 2.2);
+  h.panel.quaternion.copy(camera.quaternion);
+  h.panel.scale.set(1 + (Math.random() < 0.04 ? (Math.random() - .5) * 0.15 : 0), Math.max(0.02, ease(inn)) * (t > h.dur - 0.6 ? Math.max(0.02, out) : 1), 1);
+  h.pm.opacity = v * flick;
+  if ((h.ft = (h.ft || 0) + dt) > 1 / 30) { h.ft = 0; drawHoloText(h.can, t); h.tex.needsUpdate = true; }
+  if (t > h.dur - 0.6 && !h.offSnd) { h.offSnd = true; tone('sine', 1200, 120, 0.5, 0.08); }
+  if (t > h.dur) {
+    scene.remove(h.root); h.tex.dispose(); h.pm.dispose(); h.coneMat.dispose();
+    if (h.hum) { try { h.hum.gn.gain.linearRampToValueAtTime(0, actx.currentTime + 0.2); h.hum.o.stop(actx.currentTime + 0.3); } catch (e) {} }
+    holo = null; jazzDuck(false);
+  }
 }
 function scheduleYugo() { setTimeout(sayYugo, 45000 + Math.random() * 105000); }
 let yugoArmed = false;
@@ -2481,7 +2702,7 @@ const clock = new THREE.Clock();
 function loop() {
   if (CTRL) return;
   const dt = Math.min(clock.getDelta(), 0.05);
-  stepToss(dt); stepAim(dt); stepGoblin(dt); stepBurgers(dt); stepGuts(dt); stepParts(dt); stepMini(dt); hostLive(dt);
+  stepToss(dt); stepAim(dt); stepGoblin(dt); stepBurgers(dt); stepGuts(dt); stepParts(dt); stepHolo(dt); stepMini(dt); hostLive(dt);
   if (!gameOver && state.players.length >= 2) { state.playTime += dt; saveClock += dt; if (saveClock > 5) { saveClock = 0; save(); } } updateCamera(); placeBubble();
   for (let i = pulses.length - 1; i >= 0; i--) {
     const p = pulses[i]; p.t += dt; const u = clamp(p.t / 0.9, 0, 1);
@@ -2497,7 +2718,7 @@ function hostLive(dt) {
   if (CTRL || !room) return;
   liveT += dt; if (liveT < 0.066) return; liveT = 0;
   const r2 = v => Math.round(v * 100) / 100;
-  const a = { h: crosshair.visible ? 1 : 0, x: r2(aim.x), z: r2(aim.z), r: aimRing.visible ? r2(aim.r) : 0,
+  const a = { h: crosshair.visible ? 1 : 0, x: r2(aim.x), z: r2(aim.z), r: aimRing.visible ? r2(aim.r) : 0, m: aim.mode === 'lock' ? 'l' : 'w', t: +aim.t.toFixed(3), lt: +aim.lockT.toFixed(3), ph: aim.ph.map(v => +v.toFixed(3)),
     c: coin.visible ? 1 : 0, cx: r2(coin.position.x), cz: r2(coin.position.z), cy: r2(coin.position.y) };
   const j = JSON.stringify(a); if (j === liveLast) return; liveLast = j;
   room.presence({ a }).catch(() => {});
@@ -2519,7 +2740,7 @@ function hostPublish() {
   const g = {
     role: 'host', since: hostSince, phase: gamePhase(), turn: cur ? cur.id : null,
     ruleFor: pendingRule ? pendingRule.tosser.id : null, started: !!state.started, owners, roundRule: state.roundRule ? [String(state.roundRule.text).slice(0, 80), state.roundRule.left] : null,
-    mini: mini ? { type: mini.type, stage: mini.stage, holder: mini.holder ? mini.holder.id : null, hp: mini.hp, max: mini.max, left: Math.ceil(mini.left) } : null,
+    mini: mini ? { type: mini.type, stage: mini.stage, holder: mini.holder ? mini.holder.id : null, hp: mini.hp, max: mini.max, left: Math.ceil(mini.type === 'cups' ? (mini.pickLeft || 0) : mini.left), sub: mini.sub || null } : null,
     lobby: state.lobby.map(p => ({ id: p.id, name: p.name, color: p.color })),
     players: state.players.map(p => ({ id: p.id, name: p.name, color: p.color, x: +p.x.toFixed(2), z: +p.z.toFixed(2), r: +p.r.toFixed(2) })),
     spots: state.rules.map(r => [+r.x.toFixed(2), +r.z.toFixed(2), +r.r.toFixed(2)]).slice(-30), half: HALF, out: OUT,
@@ -2531,6 +2752,7 @@ function hostPublish() {
 function handleCmd(c, cmd) {
   const pid = String(c.pid);
   if (cmd.type !== 'join' && owners[pid] !== String(c.cid)) return; // not this phone's player
+  if (cmd.type === 'cup') { cupPick(pid, cmd.i); return; }
   if (cmd.type === 'pass') { if (mini && mini.type === 'hot' && mini.holder && String(mini.holder.id) === pid) passHot(); return; }
   if (cmd.type === 'flip') { const cur = current(); if (cur && String(cur.id) === pid && !$('#modal').classList.contains('on')) flipPressed(); }
   else if (cmd.type === 'rule' || cmd.type === 'norule') {
@@ -2646,12 +2868,16 @@ function setRoomCode(code) {
 
 // ----- phone: mini-game controls -----
 function renderMiniCtrl(body, mine, players) {
-  const M = H.mini, key = [M.type, M.stage, M.holder, mine.id].join('|');
+  const M = H.mini, key = [M.type, M.stage, M.sub, M.holder, mine.id].join('|');
   if (body.dataset.mk === key && $('#cMini')) { updateMiniCtrl(M); return; }
   body.dataset.mk = key;
   const holder = players.find(p => String(p.id) === String(M.holder));
   let html = '';
-  if (M.type === 'roulette') {
+  if (M.type === 'cups') {
+    if (M.stage === 'done') html = `<div class="c-card c-result" id="cMini" style="border-color:#ffd84a"><div class="t" style="color:#ffd84a">${H.result ? esc(H.result.t) : ''}</div><p>${H.result ? esc(H.result.s) : ''}</p></div>`;
+    else if (M.sub === 'pick') html = `<div class="c-card" id="cMini" style="text-align:center"><h3>🥤 Where's the coin?</h3><p>Tap a cup · <b id="cCupT">${M.left}s</b></p></div><div class="c-cups">${[1, 2, 3].map(n => `<button data-cup="${n}" class="${me.cupPick === n ? 'sel' : ''}">🥤<br>${n}</button>`).join('')}</div>`;
+    else { me.cupPick = 0; html = `<div class="c-card" id="cMini" style="text-align:center"><h3>🥤 COIN UNDER THE CUP</h3><p>Watch the big screen — follow the coin! 👀</p></div>`; }
+  } else if (M.type === 'roulette') {
     html = M.stage === 'done' && H.result ? `<div class="c-card c-result" id="cMini" style="border-color:#ffd84a"><div class="t" style="color:#ffd84a">🎰 This round, everyone:</div><p style="font-size:20px;font-weight:800;color:#fff">${esc((H.result.s || '').split(' — ')[0])}</p></div>` : `<div class="c-card" id="cMini" style="text-align:center"><h3>🎰 RULE ROULETTE! 🎰</h3><p>Watch the big screen… spinning!</p></div>`;
   } else if (M.type === 'hot') {
     if (M.stage === 'intro') html = `<div class="c-card" id="cMini" style="text-align:center"><h3>🔥 HOT GOBLIN! 🔥</h3><p>When he lands on you, tap <b>PASS</b> fast — before he blows!</p></div>`;
@@ -2664,19 +2890,21 @@ function renderMiniCtrl(body, mine, players) {
     else html = `<div class="c-card c-result" id="cMini"><div class="t">${H.result ? esc(H.result.t) : ''}</div><p>${H.result ? esc(H.result.s) : ''}</p><p style="margin-top:6px">Your hits: <b>${me.myHits}</b></p></div>`;
   }
   body.innerHTML = html;
+  body.querySelectorAll('[data-cup]').forEach(b => b.addEventListener('pointerdown', e => { e.preventDefault(); me.cupPick = +b.dataset.cup; cSend('cup', { i: me.cupPick }); body.querySelectorAll('[data-cup]').forEach(x => x.classList.toggle('sel', x === b)); }));
   const ps = $('#cPass'); if (ps) ps.addEventListener('pointerdown', e => { e.preventDefault(); cSend('pass'); ps.disabled = true; ps.textContent = 'Passed! 😮‍💨'; });
   const ht = $('#cHit'); if (ht) ht.addEventListener('pointerdown', e => { e.preventDefault(); me.taps++; me.myHits++; sendCtrl(); const n = $('#cMyHits'); if (n) n.textContent = me.myHits; ht.style.transform = 'scale(.94)'; setTimeout(() => ht.style.transform = '', 60); });
 }
 function updateMiniCtrl(M) {
   const f = $('#cHpFill'); if (f) f.style.width = (100 * M.hp / Math.max(1, M.max)) + '%';
   const t = $('#cBossT'); if (t) t.textContent = M.left + 's';
+  const ct = $('#cCupT'); if (ct) ct.textContent = M.left + 's';
 }
 
 // ----- the phone side -----
 const me = { pid: null, n: 0, cmd: null, joining: null, cid: null, taps: 0, myHits: 0 };
 try { me.cid = localStorage.getItem('pizzabox-cid'); if (!me.cid) { me.cid = Math.random().toString(36).slice(2, 12); localStorage.setItem('pizzabox-cid', me.cid); } } catch (e) { me.cid = Math.random().toString(36).slice(2, 12); }
 try { me.pid = localStorage.getItem('pizzabox-pid'); } catch (e) {}
-let hostPeer = null, hostGone = null, cErr = '', lastGJ = null, H = null, A = null, cDraft = '', cWasMine = false, cName = '', cPlace = null;
+let Arecv = 0, hostPeer = null, hostGone = null, cErr = '', lastGJ = null, H = null, A = null, cDraft = '', cWasMine = false, cName = '', cPlace = null;
 // live top-down view of the game for phones (no goblins, just the box, circles, crosshair and coin)
 const LV = { x: 0, z: 0, r: 0, cx: 0, cz: 0, cy: 0 };
 function liveMap() {
@@ -2686,7 +2914,16 @@ function liveMap() {
   const S = Math.round(Math.min(w, cv.clientHeight || w) * dpr); if (cv.width !== S) { cv.width = cv.height = S; }
   const g = cv.getContext('2d'), R = 7.6, k = S / (2 * R), P = v => (v + R) * k;
   const half = H.half || 4.94, out = H.out || 5;
-  if (A) { const f = 0.35; LV.x += (A.x - LV.x) * f; LV.z += (A.z - LV.z) * f; LV.r += (A.r - LV.r) * 0.5; LV.cx += (A.cx - LV.cx) * 0.5; LV.cz += (A.cz - LV.cz) * 0.5; LV.cy += (A.cy - LV.cy) * 0.5; }
+  let ax = 0, az = 0, ar = 0;
+  if (A) {
+    const el = Math.min(0.5, (performance.now() - Arecv) / 1000);
+    if (A.m === 'w' && A.ph) { const t = A.t + el * 4, ph = A.ph, AMP = (OUT + 4 * IN) / 5.15;
+      ax = AMP * (3.1 * Math.sin(0.83 * t + ph[0]) + 1.5 * Math.sin(1.77 * t + ph[1]) + 0.55 * Math.sin(3.3 * t + ph[2]));
+      az = AMP * (3.1 * Math.sin(0.71 * t + ph[3]) + 1.5 * Math.sin(1.93 * t + ph[0] * 1.3) + 0.55 * Math.sin(3.7 * t + ph[1] * 0.7)); }
+    else { ax = A.x; az = A.z; }
+    if (A.m === 'l' && A.r) { const lt = A.lt + el; ar = COIN_R + (8 * IN - COIN_R) * Math.pow(0.5 - 0.5 * Math.cos(lt * 9), 0.42); }
+    const f = 0.6; LV.x += (ax - LV.x) * f; LV.z += (az - LV.z) * f; LV.r = ar; LV.cx += (A.cx - LV.cx) * 0.5; LV.cz += (A.cz - LV.cz) * 0.5; LV.cy += (A.cy - LV.cy) * 0.5;
+  }
   // table, lid, box
   g.fillStyle = '#3b2617'; g.fillRect(0, 0, S, S);
   g.fillStyle = 'rgba(0,0,0,.18)'; for (let y = 0; y < S; y += 26 * dpr) g.fillRect(0, y, S, 2 * dpr);
@@ -2707,10 +2944,20 @@ function liveMap() {
   if (!A) return;
   // aim circle + crosshair
   if (A.h) {
-    if (LV.r > 0.05) { g.fillStyle = 'rgba(255,216,74,.18)'; g.strokeStyle = '#ffd84a'; g.lineWidth = 2.5 * dpr; g.beginPath(); g.arc(P(LV.x), P(LV.z), LV.r * k, 0, Math.PI * 2); g.fill(); g.stroke(); }
-    const cx = P(LV.x), cz = P(LV.z), cr = 0.33 * k; g.strokeStyle = '#ff2a2a'; g.lineWidth = 2.5 * dpr;
-    g.beginPath(); g.arc(cx, cz, cr, 0, Math.PI * 2); g.stroke();
-    g.beginPath(); g.moveTo(cx - cr * 1.8, cz); g.lineTo(cx - cr * 0.6, cz); g.moveTo(cx + cr * 0.6, cz); g.lineTo(cx + cr * 1.8, cz); g.moveTo(cx, cz - cr * 1.8); g.lineTo(cx, cz - cr * 0.6); g.moveTo(cx, cz + cr * 0.6); g.lineTo(cx, cz + cr * 1.8); g.stroke();
+    const cx = P(LV.x), cz = P(LV.z);
+    if (LV.r > 0.05) {
+      const rr = LV.r * k, tight = 1 - Math.min(1, (LV.r - COIN_R) / (8 * IN - COIN_R)); // 1 = smallest
+      const gr = g.createRadialGradient(cx, cz, rr * 0.2, cx, cz, rr);
+      gr.addColorStop(0, `rgba(255,216,74,${0.08 + 0.3 * tight})`); gr.addColorStop(1, `rgba(255,216,74,${0.22 + 0.3 * tight})`);
+      g.fillStyle = gr; g.beginPath(); g.arc(cx, cz, rr, 0, Math.PI * 2); g.fill();
+      g.save(); g.shadowColor = tight > 0.85 ? '#7dff6a' : '#ffd84a'; g.shadowBlur = (8 + 18 * tight) * dpr;
+      g.strokeStyle = tight > 0.85 ? '#7dff6a' : '#ffd84a'; g.lineWidth = (2.5 + 3 * tight) * dpr; g.beginPath(); g.arc(cx, cz, rr, 0, Math.PI * 2); g.stroke(); g.restore();
+    }
+    const cr = 0.33 * k, rot = performance.now() / 1000 * (A.m === 'l' ? 0 : 1.2);
+    g.save(); g.translate(cx, cz); g.rotate(rot); g.shadowColor = '#ff2a2a'; g.shadowBlur = 6 * dpr; g.strokeStyle = '#ff2a2a'; g.lineWidth = 2.5 * dpr;
+    g.beginPath(); g.arc(0, 0, cr, 0, Math.PI * 2); g.stroke();
+    g.beginPath(); g.moveTo(-cr * 1.8, 0); g.lineTo(-cr * 0.6, 0); g.moveTo(cr * 0.6, 0); g.lineTo(cr * 1.8, 0); g.moveTo(0, -cr * 1.8); g.lineTo(0, -cr * 0.6); g.moveTo(0, cr * 0.6); g.lineTo(0, cr * 1.8); g.stroke();
+    g.fillStyle = '#ff2a2a'; g.beginPath(); g.arc(0, 0, 2.5 * dpr, 0, Math.PI * 2); g.fill(); g.restore();
   }
   // the coin (bigger + shadow while it's in the air)
   if (A.c) {
@@ -2762,7 +3009,7 @@ function onCtrlPeers(peers) {
     return;
   }
   clearTimeout(hostGone); hostGone = null; hostPeer = hp.peer;
-  H = hp.presence.g; A = hp.presence.a || null;
+  H = hp.presence.g; const na = hp.presence.a || null; if (na !== A) { A = na; Arecv = performance.now(); }
   if (H && me.joining) { const f = [...(H.players || []), ...(H.lobby || [])].find(p => p.name.toLowerCase() === me.joining.toLowerCase()); if (f) { me.joining = null; const ow = H.owners && H.owners[String(f.id)]; if (ow && ow !== me.cid) { cErr = `"${f.name}" is already in the game — pick a different name.`; } else { setPid(f.id); return; } } }
   // lost the player to another phone? start over
   if (H && me.pid && H.owners && H.owners[String(me.pid)] && H.owners[String(me.pid)] !== me.cid) { me.pid = null; try { localStorage.removeItem('pizzabox-pid'); } catch (e) {} cErr = 'That player is being used on another phone.'; sendCtrl(); }
@@ -2901,7 +3148,7 @@ $('#startBtn').onclick = () => {
 };
 
 // ---------- installable app + automatic updates (website version only) ----------
-const BUILD = '1794661650';
+const BUILD = '1794664860';
 if (STANDALONE) {
   try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
   let deferredInstall = null;
