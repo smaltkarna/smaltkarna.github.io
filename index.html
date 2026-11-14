@@ -335,7 +335,13 @@ const CTRL = (() => {
   const hj = /^join-([a-z]{4})$/i.exec(h);
   if (hj) { ROOM_CODE = hj[1].toUpperCase(); try { localStorage.setItem('pizzabox-mode', 'ctrl'); localStorage.setItem('pizzabox-join', ROOM_CODE); } catch (e) {} return true; }
   if (h === 'controller') return true; if (h === 'host') return false;
-  if (STANDALONE && !saved) {
+  if (STANDALONE) {
+    // on the website only the installed app is the main screen; any browser tab is a phone/controller
+    const app = matchMedia('(display-mode: standalone)').matches || matchMedia('(display-mode: window-controls-overlay)').matches || matchMedia('(display-mode: minimal-ui)').matches || navigator.standalone === true;
+    try { localStorage.setItem('pizzabox-mode', app ? 'host' : 'ctrl'); } catch (e) {}
+    return !app;
+  }
+  if (false) {
     let hasGame = false; try { const g = JSON.parse(localStorage.getItem('pizzabox-v1')); hasGame = !!(g && g.players && g.players.length); } catch (e) {}
     const phoneLike = matchMedia('(pointer: coarse)').matches && Math.min(screen.width, screen.height) < 820;
     const c = !hasGame && phoneLike; try { localStorage.setItem('pizzabox-mode', c ? 'ctrl' : 'host'); } catch (e) {} return c;
@@ -2041,7 +2047,7 @@ function renderCtrl() {
   if (roomState === 'failed' || roomState === 'connecting' || !H) $('#cLive').classList.remove('on');
   $('#cTurn').innerHTML = '';
   if (roomState === 'failed') { meEl.textContent = ''; body.innerHTML = `<div class="c-card"><h3>Can't connect 😕</h3><p>${STANDALONE ? 'This phone can\'t reach the game. Check your internet connection and reload.' : 'This phone can\'t reach the live game. Make sure you\'re signed in to Claude and the page has been shared with you, then reload. (Phones can\'t join through a public link.)'}</p></div>`; return; }
-  $('#cHost').style.display = H ? 'none' : '';
+  $('#cHost').style.display = (H || STANDALONE) ? 'none' : '';
   if (STANDALONE && CTRL && roomState === 'ok' && !ROOM_CODE) {
     meEl.textContent = '';
     body.innerHTML = `<div class="c-card"><h3>Enter the room code</h3><p>It's on the main screen (top right).</p></div>
@@ -2085,7 +2091,7 @@ function renderCtrl() {
     return;
   }
   meEl.innerHTML = `<span class="dot" style="background:${mine.color}"></span>${esc(mine.name)}`;
-  $('#cLive').classList.toggle('on', !(H.phase === 'rule' && String(H.ruleFor) === String(mine.id)) && H.phase !== 'over');
+  $('#cLive').classList.toggle('on', String(H.turn) === String(mine.id) && !(H.phase === 'rule' && String(H.ruleFor) === String(mine.id)) && H.phase !== 'over');
   const myTurn = String(H.turn) === String(mine.id), turnP = players.find(p => String(p.id) === String(H.turn));
   if (myTurn && !cWasMine) { try { navigator.vibrate && navigator.vibrate([120, 60, 120]); } catch (e) {} }
   cWasMine = myTurn;
@@ -2094,7 +2100,7 @@ function renderCtrl() {
   if (H.phase === 'over' || (H.phase === 'rule' && String(H.ruleFor) === String(mine.id))) tEl.innerHTML = '';
   else if (myTurn) tEl.innerHTML = `<span style="color:${lighten(mine.color)}">🍕 Your turn!</span>`;
   else if (H.phase === 'rule') { const w = players.find(p => String(p.id) === String(H.ruleFor)); tEl.innerHTML = `<span style="color:${w ? lighten(w.color) : 'var(--ink)'}">✍️ ${w ? esc(w.name) : 'Someone'} is writing a rule…</span>`; }
-  else tEl.innerHTML = turnP ? `<span style="color:${lighten(turnP.color)}">🍕 ${esc(turnP.name)}'s turn</span><small>Watch the main screen — you're up when it buzzes.</small>` : 'Waiting for players…';
+  else tEl.innerHTML = turnP ? `<span style="color:${lighten(turnP.color)}">🍕 ${esc(turnP.name)}'s turn</span><small>Watch the big screen — your phone buzzes when you're up.</small>` : 'Waiting for players…';
   if (H.phase === 'over') html += `<div class="c-card c-result" style="border-color:#d7263d"><div class="t" style="color:#ff3b4f">GAME OVER 💀</div><p>The goblin ate the coin and exploded. Check the main screen.</p></div>`;
   else if (H.phase === 'rule' && String(H.ruleFor) === String(mine.id)) {
     html += `<div class="c-card"><h3>Empty spot! ✍️</h3><p>Write a rule — whoever lands on it next has to do it.</p></div>
@@ -2158,7 +2164,7 @@ $('#startBtn').onclick = () => {
 };
 
 // ---------- installable app + automatic updates (website version only) ----------
-const BUILD = '1794615919';
+const BUILD = '1794616199';
 if (STANDALONE) {
   try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
   let deferredInstall = null;
