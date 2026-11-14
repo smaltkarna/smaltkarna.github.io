@@ -197,6 +197,25 @@
   #splat.on{opacity:1;transform:translate(-50%,-50%) scale(1);transition:transform .12s cubic-bezier(.2,1.8,.4,1)}
   #splat.fade{opacity:0;transform:translate(-50%,-40%) scale(1.05);transition:opacity 1.2s,transform 1.2s}
   body.ctrl #splat{display:none}
+  #flash{position:fixed;inset:0;z-index:45;background:#fff;opacity:0;pointer-events:none}
+  #flash.on{animation:flash .7s ease-out}
+  @keyframes flash{0%{opacity:.95}100%{opacity:0}}
+  #mini{position:fixed;left:50%;top:18px;transform:translateX(-50%);z-index:12;display:none;text-align:center;background:rgba(20,8,4,.86);border:2px solid #ff8c42;border-radius:18px;padding:12px 26px;box-shadow:0 10px 40px rgba(255,120,40,.35)}
+  #mini.on{display:block;animation:pop .4s cubic-bezier(.2,1.6,.4,1)}
+  #miniTitle{font-family:"Permanent Marker",cursive;font-size:clamp(26px,3.6vw,46px);line-height:1.1}
+  #miniSub{color:#f3e2c8;font-size:15px;margin-top:4px}
+  #miniCount{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:13;font-family:"Permanent Marker",cursive;font-size:clamp(90px,16vw,200px);color:#ffd84a;text-shadow:0 8px 0 #6b2a00,0 0 40px rgba(0,0,0,.6);pointer-events:none}
+  #bossBar{position:fixed;left:50%;top:118px;transform:translateX(-50%);z-index:12;width:min(640px,80vw);display:none}
+  #bossBar.on{display:block}
+  .bb-top{display:flex;justify-content:space-between;font-weight:900;color:#fff;text-shadow:0 2px 6px #000;margin-bottom:4px;font-size:16px;letter-spacing:1px}
+  .bb-bar{position:relative;height:26px;background:rgba(0,0,0,.6);border:2px solid #ffd84a;border-radius:14px;overflow:hidden}
+  #bossFill{height:100%;width:100%;background:linear-gradient(180deg,#ff5a3c,#b3123a);transition:width .12s}
+  #bossHp{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:13px;color:#fff;text-shadow:0 1px 3px #000}
+  body.ctrl #mini,body.ctrl #miniCount,body.ctrl #bossBar,body.ctrl #flash{display:none!important}
+  .c-big.hot{background:linear-gradient(180deg,#ff8c42,#d7263d);color:#fff;animation:throb .45s ease-in-out infinite}
+  .c-big.hit{background:linear-gradient(180deg,#ff5a3c,#8b0d1a);color:#fff;min-height:40vh}
+  .c-hp{height:22px;background:rgba(0,0,0,.5);border:2px solid #ffd84a;border-radius:12px;overflow:hidden;margin-top:6px}
+  #cHpFill{height:100%;background:linear-gradient(180deg,#ff5a3c,#b3123a);transition:width .15s}
   #yugo{position:fixed;left:50%;top:40%;transform:translate(-50%,-50%) scale(.6);z-index:40;pointer-events:none;opacity:0;font-family:'Hiragino Maru Gothic ProN','Yu Gothic','Noto Sans JP',sans-serif;font-weight:800;font-size:clamp(26px,5vw,52px);line-height:1.25;text-align:center;color:#fff;background:linear-gradient(135deg,#ff5fa2,#ff9a3c);padding:22px 34px;border-radius:28px;box-shadow:0 18px 50px rgba(255,80,150,.45);transition:opacity .35s,transform .45s cubic-bezier(.2,1.6,.4,1)}
   #yugo.on{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(-3deg)}
   #toast{position:fixed;left:50%;bottom:100px;transform:translateX(calc(-50% + var(--off)));background:#000c;color:#fff;padding:9px 14px;border-radius:10px;font-size:13.5px;opacity:0;transition:opacity .25s;pointer-events:none;z-index:30}
@@ -259,6 +278,7 @@
     <p class="empty" id="phoneHelp">This computer is the main screen. Everyone else opens this same page on their phone (share it from its page on claude.ai) — phones are controllers: draw your circle, take your turn, write your rules.</p>
     <button id="asCtrl" class="c-link" style="margin-top:6px">Use this device as a controller instead</button>
     <div><button id="introBtn2" class="c-link">▶ Watch the rules intro</button></div>
+    <div><button id="tryHot" class="c-link">🔥 Play Hot Goblin now</button> <button id="tryBoss" class="c-link">👹 Play Boss Fight now</button></div>
   </section>
   <footer>
     <button id="clearRules">Wipe rules</button>
@@ -314,6 +334,10 @@
 </div></div>
 <div id="subs"><div id="subsText"></div><button id="skipIntro">Skip intro ⏭</button></div>
 <div id="splat"></div>
+<div id="flash"></div>
+<div id="mini"><div id="miniTitle"></div><div id="miniSub"></div></div>
+<div id="miniCount"></div>
+<div id="bossBar"><div class="bb-top"><span>👹 THE GOBLIN KING</span><span id="bossTime">10.0s</span></div><div class="bb-bar"><div id="bossFill"></div><span id="bossHp"></span></div></div>
 <div id="yugo">こんにちは、ユーゴ！<br>元気？ 大好きだよ！💖</div>
 
 <div id="modal">
@@ -807,7 +831,8 @@ function renderUI() {
   const ok = state.players.length >= 2;
   $('#turn').innerHTML = ok ? `Up next: <b>${esc(cur.name)}</b>` : 'Add at least 2 players';
   $('#tossBtn').disabled = !ok || !!toss || !!goblin;
-  $('#tossBtn').innerHTML = (aim.mode === 'lock' ? '🪙 Throw!' : '🎯 Flip the coin') + ' <kbd>Space</kbd>';
+  $('#tossBtn').innerHTML = (mini ? (mini.type === 'hot' ? '🔥 Pass it!' : '👊 Hit!') : aim.mode === 'lock' ? '🪙 Throw!' : '🎯 Flip the coin') + ' <kbd>Space</kbd>';
+  if (mini) $('#tossBtn').disabled = mini.stage !== 'play';
   hostPublish(); if (typeof renderLobby === 'function') renderLobby();
 }
 $('#playerList').onclick = e => {
@@ -837,7 +862,7 @@ $('#newGame').onclick = e => {
 };
 let toastT;
 function toast(t) { const el2 = $('#toast'); el2.textContent = t; el2.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => el2.classList.remove('on'), 2200); }
-function showResult(title, sub, color) { lastResult = { t: String(title).slice(0, 120), s: String(sub || '').slice(0, 200), c: color || null }; setTimeout(hostPublish, 0); const r = $('#result'); r.querySelector('.title').textContent = title; r.querySelector('.sub').textContent = sub; r.style.borderColor = color || 'var(--line)'; r.querySelector('.title').style.color = color ? lighten(color) : 'var(--ink)'; r.classList.remove('on'); void r.offsetWidth; r.classList.add('on'); }
+function showResult(title, sub, color) { lastResultAt = Date.now(); lastResult = { t: String(title).slice(0, 120), s: String(sub || '').slice(0, 200), c: color || null }; setTimeout(hostPublish, 0); const r = $('#result'); r.querySelector('.title').textContent = title; r.querySelector('.sub').textContent = sub; r.style.borderColor = color || 'var(--line)'; r.querySelector('.title').style.color = color ? lighten(color) : 'var(--ink)'; r.classList.remove('on'); void r.offsetWidth; r.classList.add('on'); }
 function hideResult() { lastResult = null; $('#result').classList.remove('on'); }
 function lighten(hex) { const c = new THREE.Color(hex); const hsl = {}; c.getHSL(hsl); c.setHSL(hsl.h, Math.min(1, hsl.s + .1), Math.max(0.62, hsl.l)); return '#' + c.getHexString(); }
 
@@ -1057,7 +1082,7 @@ const aimRing = new THREE.Group(); scene.add(aimRing);
   flat.add(overlay(new THREE.Mesh(new THREE.RingGeometry(0.965, 1, 96), new THREE.MeshBasicMaterial({ color: '#ffd84a', opacity: 0.95 }))));
   flat.add(overlay(new THREE.Mesh(new THREE.CircleGeometry(1, 64), new THREE.MeshBasicMaterial({ color: '#ffd84a', opacity: 0.13 }))));
 }
-const canAim = () => !gameOver && state.started && state.players.length >= 2 && !toss && !goblin && !placing && !$('#modal').classList.contains('on');
+const canAim = () => !gameOver && !mini && state.started && state.players.length >= 2 && !toss && !goblin && !placing && !$('#modal').classList.contains('on');
 function stepAim(dt) {
   const ok = canAim();
   if (!ok && aim.mode === 'lock' && !toss) { aim.mode = 'wander'; }
@@ -1078,6 +1103,7 @@ function stepAim(dt) {
 }
 function flipPressed() {
   ensureAudio();
+  if (mini) return miniKey();
   if (state.players.length < 2) return toast('Add at least 2 players first');
   if (!canAim()) return;
   if (aim.mode === 'wander') { aim.mode = 'lock'; aim.lockT = 0; aim.r = COIN_R; hideResult(); clearPoop(); clearBurgers(); renderUI(); return; }
@@ -2028,6 +2054,149 @@ function clearBurgers() { burgers.forEach(b => { if (b.dying < 0) { b.dying = 0;
 function speak(text, pitch = 0.6, rate = 1.05) {
   try { const ut = new SpeechSynthesisUtterance(text); ut.lang = 'en-US'; ut.pitch = pitch; ut.rate = rate; const v = speechSynthesis.getVoices().find(v => /^en/i.test(v.lang)); if (v) ut.voice = v; speechSynthesis.speak(ut); } catch (e) {}
 }
+// ---------- mini-games between turns: Hot Goblin + Goblin Boss Fight ----------
+var mini = null, lastResultAt = 0, lastTaps = {}, miniPubT = null;
+function miniBanner(html, sub) { $('#miniTitle').innerHTML = html; $('#miniSub').innerHTML = sub || ''; $('#mini').classList.add('on'); }
+function screenFlash() { const f = $('#flash'); f.classList.remove('on'); void f.offsetWidth; f.classList.add('on'); }
+function hostPublishSoon() { if (miniPubT) return; miniPubT = setTimeout(() => { miniPubT = null; hostPublish(); }, 150); }
+function miniPlayers() { return state.players.slice(); }
+function maybeStartMini() {
+  if (CTRL || mini || !state.started || gameOver || toss || goblin || placing || aim.mode !== 'wander') return;
+  if (state.players.length < 2 || $('#modal').classList.contains('on') || Date.now() - lastResultAt < 2600) return;
+  if (state.miniAt == null) { state.miniAt = state.rounds + 5 + Math.floor(Math.random() * 4); save(); }
+  if (state.rounds >= state.miniAt) startMini();
+}
+function startMini(type) {
+  if (mini || goblin || toss) return;
+  type = type || pickOther(['hot', 'boss'], state.lastMini); state.lastMini = type;
+  hideResult(); clearPoop(); clearBurgers(); coin.visible = false; ensureAudio();
+  mini = { type, stage: 'intro', t: 0, holder: null, hp: 0, max: 0, left: 10, G: null, hits: {}, flinch: 0, hitSnd: 0 };
+  jazzDuck(true);
+  if (type === 'hot') miniBanner('🔥 HOT GOBLIN! 🔥', 'Pass him before he blows! &nbsp;📱 tap <b>PASS</b> · 💻 <b>Space</b>');
+  else miniBanner('👹 GOBLIN BOSS FIGHT! 👹', 'Mash <b>HIT</b> on your phones (or <b>Space</b>) — beat him in 10 seconds!');
+  [0, 0.18, 0.36, 0.7].forEach((d, i) => tone('square', i === 3 ? 880 : 660, i === 3 ? 880 : 660, 0.14, 0.12, d));
+  addLog(type === 'hot' ? '🔥 Mini-game: Hot Goblin!' : '👹 Mini-game: Goblin Boss Fight!');
+  renderUI(); hostPublish();
+}
+function circleSpot(p) { return new THREE.Vector3(p.x, TOP, p.z); }
+function beginMiniPlay() {
+  const ps = miniPlayers();
+  $('#miniCount').textContent = ''; mini.stage = 'play'; mini.t = 0;
+  if (mini.type === 'hot') {
+    const G = buildGoblin({ skin: '#d9542a', eye: '#fff36b', hat: 'none', size: 1.25 }); scene.add(G.root); mini.G = G;
+    mini.mats = []; G.root.traverse(o => { if (o.isMesh && o.material.emissive) mini.mats.push(o.material); });
+    const h = ps[Math.floor(Math.random() * ps.length)]; mini.holder = h; G.root.position.copy(circleSpot(h));
+    mini.fuse = 9 + Math.random() * 10; mini.recvAt = performance.now(); mini.nextTick = 0;
+    hotBanner(); boingSfx();
+  } else {
+    const G = buildGoblin({ skin: '#3f7a2a', eye: '#ff2020', hat: 'crown', size: 3.3 }); scene.add(G.root); mini.G = G;
+    mini.mats = []; G.root.traverse(o => { if (o.isMesh && o.material.emissive) mini.mats.push(o.material); });
+    G.root.position.set(0, TOP, -0.6); G.root.rotation.y = Math.atan2(camera.position.x, camera.position.z + 0.6);
+    mini.max = mini.hp = 40 * Math.max(2, ps.length); mini.left = 10;
+    $('#bossBar').classList.add('on'); evilLaugh(7, 120); thudSfx(1); shake = 0.5;
+    miniBanner('👊 HIT HIM! 👊', 'Mash <b>HIT</b> on your phone · <b>Space</b> on the computer');
+  }
+  renderUI(); hostPublish();
+}
+function hotBanner() { const h = mini.holder; miniBanner(`🔥 <span style="color:${lighten(h.color)}">${esc(h.name)}</span> has the goblin! 🔥`, 'PASS IT before he blows! &nbsp;📱 tap <b>PASS</b> · 💻 <b>Space</b>'); }
+function passHot() {
+  if (!mini || mini.type !== 'hot' || mini.stage !== 'play' || mini.hop || performance.now() - mini.recvAt < 450) return;
+  const ps = miniPlayers().filter(p => p.id !== mini.holder.id); if (!ps.length) return;
+  const nx = ps[Math.floor(Math.random() * ps.length)];
+  mini.hop = { from: mini.G.root.position.clone(), to: circleSpot(nx), t: 0 };
+  mini.holder = nx; mini.recvAt = performance.now(); boingSfx(); tone('sine', 500, 1100, 0.18, 0.12);
+  hotBanner(); hostPublish();
+}
+function explodeHot() {
+  const h = mini.holder, G = mini.G, c = wpos(G.body);
+  G.root.visible = false; screenFlash(); boomSfx(); shake = 0.9;
+  spawnParts(c, 50, { colors: ['#d9542a', '#8b0d1a', '#b3123a', '#ffb347', '#3a1f12'], size: 0.09, shape: 'sphere', speed: 7, up: 4, life: 3, gravity: 16 });
+  for (let i = 0; i < 22; i++) spawnGas(c, true, ['#ff8c42', '#ffb347', '#888888'][i % 3]);
+  drink(h); state.rounds++;
+  showResult(`💥 ${h.name} drinks!`, 'The hot goblin blew up in their hands.', h.color);
+  addLog(`💥 Hot goblin blew up on ${h.name}`);
+  miniBanner(`💥 BOOM! <span style="color:${lighten(h.color)}">${esc(h.name)}</span> drinks!`, '');
+  mini.stage = 'done'; mini.t = 0; renderUI(); hostPublish();
+}
+function bossHit(n, pid) {
+  if (!mini || mini.type !== 'boss' || mini.stage !== 'play') return;
+  mini.hp = Math.max(0, mini.hp - n); const k = String(pid == null ? 'pc' : pid); mini.hits[k] = (mini.hits[k] || 0) + n; mini.flinch = 1;
+  const now = performance.now(); if (now - mini.hitSnd > 70) { mini.hitSnd = now; noiseSfx('bandpass', 1400 + Math.random() * 800, 500, 0.08, 0.6, 1.2); tone('square', 220 + Math.random() * 80, 120, 0.06, 0.08); }
+  if (Math.random() < 0.5) spawnParts(wpos(mini.G.body).add(new THREE.Vector3((Math.random() - .5) * 1.5, Math.random() * 1.5, 1.2)), 3, { colors: ['#ffe14d', '#ffffff', '#ff8c42'], size: 0.05, shape: 'box', speed: 3, up: 2, life: 0.8, gravity: 10 });
+  if (mini.hp <= 0) bossEnd(true); else hostPublishSoon();
+}
+function bossEnd(won) {
+  mini.stage = 'done'; mini.t = 0; mini.won = won; $('#bossBar').classList.remove('on');
+  if (won) {
+    let best = null, bn = 0; for (const k in mini.hits) if (mini.hits[k] > bn) { bn = mini.hits[k]; best = k; }
+    const mvp = state.players.find(p => String(p.id) === best);
+    screenFlash(); boomSfx(); shake = 0.7; for (let i = 0; i < 20; i++) spawnGas(wpos(mini.G.body), true);
+    showResult('🏆 VICTORY! Nobody drinks!', mvp ? `The Goblin King is down. MVP: ${mvp.name} (${bn} hits) 💪` : 'The Goblin King is down.', '#9be15d');
+    miniBanner('🏆 VICTORY! Nobody drinks! 🏆', mvp ? `MVP: <b>${esc(mvp.name)}</b> with ${bn} hits` : '');
+    addLog(`🏆 Beat the Goblin King${mvp ? ' — MVP ' + mvp.name : ''}`);
+  } else {
+    evilLaugh(9, 110); state.players.forEach(p => drink(p));
+    showResult('💀 DEFEAT! Everyone drinks! 🍻', `The Goblin King had ${mini.hp} HP left.`, '#d7263d');
+    miniBanner('💀 DEFEAT! 💀', 'Everyone drinks! 🍻');
+    addLog('💀 The Goblin King won — everyone drank');
+  }
+  state.rounds++; renderUI(); hostPublish();
+}
+function endMini() {
+  if (!mini) return;
+  if (mini.G) scene.remove(mini.G.root);
+  $('#mini').classList.remove('on'); $('#bossBar').classList.remove('on'); $('#miniCount').textContent = '';
+  mini = null; state.miniAt = state.rounds + 5 + Math.floor(Math.random() * 4); save();
+  jazzDuck(false); renderUI(); hostPublish();
+}
+function miniKey() { if (!mini || mini.stage !== 'play') return; if (mini.type === 'hot') passHot(); else bossHit(1, null); }
+function stepMini(dt) {
+  if (!mini) { maybeStartMini(); return; }
+  mini.t += dt;
+  if (mini.stage === 'intro') {
+    const c = 3 - Math.floor((mini.t - 1.2) / 0.8);
+    if (mini.t > 1.2 && c >= 1) { if ($('#miniCount').textContent !== String(c)) { $('#miniCount').textContent = c; tone('sine', 520, 520, 0.12, 0.2); } }
+    if (mini.t > 3.6) { $('#miniCount').textContent = 'GO!'; tone('sine', 1040, 1040, 0.25, 0.25); beginMiniPlay(); setTimeout(() => { if ($('#miniCount').textContent === 'GO!') $('#miniCount').textContent = ''; }, 700); }
+    return;
+  }
+  const G = mini.G;
+  if (mini.type === 'hot') {
+    if (mini.stage === 'play') {
+      const frac = Math.min(1, mini.t / mini.fuse);
+      mini.mats.forEach(m => { m.emissive.setRGB(1, 0.25, 0); m.emissiveIntensity = 0.15 + 0.85 * frac * (0.6 + 0.4 * Math.sin(mini.t * (6 + 24 * frac))); });
+      if (mini.hop) {
+        mini.hop.t += dt; const u = Math.min(1, mini.hop.t / 0.45);
+        G.root.position.lerpVectors(mini.hop.from, mini.hop.to, u); G.root.position.y = TOP + 4 * 1.6 * u * (1 - u);
+        G.root.rotation.y += 0.5; G.arms.forEach(a2 => a2.rotation.x = -2.7);
+        if (u >= 1) mini.hop = null;
+      } else {
+        const base = circleSpot(mini.holder); G.root.position.set(base.x + (Math.random() - .5) * 0.06 * frac, TOP + Math.abs(Math.sin(mini.t * 9)) * 0.12, base.z + (Math.random() - .5) * 0.06 * frac);
+        G.root.rotation.y = Math.atan2(camera.position.x - base.x, camera.position.z - base.z);
+        G.arms.forEach((a2, i) => { a2.rotation.x = -2.2 + 0.6 * Math.sin(mini.t * 14 + i * 2); a2.rotation.z = (i ? 1 : -1) * 0.6; }); G.jaw.scale.y = 0.32 + 0.6 * Math.abs(Math.sin(mini.t * 11));
+      }
+      if (Math.random() < 0.08 + 0.3 * frac) spawnGas(wpos(G.headTop), false, '#dddddd');
+      if (mini.t >= mini.nextTick) { mini.nextTick = mini.t + (0.7 - 0.56 * frac); tone('square', 1700, 1700, 0.03, 0.09); }
+      shake = Math.max(shake, 0.04 * frac);
+      if (mini.t >= mini.fuse) explodeHot();
+    } else if (mini.t > 3.4) endMini();
+  } else {
+    if (mini.stage === 'play') {
+      mini.left = Math.max(0, 10 - mini.t);
+      mini.flinch *= Math.exp(-10 * dt);
+      G.body.scale.setScalar(1 + 0.03 * Math.sin(mini.t * 3)); G.head.rotation.z = 0.25 * mini.flinch * Math.sin(mini.t * 60); G.body.rotation.x = -0.15 * mini.flinch;
+      G.arms.forEach((a2, i) => { a2.rotation.x = -1.2 + 0.4 * Math.sin(mini.t * 2 + i); a2.rotation.z = (i ? 1 : -1) * 0.5; }); G.jaw.scale.y = 0.32 + 0.4 * Math.abs(Math.sin(mini.t * 4));
+      mini.mats.forEach(m => { m.emissive.setRGB(1, 0, 0); m.emissiveIntensity = 0.7 * mini.flinch; });
+      $('#bossFill').style.width = (100 * mini.hp / mini.max) + '%'; $('#bossHp').textContent = `${mini.hp} / ${mini.max}`; $('#bossTime').textContent = mini.left.toFixed(1) + 's';
+      if (Math.floor(mini.t * 2) !== mini.pubTick) { mini.pubTick = Math.floor(mini.t * 2); hostPublishSoon(); }
+      if (mini.left <= 0) bossEnd(false);
+    } else {
+      if (mini.won) { const u = Math.min(1, mini.t / 0.9); G.root.rotation.x = -Math.PI / 2 * u * u; G.root.position.y = TOP - 1.2 * Math.max(0, mini.t - 1.4); }
+      else { G.body.position.y = 0.45 + 0.12 * Math.abs(Math.sin(mini.t * 7)); if (Math.floor(mini.t * 2.3) !== mini.st) { mini.st = Math.floor(mini.t * 2.3); thudSfx(1); shake = Math.max(shake, 0.5); } G.jaw.scale.y = 0.32 + 0.8 * Math.abs(Math.sin(mini.t * 14)); }
+      if (mini.t > 3.8) endMini();
+    }
+  }
+}
+
 // ---------- the rules, explained by a goblin (main screen, when the game starts) ----------
 const INTRO_LINES = [
   ['Welcome, mortals… to <b>THE PIZZA BOX!</b>', 'Welcome, mortals. To the pizza box!', 'wave'],
@@ -2112,6 +2281,8 @@ function startIntro(after) {
   jazzDuck(true); renderUI();
 }
 const previewIntro = () => { ensureAudio(); if (toss || goblin || placing) return toast('Wait for the current turn to finish'); $('#invite').classList.remove('on'); startIntro(() => { renderLobby(); }); };
+$('#tryHot').onclick = () => { if (!canAim() && !mini) return toast('Start a game with 2+ players first (and wait for the turn to finish)'); startMini('hot'); };
+$('#tryBoss').onclick = () => { if (!canAim() && !mini) return toast('Start a game with 2+ players first (and wait for the turn to finish)'); startMini('boss'); };
 $('#introBtn').onclick = previewIntro; $('#introBtn2').onclick = previewIntro;
 $('#skipIntro').onclick = () => {
   if (!goblin || !goblin.intro) return endIntro();
@@ -2259,7 +2430,7 @@ const clock = new THREE.Clock();
 function loop() {
   if (CTRL) return;
   const dt = Math.min(clock.getDelta(), 0.05);
-  stepToss(dt); stepAim(dt); stepGoblin(dt); stepBurgers(dt); stepGuts(dt); stepParts(dt); hostLive(dt);
+  stepToss(dt); stepAim(dt); stepGoblin(dt); stepBurgers(dt); stepGuts(dt); stepParts(dt); stepMini(dt); hostLive(dt);
   if (!gameOver && state.players.length >= 2) { state.playTime += dt; saveClock += dt; if (saveClock > 5) { saveClock = 0; save(); } } updateCamera(); placeBubble();
   for (let i = pulses.length - 1; i >= 0; i--) {
     const p = pulses[i]; p.t += dt; const u = clamp(p.t / 0.9, 0, 1);
@@ -2284,6 +2455,7 @@ var room = null, roomState = 'connecting', lastResult = null, claimed = new Set(
 const hostSince = Date.now(), lastCmd = {};
 function gamePhase() {
   if (gameOver) return 'over';
+  if (mini) return 'mini';
   if ($('#modal').classList.contains('on')) return 'rule';
   if (placing) return 'place';
   if (toss || goblin) return 'busy';
@@ -2296,6 +2468,7 @@ function hostPublish() {
   const g = {
     role: 'host', since: hostSince, phase: gamePhase(), turn: cur ? cur.id : null,
     ruleFor: pendingRule ? pendingRule.tosser.id : null, started: !!state.started, owners,
+    mini: mini ? { type: mini.type, stage: mini.stage, holder: mini.holder ? mini.holder.id : null, hp: mini.hp, max: mini.max, left: Math.ceil(mini.left) } : null,
     lobby: state.lobby.map(p => ({ id: p.id, name: p.name, color: p.color })),
     players: state.players.map(p => ({ id: p.id, name: p.name, color: p.color, x: +p.x.toFixed(2), z: +p.z.toFixed(2), r: +p.r.toFixed(2) })),
     spots: state.rules.map(r => [+r.x.toFixed(2), +r.z.toFixed(2), +r.r.toFixed(2)]).slice(-30), half: HALF, out: OUT,
@@ -2307,6 +2480,7 @@ function hostPublish() {
 function handleCmd(c, cmd) {
   const pid = String(c.pid);
   if (cmd.type !== 'join' && owners[pid] !== String(c.cid)) return; // not this phone's player
+  if (cmd.type === 'pass') { if (mini && mini.type === 'hot' && mini.holder && String(mini.holder.id) === pid) passHot(); return; }
   if (cmd.type === 'flip') { const cur = current(); if (cur && String(cur.id) === pid && !$('#modal').classList.contains('on')) flipPressed(); }
   else if (cmd.type === 'rule' || cmd.type === 'norule') {
     if (!pendingRule || String(pendingRule.tosser.id) !== pid) return;
@@ -2337,6 +2511,9 @@ function onHostPeers(peers) {
   if (ownChanged) setTimeout(hostPublish, 0);
   for (const p of ctrls) {
     const c = p.presence.g, cmd = c.cmd;
+    const tp = c.taps | 0;
+    if (lastTaps[p.peer] === undefined) lastTaps[p.peer] = tp;
+    else if (tp > lastTaps[p.peer]) { const d = Math.min(tp - lastTaps[p.peer], 40); lastTaps[p.peer] = tp; if (mini && owners[String(c.pid)] === String(c.cid)) bossHit(d, c.pid); }
     if (!cmd || typeof cmd.n !== 'number') { if (lastCmd[p.peer] === undefined) lastCmd[p.peer] = 0; continue; }
     if (lastCmd[p.peer] === undefined) { lastCmd[p.peer] = cmd.n; continue; } // don't replay old presses
     if (cmd.n > lastCmd[p.peer]) { lastCmd[p.peer] = cmd.n; handleCmd(c, cmd); }
@@ -2416,8 +2593,34 @@ function setRoomCode(code) {
   qrMade = false; if ($('#invite').classList.contains('on')) $('#inviteBtn').onclick();
 }
 
+// ----- phone: mini-game controls -----
+function renderMiniCtrl(body, mine, players) {
+  const M = H.mini, key = [M.type, M.stage, M.holder, mine.id].join('|');
+  if (body.dataset.mk === key && $('#cMini')) { updateMiniCtrl(M); return; }
+  body.dataset.mk = key;
+  const holder = players.find(p => String(p.id) === String(M.holder));
+  let html = '';
+  if (M.type === 'hot') {
+    if (M.stage === 'intro') html = `<div class="c-card" id="cMini" style="text-align:center"><h3>🔥 HOT GOBLIN! 🔥</h3><p>When he lands on you, tap <b>PASS</b> fast — before he blows!</p></div>`;
+    else if (M.stage === 'play' && holder && String(holder.id) === String(mine.id)) { html = `<div id="cMini"></div><button class="c-big hot" id="cPass">🔥 PASS IT! 🔥</button>`; try { navigator.vibrate && navigator.vibrate([200, 80, 200]); } catch (e) {} }
+    else if (M.stage === 'play') html = `<div class="c-card" id="cMini" style="text-align:center"><h3>😬 ${holder ? esc(holder.name) : 'Someone'} has the hot goblin…</h3><p>Pray he doesn't come to you.</p></div><button class="c-big" disabled>🙏 Not you… yet</button>`;
+    else html = `<div class="c-card c-result" id="cMini"><div class="t">${H.result ? esc(H.result.t) : '💥 BOOM!'}</div><p>${H.result ? esc(H.result.s) : ''}</p></div>`;
+  } else {
+    if (M.stage === 'intro') { me.myHits = 0; html = `<div class="c-card" id="cMini" style="text-align:center"><h3>👹 BOSS FIGHT! 👹</h3><p>Get ready to MASH the button when it says GO!</p></div>`; }
+    else if (M.stage === 'play') html = `<div id="cMini" class="c-card"><div style="display:flex;justify-content:space-between;font-weight:800"><span>👹 Goblin King</span><span id="cBossT">${M.left}s</span></div><div class="c-hp"><div id="cHpFill" style="width:${100 * M.hp / Math.max(1, M.max)}%"></div></div><p style="margin-top:6px;text-align:center">Your hits: <b id="cMyHits">${me.myHits}</b></p></div><button class="c-big hit" id="cHit">👊 HIT!</button>`;
+    else html = `<div class="c-card c-result" id="cMini"><div class="t">${H.result ? esc(H.result.t) : ''}</div><p>${H.result ? esc(H.result.s) : ''}</p><p style="margin-top:6px">Your hits: <b>${me.myHits}</b></p></div>`;
+  }
+  body.innerHTML = html;
+  const ps = $('#cPass'); if (ps) ps.addEventListener('pointerdown', e => { e.preventDefault(); cSend('pass'); ps.disabled = true; ps.textContent = 'Passed! 😮‍💨'; });
+  const ht = $('#cHit'); if (ht) ht.addEventListener('pointerdown', e => { e.preventDefault(); me.taps++; me.myHits++; sendCtrl(); const n = $('#cMyHits'); if (n) n.textContent = me.myHits; ht.style.transform = 'scale(.94)'; setTimeout(() => ht.style.transform = '', 60); });
+}
+function updateMiniCtrl(M) {
+  const f = $('#cHpFill'); if (f) f.style.width = (100 * M.hp / Math.max(1, M.max)) + '%';
+  const t = $('#cBossT'); if (t) t.textContent = M.left + 's';
+}
+
 // ----- the phone side -----
-const me = { pid: null, n: 0, cmd: null, joining: null, cid: null };
+const me = { pid: null, n: 0, cmd: null, joining: null, cid: null, taps: 0, myHits: 0 };
 try { me.cid = localStorage.getItem('pizzabox-cid'); if (!me.cid) { me.cid = Math.random().toString(36).slice(2, 12); localStorage.setItem('pizzabox-cid', me.cid); } } catch (e) { me.cid = Math.random().toString(36).slice(2, 12); }
 try { me.pid = localStorage.getItem('pizzabox-pid'); } catch (e) {}
 let hostPeer = null, hostGone = null, cErr = '', lastGJ = null, H = null, A = null, cDraft = '', cWasMine = false, cName = '', cPlace = null;
@@ -2495,7 +2698,7 @@ function drawPlacer(body, players) {
   $('#cPut').onclick = () => { if (cPlace.x == null) return; if (cPlace.lobbyId) { cSend('place', { x: +cPlace.x.toFixed(2), z: +cPlace.z.toFixed(2), r: +cPlace.r.toFixed(2) }); cPlace = null; return; } me.joining = cName; cSend('join', { name: cName, x: +cPlace.x.toFixed(2), z: +cPlace.z.toFixed(2), r: +cPlace.r.toFixed(2) }); cPlace = null; renderCtrl(); };
   draw();
 }
-function sendCtrl() { if (room) room.presence({ g: { role: 'ctrl', pid: me.pid, cid: me.cid, cmd: me.cmd } }).catch(() => {}); }
+function sendCtrl() { if (room) room.presence({ g: { role: 'ctrl', pid: me.pid, cid: me.cid, cmd: me.cmd, taps: me.taps } }).catch(() => {}); }
 function cSend(type, extra) { me.n++; me.cmd = Object.assign({ n: me.n, type }, extra || {}); sendCtrl(); }
 function setPid(id) { me.pid = id == null ? null : String(id); try { if (me.pid) localStorage.setItem('pizzabox-pid', me.pid); else localStorage.removeItem('pizzabox-pid'); } catch (e) {} sendCtrl(); renderCtrl(); }
 function onCtrlPeers(peers) {
@@ -2570,6 +2773,8 @@ function renderCtrl() {
     return;
   }
   meEl.innerHTML = `<span class="dot" style="background:${mine.color}"></span>${esc(mine.name)}`;
+  if (H.phase === 'mini' && H.mini) { $('#cLive').classList.remove('on'); $('#cTurn').innerHTML = ''; renderMiniCtrl(body, mine, players); return; }
+  body.dataset.mk = '';
   $('#cLive').classList.toggle('on', String(H.turn) === String(mine.id) && !(H.phase === 'rule' && String(H.ruleFor) === String(mine.id)) && H.phase !== 'over');
   const myTurn = String(H.turn) === String(mine.id), turnP = players.find(p => String(p.id) === String(H.turn));
   if (myTurn && !cWasMine) { try { navigator.vibrate && navigator.vibrate([120, 60, 120]); } catch (e) {} }
@@ -2643,7 +2848,7 @@ $('#startBtn').onclick = () => {
 };
 
 // ---------- installable app + automatic updates (website version only) ----------
-const BUILD = '1794655870';
+const BUILD = '1794657537';
 if (STANDALONE) {
   try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
   let deferredInstall = null;
