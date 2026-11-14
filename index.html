@@ -189,6 +189,7 @@
   #subsText b{color:#9be15d}
   #skipIntro{pointer-events:auto;background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.3);padding:8px 14px;font-size:13px;font-weight:700}
   body.ctrl #subs{display:none!important}
+  body.intro #lobby{display:none!important}
   body.intro #hud,body.intro #help,body.intro #result,body.intro #panel,body.intro #menuBtn,body.intro #inviteBtn,body.intro #installBtn,body.intro #jazzBtn{display:none!important}
   #yugo{position:fixed;left:50%;top:40%;transform:translate(-50%,-50%) scale(.6);z-index:40;pointer-events:none;opacity:0;font-family:'Hiragino Maru Gothic ProN','Yu Gothic','Noto Sans JP',sans-serif;font-weight:800;font-size:clamp(26px,5vw,52px);line-height:1.25;text-align:center;color:#fff;background:linear-gradient(135deg,#ff5fa2,#ff9a3c);padding:22px 34px;border-radius:28px;box-shadow:0 18px 50px rgba(255,80,150,.45);transition:opacity .35s,transform .45s cubic-bezier(.2,1.6,.4,1)}
   #yugo.on{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(-3deg)}
@@ -251,6 +252,7 @@
     <h2>📱 Play from your phones</h2>
     <p class="empty" id="phoneHelp">This computer is the main screen. Everyone else opens this same page on their phone (share it from its page on claude.ai) — phones are controllers: draw your circle, take your turn, write your rules.</p>
     <button id="asCtrl" class="c-link" style="margin-top:6px">Use this device as a controller instead</button>
+    <div><button id="introBtn2" class="c-link">▶ Watch the rules intro</button></div>
   </section>
   <footer>
     <button id="clearRules">Wipe rules</button>
@@ -301,6 +303,7 @@
   <div id="lbList"></div>
   <form id="lbAdd" autocomplete="off"><input id="lbName" maxlength="16" placeholder="No phone? Add a name here"><button type="submit">Add</button></form>
   <button id="startBtn">Start game ▶</button>
+  <div><button id="introBtn" class="c-link" style="font-size:14px;margin-top:8px">▶ Watch the rules intro</button></div>
   <p class="lb-note">After you start, everyone draws their circle — on their phone, or right here.</p>
 </div></div>
 <div id="subs"><div id="subsText"></div><button id="skipIntro">Skip intro ⏭</button></div>
@@ -1719,6 +1722,8 @@ function startIntro(after) {
   goblin = { G, steps, i: 0, t: 0, started: false, hold: false, camR: 7.5, intro: true, after: () => { coin.visible = coinWas; endIntro(); after && after(); } };
   jazzDuck(true); renderUI();
 }
+const previewIntro = () => { ensureAudio(); if (toss || goblin || placing) return toast('Wait for the current turn to finish'); $('#invite').classList.remove('on'); startIntro(() => { renderLobby(); }); };
+$('#introBtn').onclick = previewIntro; $('#introBtn2').onclick = previewIntro;
 $('#skipIntro').onclick = () => {
   if (!goblin || !goblin.intro) return endIntro();
   const after = goblin.after; scene.remove(goblin.G.root); goblin = null; jazzDuck(false); renderUI(); if (after) after();
@@ -2249,7 +2254,7 @@ $('#startBtn').onclick = () => {
 };
 
 // ---------- installable app + automatic updates (website version only) ----------
-const BUILD = '1794649445';
+const BUILD = '1794653580';
 if (STANDALONE) {
   try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
   let deferredInstall = null;
