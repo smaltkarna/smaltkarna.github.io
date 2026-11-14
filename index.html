@@ -1716,17 +1716,34 @@ function startIntro(after) {
       else if (pose === 'cackle') { A0.rotation.x = A1.rotation.x = -0.9; A0.rotation.z = -0.9 - 0.2 * Math.sin(t * 9); A1.rotation.z = 0.9 + 0.2 * Math.sin(t * 9); G.body.rotation.x = 0.15 * Math.sin(t * 9); }
     }, () => { $('#subsText').innerHTML = sub; introSpeak(say, () => { done = true; }); }, () => done);
   });
-  S2(0.9, u => { G.jaw.scale.y = 0.32 + 0.6 * Math.abs(Math.sin(u * 22)); G.head.rotation.x = -0.35 * Math.sin(Math.PI * u); G.arms.forEach((a2, i) => a2.rotation.z = (i ? 1 : -1) * (0.25 + 0.8 * Math.sin(Math.PI * u))); }, () => { evilLaugh(8, 250); $('#subsText').innerHTML = 'Now — <b>draw your circles!</b> 🍕'; });
-  let j1, j2;
-  S2(1.1, u => { G.root.position.lerpVectors(j1, j2, u); G.root.position.y = THREE.MathUtils.lerp(TOP, 0, u) + 4 * 3 * u * (1 - u); G.root.rotation.y = Math.atan2(j2.x - j1.x, j2.z - j1.z); G.arms.forEach(a2 => a2.rotation.x = -2.6 * Math.sin(Math.PI * u)); }, () => { boingSfx(); j1 = G.root.position.clone(); j2 = new THREE.Vector3(14, 0, 4); });
-  goblin = { G, steps, i: 0, t: 0, started: false, hold: false, camR: 7.5, intro: true, after: () => { coin.visible = coinWas; endIntro(); after && after(); } };
+  S2(0.9, u => { G.jaw.scale.y = 0.32 + 0.6 * Math.abs(Math.sin(u * 22)); G.head.rotation.x = -0.35 * Math.sin(Math.PI * u); G.arms.forEach((a2, i) => a2.rotation.z = (i ? 1 : -1) * (0.25 + 0.8 * Math.sin(Math.PI * u))); }, () => { evilLaugh(8, 250); });
+  // exit: a massive fart launches him into the sky like a rocket
+  const puffs = [], gasMat = () => new THREE.MeshStandardMaterial({ color: ['#9acd32', '#7fb02a', '#b5d65a', '#6b8f23'][Math.floor(Math.random() * 4)], transparent: true, opacity: 0.75, roughness: 1, depthWrite: false });
+  const puff = (pos, big) => { const m = new THREE.Mesh(new THREE.SphereGeometry(0.25 + Math.random() * 0.25, 12, 8), gasMat()); m.position.copy(pos).add(new THREE.Vector3((Math.random() - .5) * 0.4, 0, (Math.random() - .5) * 0.4)); scene.add(m); puffs.push({ m, v: new THREE.Vector3((Math.random() - .5) * (big ? 5 : 1.5), -Math.random() * (big ? 2 : 0.5), (Math.random() - .5) * (big ? 5 : 1.5)), grow: 1.5 + Math.random() * 2.5, life: 0 }); };
+  const stepPuffs = dt => { for (let i = puffs.length - 1; i >= 0; i--) { const q = puffs[i]; q.life += dt; q.m.position.addScaledVector(q.v, dt); q.v.multiplyScalar(0.94); q.m.position.y = Math.max(q.m.position.y, TOP + 0.2); q.m.position.y += dt * 0.4; q.m.scale.setScalar(1 + q.life * q.grow); q.m.material.opacity = Math.max(0, 0.75 * (1 - q.life / 2.6)); if (q.life > 2.6) { scene.remove(q.m); puffs.splice(i, 1); } } };
+  let lastT = 0;
+  // squat, strain, tremble...
+  S2(1.1, u => { const e = Math.min(1, u * 2.5); G.body.position.y = 0.45 - 0.2 * e; G.legs.forEach(l => l.rotation.x = -0.6 * e); G.arms.forEach((a2, i) => { a2.rotation.x = -1.2 * e; a2.rotation.z = (i ? 1 : -1) * (0.25 + 0.6 * e); }); G.body.rotation.x = 0.3 * e; G.jaw.scale.y = 0.32 + 0.15 * Math.abs(Math.sin(u * 40)); G.root.position.x = (Math.random() - .5) * 0.06 * u; G.body.scale.setScalar(1 + 0.12 * u); shake = Math.max(shake, 0.03 * u); },
+    () => { G.root.rotation.y = camYaw() + Math.PI * 0.85; $('#subsText').innerHTML = '…uh oh. 💨'; tone('sine', 120, 260, 1.1, 0.12); });
+  // ...BRRRAAAAP — liftoff
+  S2(2.8, u => {
+    const dt = Math.max(0, u * 2.8 - lastT); lastT = u * 2.8;
+    const t = u * 2.8, lift = t < 0.35 ? 0 : (t - 0.35);
+    G.body.scale.setScalar(1); G.body.position.y = 0.45; G.legs.forEach(l => l.rotation.x = 0.15 * Math.sin(t * 50)); G.arms.forEach((a2, i) => { a2.rotation.x = -2.9; a2.rotation.z = (i ? 1 : -1) * 0.25; });
+    G.root.position.set(0.15 * Math.sin(t * 30) * Math.min(1, lift), TOP + 9 * lift * lift, 1.2); G.root.rotation.y += 0.25 + lift * 0.3; G.body.rotation.x = 0;
+    const butt = wpos(G.butt); if (Math.random() < 0.9) puff(butt, t < 0.5); if (t < 0.45) { puff(butt, true); puff(butt, true); }
+    stepPuffs(dt); shake = Math.max(shake, t < 0.8 ? 0.45 : 0.12);
+  }, () => { lastT = 0; $('#subsText').innerHTML = '<b>BRRRRAAAAAAP!!!</b> 💨🚀'; fartSfx(); setTimeout(fartSfx, 250); setTimeout(fartSfx, 600); whooshSfx(2.4); tone('sawtooth', 70, 35, 2.2, 0.35); noiseSfx('lowpass', 500, 80, 2.4, 0.9, 1); setTimeout(() => evilLaugh(6, 330), 900); });
+  // the gas lingers a moment
+  S2(1.2, u => { const dt = Math.max(0, u * 1.2 - lastT); lastT = u * 1.2; stepPuffs(dt); G.root.position.y += 0.4; }, () => { lastT = 0; G.root.visible = false; $('#subsText').innerHTML = 'Now — <b>draw your circles!</b> 🍕'; });
+  goblin = { G, steps, i: 0, t: 0, started: false, hold: false, camR: 7.5, intro: true, after: () => { puffs.forEach(q => scene.remove(q.m)); puffs.length = 0; coin.visible = coinWas; endIntro(); after && after(); } };
   jazzDuck(true); renderUI();
 }
 const previewIntro = () => { ensureAudio(); if (toss || goblin || placing) return toast('Wait for the current turn to finish'); $('#invite').classList.remove('on'); startIntro(() => { renderLobby(); }); };
 $('#introBtn').onclick = previewIntro; $('#introBtn2').onclick = previewIntro;
 $('#skipIntro').onclick = () => {
   if (!goblin || !goblin.intro) return endIntro();
-  const after = goblin.after; scene.remove(goblin.G.root); goblin = null; jazzDuck(false); renderUI(); if (after) after();
+  const after = goblin.after; scene.remove(goblin.G.root); goblin = null; shake = 0; jazzDuck(false); renderUI(); if (after) after();
 };
 function startJosh(coinPos, josh) {
   const G = buildGoblin({ skin: SKINS[Math.floor(Math.random() * SKINS.length)], eye: '#ff5a3c', hat: pickOther(['none', 'bandana', 'tophat', 'crown'], ''), size: 1.35 });
@@ -2254,7 +2271,7 @@ $('#startBtn').onclick = () => {
 };
 
 // ---------- installable app + automatic updates (website version only) ----------
-const BUILD = '1794653580';
+const BUILD = '1794653847';
 if (STANDALONE) {
   try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
   let deferredInstall = null;
