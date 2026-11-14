@@ -1033,11 +1033,11 @@ function evaluate(x, z) {
     let sub = own && ph.length === 1 ? `${tosser.name} landed in their own circle 😬` : `${tosser.name}'s coin landed in ${list}'s circle`;
     if (rh.length) sub += ` — and on the rule: "${rh[0].text}"`;
     ph.filter(p => p.name.trim().toLowerCase() === 'burger').forEach(p => { makeBurger(p, x, z); sub += ' 🍔 Order up — a hamburger was made!'; addLog('🍔 A hamburger was made'); });
-    ph.forEach(p => drink(p, p.name.toLowerCase().replace(/[^a-z]/g, '') === 'suckyducky' ? 2 : 1)); state.rounds++;
+    ph.forEach(p => drink(p, ['suckyducky', 'josh'].includes(p.name.toLowerCase().replace(/[^a-z]/g, '')) ? 2 : 1)); state.rounds++;
     showResult(`${list} drink${ph.length > 1 ? '' : 's'}! 🍺`, sub, ph[0].color);
     ph.forEach(pulse); rh.forEach(pulse);
     if (ph.some(p => p.name.trim().toLowerCase() === 'yugo') && !state.yugoWelcomed) { state.yugoWelcomed = true; goblin = { pending: true }; setTimeout(() => startWelcome(new THREE.Vector3(x, TOP, z)), 650); }
-    else if (ph.some(p => p.name.toLowerCase().replace(/[^a-z]/g, '') === 'suckyducky')) { goblin = { pending: true }; const jp = ph.find(p => p.name.toLowerCase().replace(/[^a-z]/g, '') === 'suckyducky'); setTimeout(() => startJosh(new THREE.Vector3(x, TOP, z), jp), 650); }
+    else if (ph.some(p => ['suckyducky', 'josh'].includes(p.name.toLowerCase().replace(/[^a-z]/g, '')))) { goblin = { pending: true }; const jp = ph.find(p => ['suckyducky', 'josh'].includes(p.name.toLowerCase().replace(/[^a-z]/g, ''))); setTimeout(() => startJosh(new THREE.Vector3(x, TOP, z), jp), 650); }
     else if (ph.some(p => p.name.trim().toLowerCase() === 'jack')) { goblin = { pending: true }; setTimeout(() => startGoblin(new THREE.Vector3(x, TOP, z)), 650); }
     addLog(`🍺 ${tosser.name} → ${list} drink${ph.length > 1 ? '' : 's'}`);
     advance();
@@ -2901,7 +2901,7 @@ $('#startBtn').onclick = () => {
 };
 
 // ---------- installable app + automatic updates (website version only) ----------
-const BUILD = '1794658539';
+const BUILD = '1794661650';
 if (STANDALONE) {
   try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
   let deferredInstall = null;
