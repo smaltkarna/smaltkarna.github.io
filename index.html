@@ -1923,6 +1923,7 @@ function makePeerRoom() {
     api.presence = async patch => { merge(mine, patch); pushMine(); };
     const connect = () => {
       clearTimeout(retry); if (!ROOM_CODE || !peer.open) return;
+      if (conn && conn.open && conn.peer === 'pizzabox-' + ROOM_CODE.toLowerCase()) return; // already connected — keep it
       if (conn) { try { conn.close(); } catch (e) {} }
       const c = conn = peer.connect('pizzabox-' + ROOM_CODE.toLowerCase(), { reliable: true });
       c.on('open', () => { if (c === conn) pushMine(); });
@@ -1930,8 +1931,8 @@ function makePeerRoom() {
       c.on('close', () => { if (c !== conn) return; delete others.host; fire(); retry = setTimeout(connect, 2000); });
       c.on('error', () => {});
     };
-    api.join = code => { ROOM_CODE = code; try { localStorage.setItem('pizzabox-join', code); } catch (e) {} delete others.host; fire(); connect(); };
-    peer.on('open', connect);
+    api.join = code => { ROOM_CODE = code; try { localStorage.setItem('pizzabox-join', code); } catch (e) {} delete others.host; fire(); if (conn) { try { conn.close(); } catch (e) {} conn = null; } connect(); };
+    peer.on('open', () => connect());
     peer.on('error', e => { if (e && e.type === 'peer-unavailable') { delete others.host; fire(); retry = setTimeout(connect, 3000); } });
     peer.on('disconnected', () => setTimeout(() => { try { peer.reconnect(); } catch (e) {} }, 1500));
   }
@@ -1947,7 +1948,7 @@ function setRoomCode(code) {
 const me = { pid: null, n: 0, cmd: null, joining: null, cid: null };
 try { me.cid = localStorage.getItem('pizzabox-cid'); if (!me.cid) { me.cid = Math.random().toString(36).slice(2, 12); localStorage.setItem('pizzabox-cid', me.cid); } } catch (e) { me.cid = Math.random().toString(36).slice(2, 12); }
 try { me.pid = localStorage.getItem('pizzabox-pid'); } catch (e) {}
-let cErr = '', lastGJ = null, H = null, A = null, cDraft = '', cWasMine = false, cName = '', cPlace = null;
+let hostPeer = null, hostGone = null, cErr = '', lastGJ = null, H = null, A = null, cDraft = '', cWasMine = false, cName = '', cPlace = null;
 // live top-down view of the game for phones (no goblins, just the box, circles, crosshair and coin)
 const LV = { x: 0, z: 0, r: 0, cx: 0, cz: 0, cy: 0 };
 function liveMap() {
@@ -2027,7 +2028,13 @@ function cSend(type, extra) { me.n++; me.cmd = Object.assign({ n: me.n, type }, 
 function setPid(id) { me.pid = id == null ? null : String(id); try { if (me.pid) localStorage.setItem('pizzabox-pid', me.pid); else localStorage.removeItem('pizzabox-pid'); } catch (e) {} sendCtrl(); renderCtrl(); }
 function onCtrlPeers(peers) {
   const hosts = peers.filter(p => !p.sameTab && p.presence && p.presence.g && p.presence.g.role === 'host').sort((a, b) => (a.presence.g.since || 0) - (b.presence.g.since || 0));
-  H = hosts.length ? hosts[0].presence.g : null; A = hosts.length ? hosts[0].presence.a || null : null;
+  let hp = hosts.find(p => p.peer === hostPeer) || hosts[0] || null; // stick with the same main screen while it's there
+  if (!hp) {
+    if (H && !hostGone) { hostGone = setTimeout(() => { hostGone = null; H = null; A = null; lastGJ = null; renderCtrl(); }, 5000); } // brief blip: keep the screen as it is
+    return;
+  }
+  clearTimeout(hostGone); hostGone = null; hostPeer = hp.peer;
+  H = hp.presence.g; A = hp.presence.a || null;
   if (H && me.joining) { const f = [...(H.players || []), ...(H.lobby || [])].find(p => p.name.toLowerCase() === me.joining.toLowerCase()); if (f) { me.joining = null; const ow = H.owners && H.owners[String(f.id)]; if (ow && ow !== me.cid) { cErr = `"${f.name}" is already in the game — pick a different name.`; } else { setPid(f.id); return; } } }
   // lost the player to another phone? start over
   if (H && me.pid && H.owners && H.owners[String(me.pid)] && H.owners[String(me.pid)] !== me.cid) { me.pid = null; try { localStorage.removeItem('pizzabox-pid'); } catch (e) {} cErr = 'That player is being used on another phone.'; sendCtrl(); }
@@ -2164,7 +2171,7 @@ $('#startBtn').onclick = () => {
 };
 
 // ---------- installable app + automatic updates (website version only) ----------
-const BUILD = '1794616199';
+const BUILD = '1794616576';
 if (STANDALONE) {
   try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
   let deferredInstall = null;
