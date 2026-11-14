@@ -183,6 +183,13 @@
   #startBtn{margin-top:18px;background:linear-gradient(180deg,#9be15d,#4f9a2a);color:#10230a;font-weight:900;font-size:24px;padding:16px 40px;border-radius:18px;box-shadow:0 10px 30px rgba(80,180,60,.35)}
   #startBtn:disabled{filter:grayscale(.8) brightness(.6)}
   .lb-note{color:var(--muted);font-size:13px;margin-top:10px}
+  #subs{position:fixed;left:50%;bottom:34px;transform:translateX(-50%);z-index:30;display:none;flex-direction:column;align-items:center;gap:10px;width:min(920px,92vw);pointer-events:none}
+  #subs.on{display:flex}
+  #subsText{background:rgba(8,5,3,.82);color:#fff;font-size:clamp(20px,2.6vw,32px);font-weight:800;line-height:1.3;text-align:center;padding:14px 24px;border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.5);border:2px solid rgba(155,225,93,.55)}
+  #subsText b{color:#9be15d}
+  #skipIntro{pointer-events:auto;background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.3);padding:8px 14px;font-size:13px;font-weight:700}
+  body.ctrl #subs{display:none!important}
+  body.intro #hud,body.intro #help,body.intro #result,body.intro #panel,body.intro #menuBtn,body.intro #inviteBtn,body.intro #installBtn,body.intro #jazzBtn{display:none!important}
   #yugo{position:fixed;left:50%;top:40%;transform:translate(-50%,-50%) scale(.6);z-index:40;pointer-events:none;opacity:0;font-family:'Hiragino Maru Gothic ProN','Yu Gothic','Noto Sans JP',sans-serif;font-weight:800;font-size:clamp(26px,5vw,52px);line-height:1.25;text-align:center;color:#fff;background:linear-gradient(135deg,#ff5fa2,#ff9a3c);padding:22px 34px;border-radius:28px;box-shadow:0 18px 50px rgba(255,80,150,.45);transition:opacity .35s,transform .45s cubic-bezier(.2,1.6,.4,1)}
   #yugo.on{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(-3deg)}
   #toast{position:fixed;left:50%;bottom:100px;transform:translateX(calc(-50% + var(--off)));background:#000c;color:#fff;padding:9px 14px;border-radius:10px;font-size:13.5px;opacity:0;transition:opacity .25s;pointer-events:none;z-index:30}
@@ -296,6 +303,7 @@
   <button id="startBtn">Start game ▶</button>
   <p class="lb-note">After you start, everyone draws their circle — on their phone, or right here.</p>
 </div></div>
+<div id="subs"><div id="subsText"></div><button id="skipIntro">Skip intro ⏭</button></div>
 <div id="yugo">こんにちは、ユーゴ！<br>元気？ 大好きだよ！💖</div>
 
 <div id="modal">
@@ -1358,7 +1366,7 @@ function stepGoblin(dt) {
   const s = goblin.steps[goblin.i];
   if (!s) { $('#bubble').classList.remove('on'); const after = goblin.after; scene.remove(goblin.G.root); goblin = null; coin.visible = true; coin.scale.set(1, 1, 1); jazzDuck(false); renderUI(); if (after) after(); return; }
   if (!goblin.started) { goblin.started = true; s.start && s.start(); }
-  goblin.t += dt; const u = Math.min(1, goblin.t / s.d); s.f(u);
+  goblin.t += dt; const u = s.wait ? (s.wait() ? 1 : Math.min(0.999, goblin.t / (s.d || 1))) : Math.min(1, goblin.t / s.d); s.f(s.wait ? goblin.t : u, u);
   if (goblin && goblin.hold) coin.position.copy(wpos(goblin.G.arms[1].hand));
   if (u >= 1) { goblin.i++; goblin.t = 0; goblin.started = false; }
 }
@@ -1645,6 +1653,76 @@ function clearBurgers() { burgers.forEach(b => { if (b.dying < 0) { b.dying = 0;
 function speak(text, pitch = 0.6, rate = 1.05) {
   try { const ut = new SpeechSynthesisUtterance(text); ut.lang = 'en-US'; ut.pitch = pitch; ut.rate = rate; const v = speechSynthesis.getVoices().find(v => /^en/i.test(v.lang)); if (v) ut.voice = v; speechSynthesis.speak(ut); } catch (e) {}
 }
+// ---------- the rules, explained by a goblin (main screen, when the game starts) ----------
+const INTRO_LINES = [
+  ['Welcome, mortals… to <b>THE PIZZA BOX!</b>', 'Welcome, mortals. To the pizza box!', 'wave'],
+  ['Everyone writes their name inside the box… and draws a <b>circle</b> around it.', 'Everyone writes their name inside the box, and draws a circle around it.', 'point'],
+  ['On your turn, <b>freeze the crosshair</b>… then <b>throw</b> when the yellow circle is small!', 'On your turn, freeze the crosshair. Then throw, when the yellow circle is small!', 'throw'],
+  ['Land in someone\'s circle — <b>they drink!</b>', 'Land in someone\'s circle, and they drink!', 'cheer'],
+  ['Land on empty cardboard — you <b>write a new rule</b> on the box.', 'Land on empty cardboard, and you write a new rule on the box.', 'point'],
+  ['Land on a rule — <b>you must obey it!</b> Unless you wrote it.', 'Land on a rule, and you must obey it! Unless you wrote it.', 'shrug'],
+  ['Miss the box completely… and <b>YOU drink.</b>', 'Miss the box completely, and YOU drink.', 'wag'],
+  ['And if you see me again… <b>hide your coin.</b> Hehehe!', 'And if you see me again, hide your coin. Hehehe!', 'cackle'],
+];
+let introVoice = null;
+function introSpeak(text, done) {
+  let finished = false, spoke = false, readable = false; const fin = () => { if (!finished) { finished = true; done(); } };
+  const check = () => { if (spoke && readable) fin(); };
+  const words = text.split(/\s+/).length;
+  setTimeout(() => { readable = true; check(); }, Math.max(2.4, words * 0.34) * 1000); // always long enough to read the subtitle
+  setTimeout(fin, (Math.max(2.4, words * 0.42) + 2) * 1000); // backup if the voice never reports back
+  try {
+    const ut = new SpeechSynthesisUtterance(text); ut.lang = 'en-US'; ut.pitch = 0.45; ut.rate = 0.95;
+    if (!introVoice) { const vs = speechSynthesis.getVoices().filter(v => /^en/i.test(v.lang)); introVoice = vs.find(v => /male|daniel|fred|alex|guy|david|google uk english male/i.test(v.name)) || vs[0] || null; }
+    if (introVoice) ut.voice = introVoice;
+    ut.onend = () => setTimeout(() => { spoke = true; check(); }, 350); ut.onerror = () => { spoke = true; check(); };
+    speechSynthesis.speak(ut);
+  } catch (e) { spoke = true; }
+}
+function endIntro() {
+  try { speechSynthesis.cancel(); } catch (e) {}
+  $('#subs').classList.remove('on'); document.body.classList.remove('intro');
+}
+function startIntro(after) {
+  if (goblin) { after && after(); return; }
+  const G = buildGoblin({ skin: '#5aa83a', eye: '#ffe14d', hat: 'tophat', size: 1.7 });
+  scene.add(G.root);
+  const stand = new THREE.Vector3(0, TOP, 1.2);
+  const camYaw = () => Math.atan2(camera.position.x - stand.x, camera.position.z - stand.z);
+  const steps = [], S2 = (d, f, st, wait) => steps.push({ d, f, start: st, wait });
+  const coinWas = coin.visible;
+  document.body.classList.add('intro'); $('#subs').classList.add('on'); $('#subsText').innerHTML = '…';
+  try { speechSynthesis.cancel(); speechSynthesis.getVoices(); } catch (e) {}
+  let yaw;
+  S2(1.1, u => { G.root.position.set(stand.x, THREE.MathUtils.lerp(15, TOP, u * u), stand.z); G.root.rotation.y = yaw + (1 - u) * 12; G.arms.forEach(a2 => a2.rotation.x = -2.8); }, () => { yaw = camYaw(); wheeSfx(); });
+  S2(0.35, u => { const k = Math.sin(Math.PI * u); G.arms.forEach(a2 => a2.rotation.x = 0); G.body.scale.set(1 + 0.25 * k, 1 - 0.3 * k, 1 + 0.25 * k); }, thudSfx);
+  S2(0.8, u => { G.jaw.scale.y = 0.32 + 0.6 * Math.abs(Math.sin(u * 20)); G.head.rotation.x = -0.25 * Math.sin(Math.PI * u); }, () => evilLaugh(5, 260));
+  INTRO_LINES.forEach(([sub, say, pose]) => {
+    let done = false;
+    S2(1, t => {
+      // talk: flap the jaw, gesture, bob
+      const talking = !done; G.jaw.scale.y = talking ? 0.32 + 0.7 * Math.abs(Math.sin(t * 17)) * (0.6 + 0.4 * Math.sin(t * 5)) : 0.32;
+      G.body.position.y = 0.45 + 0.03 * Math.sin(t * 6); G.head.rotation.z = 0.1 * Math.sin(t * 2.3); G.root.rotation.y = camYaw();
+      const A0 = G.arms[0], A1 = G.arms[1];
+      if (pose === 'wave') { A1.rotation.x = -0.3; A1.rotation.z = 2.4 + 0.4 * Math.sin(t * 10); A0.rotation.x = 0; A0.rotation.z = -0.25; }
+      else if (pose === 'point') { A1.rotation.x = -1.5 + 0.1 * Math.sin(t * 3); A1.rotation.z = 0.25; A0.rotation.x = -0.2; A0.rotation.z = -0.4; }
+      else if (pose === 'throw') { const k = (t * 1.3) % 2; A1.rotation.x = k < 1 ? 1.2 * k : 1.2 - 3.6 * (k - 1); A1.rotation.z = 0.25; A0.rotation.x = -0.5; }
+      else if (pose === 'cheer') { A0.rotation.x = A1.rotation.x = -2.7 + 0.25 * Math.sin(t * 12); A0.rotation.z = -0.3; A1.rotation.z = 0.3; G.body.position.y = 0.45 + 0.12 * Math.abs(Math.sin(t * 7)); }
+      else if (pose === 'shrug') { A0.rotation.z = -1.2; A1.rotation.z = 1.2; A0.rotation.x = A1.rotation.x = -0.4; G.head.rotation.z = 0.25 * Math.sin(t * 1.5); }
+      else if (pose === 'wag') { A1.rotation.x = -2.2; A1.rotation.z = 0.25 + 0.35 * Math.sin(t * 12); A0.rotation.x = 0; A0.rotation.z = -0.25; }
+      else if (pose === 'cackle') { A0.rotation.x = A1.rotation.x = -0.9; A0.rotation.z = -0.9 - 0.2 * Math.sin(t * 9); A1.rotation.z = 0.9 + 0.2 * Math.sin(t * 9); G.body.rotation.x = 0.15 * Math.sin(t * 9); }
+    }, () => { $('#subsText').innerHTML = sub; introSpeak(say, () => { done = true; }); }, () => done);
+  });
+  S2(0.9, u => { G.jaw.scale.y = 0.32 + 0.6 * Math.abs(Math.sin(u * 22)); G.head.rotation.x = -0.35 * Math.sin(Math.PI * u); G.arms.forEach((a2, i) => a2.rotation.z = (i ? 1 : -1) * (0.25 + 0.8 * Math.sin(Math.PI * u))); }, () => { evilLaugh(8, 250); $('#subsText').innerHTML = 'Now — <b>draw your circles!</b> 🍕'; });
+  let j1, j2;
+  S2(1.1, u => { G.root.position.lerpVectors(j1, j2, u); G.root.position.y = THREE.MathUtils.lerp(TOP, 0, u) + 4 * 3 * u * (1 - u); G.root.rotation.y = Math.atan2(j2.x - j1.x, j2.z - j1.z); G.arms.forEach(a2 => a2.rotation.x = -2.6 * Math.sin(Math.PI * u)); }, () => { boingSfx(); j1 = G.root.position.clone(); j2 = new THREE.Vector3(14, 0, 4); });
+  goblin = { G, steps, i: 0, t: 0, started: false, hold: false, camR: 7.5, intro: true, after: () => { coin.visible = coinWas; endIntro(); after && after(); } };
+  jazzDuck(true); renderUI();
+}
+$('#skipIntro').onclick = () => {
+  if (!goblin || !goblin.intro) return endIntro();
+  const after = goblin.after; scene.remove(goblin.G.root); goblin = null; jazzDuck(false); renderUI(); if (after) after();
+};
 function startJosh(coinPos, josh) {
   const G = buildGoblin({ skin: SKINS[Math.floor(Math.random() * SKINS.length)], eye: '#ff5a3c', hat: pickOther(['none', 'bandana', 'tophat', 'crown'], ''), size: 1.35 });
   scene.add(G.root);
@@ -2167,11 +2245,11 @@ $('#lbAdd').addEventListener('submit', e => { e.preventDefault(); const n = $('#
 $('#startBtn').onclick = () => {
   if ([...state.lobby, ...state.players].length < 2) return;
   state.started = true; save(); renderUI(); renderLobby(); ensureAudio();
-  showResult('Game on! 🍕', state.lobby.length ? 'Everyone draw your circle — on your phone, or ✏️ / 🎲 next to your name here.' : 'Flip the coin!');
+  startIntro(() => showResult('Game on! 🍕', state.lobby.length ? 'Everyone draw your circle — on your phone, or ✏️ / 🎲 next to your name here.' : 'Flip the coin!'));
 };
 
 // ---------- installable app + automatic updates (website version only) ----------
-const BUILD = '1794616576';
+const BUILD = '1794649445';
 if (STANDALONE) {
   try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
   let deferredInstall = null;
