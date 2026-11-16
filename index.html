@@ -189,6 +189,9 @@
   #subsText b{color:#9be15d}
   #skipIntro{pointer-events:auto;background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.3);padding:8px 14px;font-size:13px;font-weight:700}
   body.ctrl #subs{display:none!important}
+  #introVid{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;z-index:25;background:#000;display:none;pointer-events:none}
+  body.introvid #introVid{display:block}
+  body.ctrl #introVid{display:none!important}
   body.intro #lobby{display:none!important}
   body.intro #hud,body.intro #help,body.intro #result,body.intro #panel,body.intro #menuBtn,body.intro #inviteBtn,body.intro #installBtn,body.intro #jazzBtn{display:none!important}
   #splat{position:fixed;z-index:28;width:min(38vw,380px);height:min(30vw,300px);transform:translate(-50%,-50%) scale(.2);opacity:0;pointer-events:none;
@@ -2485,7 +2488,58 @@ function endIntro() {
   try { speechSynthesis.cancel(); } catch (e) {}
   $('#subs').classList.remove('on'); document.body.classList.remove('intro');
 }
+// ---------- prerecorded rules video (rendered in Blender); the live 3D intro is the fallback ----------
+const INTRO_VID = { src: 'intro.mp4', cues: {"drop": 0.6, "land": 1.5, "laugh": 1.85, "cackle": 44.15, "squat": 45.05, "fart": 46.15, "linger": 48.95, "end": 50.15, "lines": [2.95, 6.35, 12.55, 19.15, 22.95, 29.15, 35.35, 39.15]} };
+let introVid = null, introVidOk = null;
+function prepIntroVideo() {
+  if (CTRL || introVid) return;
+  introVid = document.createElement('video'); introVid.id = 'introVid';
+  Object.assign(introVid, { muted: true, playsInline: true, preload: 'auto' }); introVid.setAttribute('playsinline', ''); introVid.setAttribute('muted', '');
+  introVid.addEventListener('canplaythrough', () => { if (introVidOk === null) introVidOk = true; }, { once: true });
+  introVid.addEventListener('error', () => { introVidOk = false; });
+  introVid.src = introVid.canPlayType('video/mp4; codecs="avc1.640028"') ? INTRO_VID.src : INTRO_VID.src.replace('.mp4', '.webm'); document.body.appendChild(introVid);
+}
 function startIntro(after) {
+  if (goblin) { after && after(); return; }
+  prepIntroVideo();
+  if (!introVid || introVidOk === false || introVid.readyState < 3) return startIntroLive(after);
+  const v = introVid, C = INTRO_VID.cues, fired = new Set();
+  goblin = { pending: true, intro: true, video: true };
+  document.body.classList.add('intro', 'introvid'); $('#subs').classList.add('on'); $('#subsText').innerHTML = '…';
+  try { speechSynthesis.cancel(); speechSynthesis.getVoices(); } catch (e) {}
+  jazzDuck(true); renderUI();
+  let speaking = false, raf = 0;
+  const finish = () => {
+    cancelAnimationFrame(raf); v.pause(); document.body.classList.remove('introvid'); endIntro();
+    goblin = null; jazzDuck(false); renderUI(); after && after();
+  };
+  goblin.after = after; goblin.finishVideo = finish;
+  const cue = (name, at, fn) => { if (!fired.has(name) && v.currentTime >= at) { fired.add(name); fn(); } };
+  const tick = () => {
+    if (!goblin || !goblin.video) return;
+    cue('drop', C.drop, () => wheeSfx());
+    cue('land', C.land, () => { thudSfx(1); });
+    cue('laugh', C.laugh, () => evilLaugh(5, 260));
+    INTRO_LINES.forEach(([sub, say], i) => cue('l' + i, C.lines[i], () => {
+      $('#subsText').innerHTML = sub; speaking = true;
+      introSpeak(say, () => { speaking = false; if (v.paused && !v.ended) v.play().catch(() => {}); });
+    }));
+    // if the voice is still talking when the next line is due, hold the video for it
+    const nextLine = C.lines.find(x => x > v.currentTime + 0.001);
+    if (speaking && nextLine !== undefined && v.currentTime > nextLine - 0.08 && !v.paused) v.pause();
+    if (speaking && v.currentTime > C.cackle - 0.08 && v.currentTime < C.cackle && !v.paused) v.pause();
+    cue('cackle', C.cackle, () => evilLaugh(8, 250));
+    cue('squat', C.squat, () => { $('#subsText').innerHTML = '…uh oh. 💨'; tone('sine', 120, 260, 1.1, 0.12); });
+    cue('fart', C.fart, () => { $('#subsText').innerHTML = '<b>BRRRRAAAAAAP!!!</b> 💨🚀'; fartSfx(); setTimeout(fartSfx, 250); setTimeout(fartSfx, 600); whooshSfx(2.4); tone('sawtooth', 70, 35, 2.2, 0.35); noiseSfx('lowpass', 500, 80, 2.4, 0.9, 1); });
+    cue('linger', C.linger, () => { $('#subsText').innerHTML = 'Now — <b>draw your circles!</b> 🍕'; });
+    if (v.ended) { setTimeout(finish, 900); return; }
+    raf = requestAnimationFrame(tick);
+  };
+  v.currentTime = 0;
+  v.play().then(() => { raf = requestAnimationFrame(tick); }).catch(() => { goblin = null; document.body.classList.remove('introvid'); startIntroLive(after); });
+}
+
+function startIntroLive(after) {
   if (goblin) { after && after(); return; }
   const G = buildGoblin({ skin: '#5aa83a', eye: '#ffc414', hat: 'tophat', size: 1.7, look: RULES_LOOK });
   scene.add(G.root);
@@ -2547,6 +2601,7 @@ $('#tryRoul').onclick = () => { if (!canAim() && !mini) return toast('Start a ga
 $('#tryBoss').onclick = () => { if (!canAim() && !mini) return toast('Start a game with 2+ players first (and wait for the turn to finish)'); startMini('boss'); };
 $('#introBtn').onclick = previewIntro; $('#introBtn2').onclick = previewIntro;
 $('#skipIntro').onclick = () => {
+  if (goblin && goblin.video) return goblin.finishVideo();
   if (!goblin || !goblin.intro) return endIntro();
   const after = goblin.after; scene.remove(goblin.G.root); goblin = null; shake = 0; jazzDuck(false); renderUI(); if (after) after();
 };
@@ -3219,7 +3274,7 @@ $('#startBtn').onclick = () => {
 };
 
 // ---------- installable app + automatic updates (website version only) ----------
-const BUILD = '1794822950';
+const BUILD = '1794832343';
 if (STANDALONE) {
   try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
   let deferredInstall = null;
@@ -3267,7 +3322,7 @@ $('#copyLink').onclick = async () => { try { await navigator.clipboard.writeText
 // fonts first so the marker writing renders correctly
 const fontsReady = document.fonts ? Promise.race([Promise.all([document.fonts.load('80px "Permanent Marker"'), document.fonts.load('900 80px Inter'), document.fonts.load('700 40px Inter')]), new Promise(r => setTimeout(r, 3000))]) : Promise.resolve();
 fontsReady.catch(() => {}).then(() => { makeBase(); makeLid(); drawTop(); });
-renderUI(); loop(); setTimeout(prewarm, 600);
+renderUI(); loop(); setTimeout(prewarm, 600); setTimeout(prepIntroVideo, 1500);
 if (!state.players.length) setTimeout(() => $('#nameInput').focus({ preventScroll: true }), 300);
 })();
 </script>
