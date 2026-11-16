@@ -1,13 +1,15 @@
 // Pizza Box service worker: always tries the network for the game page (so updates arrive right away),
 // falls back to the saved copy when offline; libraries, fonts and icons are cached.
 const CACHE = 'pizzabox-v1';
+const ROOT = new URL('./', self.registration.scope).pathname;
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
 self.addEventListener('fetch', e => {
   const req = e.request; if (req.method !== 'GET') return;
   const url = new URL(req.url);
   if (url.pathname.endsWith('version.json')) return;
-  const isPage = req.mode === 'navigate' || (url.origin === location.origin && (url.pathname.endsWith('/') || url.pathname.endsWith('index.html')));
+  if (url.origin === location.origin && url.pathname.startsWith(ROOT + 'classic')) return; // the frozen classic version is never cached
+  const isPage = url.origin === location.origin && (url.pathname === ROOT || url.pathname === ROOT + 'index.html');
   if (isPage) {
     e.respondWith(fetch(req, { cache: 'no-store' }).then(r => { const c = r.clone(); caches.open(CACHE).then(cc => cc.put('./', c)); return r; })
       .catch(() => caches.match('./')));
