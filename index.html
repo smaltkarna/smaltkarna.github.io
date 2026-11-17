@@ -57,8 +57,8 @@
   #panel footer button{flex:1;background:rgba(255,255,255,.07);color:var(--ink);padding:9px;font-size:13px;border:1px solid var(--line)}
   #panel footer button.warn{background:rgba(226,69,60,.25);border-color:var(--red)}
   #hud{position:fixed;left:50%;bottom:22px;transform:translateX(calc(-50% + var(--off)));display:flex;align-items:center;gap:10px;z-index:6}
-  #turn{background:var(--card);border:1px solid var(--line);padding:10px 14px;border-radius:14px;font-size:14px;white-space:nowrap;backdrop-filter:blur(8px)}
-  #turn b{font-family:"Permanent Marker",cursive;font-weight:400;font-size:18px;color:var(--accent)}
+  #turn{background:var(--card);border:1px solid var(--line);padding:6px 18px;border-radius:16px;font-size:14px;font-weight:600;white-space:nowrap;backdrop-filter:blur(8px)}
+  #turn b{font-family:"Permanent Marker",cursive;font-weight:400;font-size:clamp(38px,3.6vw,56px);line-height:1;margin-left:8px;vertical-align:middle}
   #tossBtn{background:linear-gradient(180deg,#ffcf5a,#e8962a);color:#2a1606;font-weight:900;font-size:18px;padding:15px 26px;border-radius:16px;box-shadow:0 8px 24px rgba(232,150,42,.35),inset 0 -3px 0 rgba(0,0,0,.18);letter-spacing:.3px}
   #tossBtn{white-space:nowrap}
   @media (max-width:1250px){#help{display:none}}
@@ -75,6 +75,9 @@
   #result.on{display:block;animation:pop .35s cubic-bezier(.2,1.6,.4,1)}
   #result .title{font-family:"Permanent Marker",cursive;font-size:34px;line-height:1.1}
   #result .sub{color:#e6d8c3;font-size:14.5px;margin-top:6px;line-height:1.4}
+  #result.big{max-width:min(900px,calc(100vw - 360px));padding:20px 32px}
+  #result.big .title{font-size:clamp(40px,5.2vw,68px);line-height:1.05}
+  #result.big .sub{font-size:clamp(17px,1.6vw,22px);font-weight:600;margin-top:10px}
   @keyframes pop{from{transform:translateX(calc(-50% + var(--off))) scale(.7);opacity:0}}
   #modal{position:fixed;inset:0;background:rgba(10,6,3,.55);display:none;align-items:center;justify-content:center;z-index:20;padding:16px}
   #modal.on{display:flex}
@@ -858,7 +861,7 @@ function renderUI() {
   $('#ruleCount').textContent = state.rules.length ? `(${state.rules.length})` : '';
   $('#log').innerHTML = state.log.map(l => `<li>${esc(l)}</li>`).join('');
   const ok = state.players.length >= 2;
-  $('#turn').innerHTML = ok ? `Up next: <b>${esc(cur.name)}</b>` : 'Add at least 2 players';
+  $('#turn').innerHTML = ok ? `Turn: <b style="color:${lighten(cur.color)}">${esc(cur.name)}</b>` : 'Add at least 2 players';
   $('#tossBtn').disabled = !ok || !!toss || !!goblin;
   document.body.classList.toggle('mini', !!mini);
   $('#tossBtn').innerHTML = (mini ? (mini.type === 'hot' ? '🔥 Pass it!' : mini.type === 'roulette' ? '🎰 Spinning…' : mini.type === 'cups' ? '🥤 Pick a cup' : '👊 Hit!') : aim.mode === 'lock' ? '🪙 Throw!' : '🎯 Flip the coin') + ' <kbd>Space</kbd>';
@@ -893,7 +896,7 @@ $('#newGame').onclick = e => {
 };
 let toastT;
 function toast(t) { const el2 = $('#toast'); el2.textContent = t; el2.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => el2.classList.remove('on'), 2200); }
-function showResult(title, sub, color) { lastResultAt = Date.now(); lastResult = { t: String(title).slice(0, 120), s: String(sub || '').slice(0, 200), c: color || null }; setTimeout(hostPublish, 0); const r = $('#result'); r.querySelector('.title').textContent = title; r.querySelector('.sub').textContent = sub; r.style.borderColor = color || 'var(--line)'; r.querySelector('.title').style.color = color ? lighten(color) : 'var(--ink)'; r.classList.remove('on'); void r.offsetWidth; r.classList.add('on'); }
+function showResult(title, sub, color, size) { $('#result').classList.toggle('big', size === 'big'); lastResultAt = Date.now(); lastResult = { t: String(title).slice(0, 120), s: String(sub || '').slice(0, 200), c: color || null }; setTimeout(hostPublish, 0); const r = $('#result'); r.querySelector('.title').textContent = title; r.querySelector('.sub').textContent = sub; r.style.borderColor = color || 'var(--line)'; r.querySelector('.title').style.color = color ? lighten(color) : 'var(--ink)'; r.classList.remove('on'); void r.offsetWidth; r.classList.add('on'); }
 function hideResult() { lastResult = null; $('#result').classList.remove('on'); }
 function lighten(hex) { const c = new THREE.Color(hex); const hsl = {}; c.getHSL(hsl); c.setHSL(hsl.h, Math.min(1, hsl.s + .1), Math.max(0.62, hsl.l)); return '#' + c.getHexString(); }
 
@@ -1059,8 +1062,7 @@ function evaluate(x, z) {
     advance();
   } else if (rh.length) {
     const r = rh[0]; pulse(r);
-    if (r.byId === tosser.id) { showResult('Your own rule 😎', `"${r.text}" — you wrote it, ${tosser.name}, so you're safe.`, r.color); addLog(`😎 ${tosser.name} hit their own rule`); }
-    else { state.rounds++; showResult(`${tosser.name}: ${r.text}`, `Rule #${state.rules.indexOf(r) + 1}, written by ${r.by}`, r.color); addLog(`📜 ${tosser.name} → "${r.text}"`); }
+    state.rounds++; showResult(`📜 ${r.text}`, `👉 ${tosser.name} has to do it!  ·  rule #${state.rules.indexOf(r) + 1}, written by ${r.byId === tosser.id ? 'you 😈' : r.by}`, r.color, 'big'); addLog(`📜 ${tosser.name} → "${r.text}"`);
     advance();
   } else openRuleModal(x, z, tosser);
 }
@@ -1091,7 +1093,7 @@ $('#saveRule').onclick = () => {
   const r = minR + Math.random() * (maxR - minR);
   const rule = { id: newId(), text, by: tosser.name, byId: tosser.id, color: tosser.color, r, x: clamp(x, -HALF + r, HALF - r), z: clamp(z, -HALF + r, HALF - r) };
   state.rules.push(rule); drawTop(); pulse(rule);
-  showResult('New rule on the box ✍️', `"${text}" — next person to land here does it.`, tosser.color);
+  showResult(`✍️ ${text}`, `New rule by ${tosser.name} — whoever lands here has to do it!`, tosser.color, 'big');
   addLog(`✍️ ${tosser.name} wrote: "${text}"`);
   $('#modal').classList.remove('on'); pendingRule = null; advance();
 };
@@ -2465,7 +2467,7 @@ const INTRO_LINES = [
   ['On your turn, <b>freeze the crosshair</b>… then <b>throw</b> when the yellow circle is small!', 'On your turn, freeze the crosshair. Then throw, when the yellow circle is small!', 'throw'],
   ['Land in someone\'s circle — <b>they drink!</b>', 'Land in someone\'s circle, and they drink!', 'cheer'],
   ['Land on empty cardboard — you <b>write a new rule</b> on the box.', 'Land on empty cardboard, and you write a new rule on the box.', 'point'],
-  ['Land on a rule — <b>you must obey it!</b> Unless you wrote it.', 'Land on a rule, and you must obey it! Unless you wrote it.', 'shrug'],
+  ['Land on a rule — <b>you must obey it!</b> Even your own.', 'Land on a rule, and you must obey it! Even your own.', 'shrug'],
   ['Miss the box completely… and <b>YOU drink.</b>', 'Miss the box completely, and YOU drink.', 'wag'],
   ['And if you see me again… <b>hide your coin.</b> Hehehe!', 'And if you see me again, hide your coin. Hehehe!', 'cackle'],
 ];
@@ -3279,7 +3281,7 @@ $('#startBtn').onclick = () => {
 };
 
 // ---------- installable app + automatic updates (website version only) ----------
-const BUILD = '1794855736';
+const BUILD = '1794874282';
 if (STANDALONE) {
   try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
   let deferredInstall = null;
