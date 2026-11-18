@@ -58,6 +58,9 @@
   #panel footer button.warn{background:rgba(226,69,60,.25);border-color:var(--red)}
   #hud{position:fixed;left:50%;bottom:22px;transform:translateX(calc(-50% + var(--off)));display:flex;align-items:center;gap:10px;z-index:6}
   #turn{background:var(--card);border:1px solid var(--line);padding:6px 18px;border-radius:16px;font-size:14px;font-weight:600;white-space:nowrap;backdrop-filter:blur(8px)}
+  #turnClock{display:none;background:var(--card);border:1px solid var(--line);padding:6px 14px;border-radius:16px;font-size:18px;font-weight:700;white-space:nowrap;backdrop-filter:blur(8px)}
+  #turnClock.on{display:block}#turnClock b{font-size:28px;font-variant-numeric:tabular-nums}
+  #turnClock.low{border-color:#ff4d4d;color:#ff6b6b;animation:tcpulse .5s ease-in-out infinite alternate}@keyframes tcpulse{to{transform:scale(1.1)}}
   #turn b{font-family:"Permanent Marker",cursive;font-weight:400;font-size:clamp(38px,3.6vw,56px);line-height:1;margin-left:8px;vertical-align:middle}
   #tossBtn{background:linear-gradient(180deg,#ffcf5a,#e8962a);color:#2a1606;font-weight:900;font-size:18px;padding:15px 26px;border-radius:16px;box-shadow:0 8px 24px rgba(232,150,42,.35),inset 0 -3px 0 rgba(0,0,0,.18);letter-spacing:.3px}
   #tossBtn{white-space:nowrap}
@@ -401,6 +404,7 @@
 
 <div id="hud">
   <div id="turn">Add at least 2 players</div>
+  <div id="turnClock"></div>
   <div id="phones" title="Phones connected as controllers"></div>
   <div id="roomCode" title="Phones join with this code"></div>
   <button id="tossBtn">🎯 Flip the coin <kbd>Space</kbd></button>
@@ -1210,7 +1214,7 @@ function evaluate(x, z) {
     ph.forEach(pulse); rh.forEach(pulse);
     if (ph.some(p => p.name.trim().toLowerCase() === 'yugo') && !state.yugoWelcomed) { state.yugoWelcomed = true; goblin = { pending: true }; setTimeout(() => startWelcome(new THREE.Vector3(x, TOP, z)), 650); }
     else if (ph.some(p => ['suckyducky', 'josh'].includes(p.name.toLowerCase().replace(/[^a-z]/g, '')))) { goblin = { pending: true }; const jp = ph.find(p => ['suckyducky', 'josh'].includes(p.name.toLowerCase().replace(/[^a-z]/g, ''))); setTimeout(() => startJosh(new THREE.Vector3(x, TOP, z), jp), 650); }
-    else if (ph.some(p => isGoblinSpot(p))) { goblin = { pending: true }; setTimeout(() => startGoblin(new THREE.Vector3(x, TOP, z)), 650); }
+    else if (ph.some(p => isGoblinSpot(p)) || (ph.some(p => !hasOwnAnim(p)) && Math.random() < 0.25)) { goblin = { pending: true }; setTimeout(() => startGoblin(new THREE.Vector3(x, TOP, z)), 650); }
     addLog(`🍺 ${tosser.name} → ${list} drink${ph.length > 1 ? '' : 's'}`);
     advance();
   } else if (rh.length) {
@@ -3450,7 +3454,25 @@ function spinRoulette() {
   tick();
 }
 function miniKey() { if (!mini || mini.stage !== 'play') return; if (mini.type === 'hot') passHot(); else if (mini.type === 'boss') bossHit(1, null); else if (mini.type === 'fieldgoal') fgPress(null); }
+// 15-second turn clock: too slow and you drink, and the turn moves on
+var TURN_SECS = 15, turnClock = { pid: null, left: TURN_SECS, on: false, shown: null };
+function stepTurnClock(dt) {
+  const el = $('#turnClock'), cur = current();
+  const live = canAim() && cur && !state.lobby.length && !document.body.classList.contains('intro');
+  if (!live || !cur) { turnClock.on = false; if (el.classList.contains('on')) el.classList.remove('on'); if (turnClock.shown !== null) { turnClock.shown = null; hostPublishSoon(); } return; }
+  if (!turnClock.on || turnClock.pid !== cur.id) { turnClock = { pid: cur.id, left: TURN_SECS, on: true, shown: null }; }
+  turnClock.left -= dt;
+  const n = Math.max(0, Math.ceil(turnClock.left));
+  if (n !== turnClock.shown) { turnClock.shown = n; el.innerHTML = `⏱ <b>${n}</b>`; el.classList.toggle('low', n <= 5); el.classList.add('on'); if (n <= 5 && n > 0) tone('square', 880, 880, 0.06, 0.05); hostPublishSoon(); }
+  if (turnClock.left <= 0) {
+    turnClock.on = false; el.classList.remove('on'); aim.mode = 'wander';
+    drink(cur); state.rounds++; tone('sawtooth', 300, 120, 0.5, 0.12);
+    showResult(`⏰ Too slow, ${cur.name}!`, '15 seconds are up — drink! 🍺', cur.color); addLog(`⏰ ${cur.name} ran out of time and drank`);
+    advance();
+  }
+}
 function stepMini(dt) {
+  stepTurnClock(dt);
   if (!mini) { maybeStartMini(); return; }
   mini.t += dt;
   if (mini.stage === 'intro') {
@@ -3967,7 +3989,7 @@ function hostPublish() {
   const cur = state.players.length ? current() : null;
   const g = {
     role: 'host', since: hostSince, phase: gamePhase(), turn: cur ? cur.id : null,
-    ruleFor: pendingRule ? pendingRule.tosser.id : null, started: !!state.started, fr: +fairR().toFixed(2), fm: +maxDrawR().toFixed(2), owners, roundRule: state.roundRule ? [String(state.roundRule.text).slice(0, 80), state.roundRule.left] : null,
+    ruleFor: pendingRule ? pendingRule.tosser.id : null, started: !!state.started, tl: turnClock && turnClock.on ? turnClock.shown : null, fr: +fairR().toFixed(2), fm: +maxDrawR().toFixed(2), owners, roundRule: state.roundRule ? [String(state.roundRule.text).slice(0, 80), state.roundRule.left] : null,
     mini: mini ? { type: mini.type, stage: mini.stage, holder: mini.holder ? mini.holder.id : null, hp: mini.hp, max: mini.max, left: Math.ceil(mini.type === 'cups' ? (mini.pickLeft || 0) : mini.left), sub: mini.sub || null, who: mini.who != null ? mini.who : null, n: mini.n || 0, card: mini.card ? cardTxt(mini.card) : null, cardS: mini.card ? mini.card.s : null, next: mini.next ? cardTxt(mini.next) : null, q: mini.q || null, asker: mini.asker != null ? mini.asker : null, verdict: mini.verdict || null, vb: mini.vb || 0, vl: mini.vl || 0, voted: mini.votes ? Object.keys(mini.votes) : [] } : null,
     lobby: state.lobby.map(p => ({ id: p.id, name: p.name, color: p.color })), drawer: drawerId(),
     players: state.players.map(p => ({ id: p.id, name: p.name, color: p.color, x: +p.x.toFixed(2), z: +p.z.toFixed(2), r: +p.r.toFixed(2) })),
@@ -4359,7 +4381,7 @@ function renderCtrl() {
   let html = H.roundRule ? `<div class="c-card" style="border-color:#ffd84a;background:rgba(60,40,8,.9)"><p style="margin:0;color:#fff3c4">🎰 <b style="color:#ffd84a">This round, everyone:</b> ${esc(H.roundRule[0])} <span style="color:var(--muted)">(${H.roundRule[1]} turn${H.roundRule[1] === 1 ? '' : 's'} left)</span></p></div>` : '';
   const tEl = $('#cTurn');
   if (H.phase === 'over' || (H.phase === 'rule' && String(H.ruleFor) === String(mine.id))) tEl.innerHTML = '';
-  else if (myTurn) tEl.innerHTML = `<span style="color:${lighten(mine.color)}">🍕 Your turn!</span>`;
+  else if (myTurn) tEl.innerHTML = `<span style="color:${lighten(mine.color)}">🍕 Your turn!${H.tl != null ? ` <b style="color:${H.tl <= 5 ? '#ff6b6b' : '#ffd84a'}">⏱ ${H.tl}s</b>` : ''}</span>`;
   else if (H.phase === 'rule') { const w = players.find(p => String(p.id) === String(H.ruleFor)); tEl.innerHTML = `<span style="color:${w ? lighten(w.color) : 'var(--ink)'}">✍️ ${w ? esc(w.name) : 'Someone'} is writing a rule…</span>`; }
   else tEl.innerHTML = turnP ? `<span style="color:${lighten(turnP.color)}">🍕 ${esc(turnP.name)}'s turn</span><small>Watch the big screen — your phone buzzes when you're up.</small>` : 'Waiting for players…';
   if (H.phase === 'over') html += `<div class="c-card c-result" style="border-color:#d7263d"><div class="t" style="color:#ff3b4f">GAME OVER 💀</div><p>The goblin ate the coin and exploded. Check the main screen.</p></div>`;
@@ -4426,7 +4448,7 @@ $('#startBtn').onclick = () => {
 };
 
 // ---------- installable app + automatic updates (website version only) ----------
-const BUILD = '1795037821';
+const BUILD = '1795038978';
 if (STANDALONE) {
   try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
   let deferredInstall = null;
