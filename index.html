@@ -248,11 +248,37 @@
   .pcard.flip{animation:cflip .55s ease-out}@keyframes cflip{0%{transform:rotateY(90deg)}100%{transform:rotateY(0)}}
   .verdict{margin-top:14px;font:900 clamp(22px,2.6vw,34px) system-ui}.verdict.ok{color:#7dff6a}.verdict.bad{color:#ff6b6b}
   .tos-big{font-size:clamp(60px,8vw,110px)}.tos-big small{font-size:28px;vertical-align:middle;opacity:.7}
+  .tos-rule{margin-top:12px;font-size:15px;opacity:.85;line-height:1.5}
+  .tos-votes{display:flex;gap:40px;justify-content:center;font:900 clamp(30px,4vw,52px) system-ui;margin-top:8px}
   .tos-q{font:800 clamp(24px,3vw,40px) system-ui;line-height:1.25;max-width:780px;margin:6px auto;color:#fff3c4}
   #fgMeter{position:fixed;right:40px;top:50%;transform:translateY(-50%);z-index:13;width:46px;height:44vh;border:3px solid #fff;border-radius:14px;background:linear-gradient(#2ecc71 0 30%,#ffd84a 30% 50%,#ff4d4d 50%);display:none;overflow:hidden}
   #fgMeter.on{display:block}#fgFill{position:absolute;left:0;right:0;bottom:0;background:rgba(255,255,255,.82);border-top:4px solid #111}
   #fgMeter span{position:absolute;bottom:6px;left:50%;transform:translateX(-50%) rotate(-90deg);font-weight:900;color:#111;font-size:12px}
-  body.ctrl #gamePanel,body.ctrl #fgMeter{display:none!important}
+  body.ctrl #gamePanel,body.ctrl #fgMeter,body.ctrl #fgWind{display:none!important}
+  body.fgmode #mini{left:16px;top:60px;transform:none;padding:8px 14px;max-width:300px;text-align:left}
+  body.fgmode #miniTitle{font-size:22px}body.fgmode #miniSub{font-size:13px}
+  body.fgmode #gamePanel.fg{left:16px;bottom:16px;transform:none;text-align:left;max-width:300px}
+  body.fgmode #gamePanel.fg #gpTitle{font-size:18px;margin-bottom:4px}body.fgmode #gamePanel.fg #gpBtns button{font-size:16px;padding:8px 14px;margin:6px 0 0}
+  body.fgmode #panel,body.fgmode #hud,body.fgmode #help{opacity:0;pointer-events:none}
+  #snaggle{position:fixed;inset:0;z-index:24;display:flex;align-items:center;justify-content:center;pointer-events:none;opacity:0}
+  .sn-phone{width:340px;height:640px;max-height:88vh;background:#111;border-radius:42px;border:10px solid #222;box-shadow:0 30px 80px rgba(0,0,0,.7),0 0 0 2px #444;display:flex;flex-direction:column;overflow:hidden;font-family:system-ui}
+  .sn-top{display:flex;justify-content:space-between;align-items:center;padding:16px 18px 8px;background:#fff}.sn-logo{font:900 24px system-ui;color:#1fae4b;letter-spacing:-.5px}.sn-ic{opacity:.5}
+  .sn-deck{flex:1;position:relative;background:#f3f3f3;overflow:hidden}
+  .sn-card{position:absolute;inset:10px;border-radius:18px;overflow:hidden;background:#000;box-shadow:0 8px 20px rgba(0,0,0,.25)}
+  .sn-card img{width:100%;height:100%;object-fit:cover;display:block}
+  .sn-card .sn-info{position:absolute;left:0;right:0;bottom:0;padding:60px 16px 16px;background:linear-gradient(transparent,rgba(0,0,0,.85));color:#fff}
+  .sn-card b{font-size:26px}.sn-card p{margin:4px 0 0;font-size:15px;line-height:1.3;opacity:.95}
+  .sn-card i{position:absolute;top:28px;font:900 34px system-ui;font-style:normal;padding:2px 12px;border:4px solid;border-radius:10px;opacity:0}
+  .sn-nope{right:20px;color:#ff3b5c;transform:rotate(18deg)}.sn-like{left:20px;color:#1fdc5a;transform:rotate(-18deg)}
+  .sn-card.gold{box-shadow:0 0 0 4px #ffd84a,0 0 40px #ffd84a}
+  .sn-btns{display:flex;justify-content:center;gap:40px;padding:14px;background:#fff}.sn-btns span{width:58px;height:58px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px;box-shadow:0 4px 14px rgba(0,0,0,.15)}.sn-x{color:#ff3b5c}
+  .sn-match{position:absolute;inset:0;background:linear-gradient(160deg,#1fae4b,#0b6b2c);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;animation:pop .5s cubic-bezier(.2,1.6,.4,1)}
+  .sn-match h2{font:900 36px "Permanent Marker",cursive;margin:0 0 20px}.sn-pics{display:flex;gap:12px}.sn-pics img{width:120px;height:150px;object-fit:cover;border-radius:16px;border:4px solid #fff}
+  .sn-match p{margin-top:18px;font-size:16px}
+  body.ctrl #snaggle{display:none!important}
+  #fgWind{position:fixed;right:24px;top:64px;z-index:13;display:none;background:rgba(20,10,4,.85);border:2px solid #9fd0ff;border-radius:14px;padding:8px 14px;color:#fff;text-align:center;font-size:14px}
+  #fgWind.on{display:block}#fgWind b{font-size:20px}
+  body.fgmode #fgMeter{top:auto;bottom:24px;transform:none;height:34vh}
   .cp-top{font-weight:800;font-size:13px;color:#fff3c4;margin-bottom:6px;display:flex;justify-content:space-between;gap:16px}
   #cupTime{color:#ffd84a;font-size:16px}
   .cup-row{display:flex;align-items:center;gap:6px;margin:4px 0}
@@ -289,6 +315,7 @@
   #menuBtn{display:none;position:fixed;top:12px;left:12px;z-index:8;background:var(--card);color:var(--ink);border:1px solid var(--line);padding:9px 13px;font-weight:700;font-size:14px}
   #jazzBtn{position:fixed;top:14px;right:14px;z-index:8;background:var(--card);color:var(--ink);border:1px solid var(--line);padding:9px 13px;font-size:13px;font-weight:700;backdrop-filter:blur(8px)}
   #jazzBtn.off{opacity:.6}
+  #jazzBtn{width:108px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   #help{position:fixed;right:16px;bottom:22px;color:rgba(246,239,228,.45);font-size:12px;text-align:right;line-height:1.5;z-index:4}
   @media (max-width:760px){
     #panel{display:none;top:58px;left:10px;right:10px;width:auto;bottom:auto;max-height:62vh}
@@ -407,7 +434,7 @@
 <div id="roundRule"></div>
 <div id="fade"></div><div id="cutCap"></div>
 <div id="lowerThird"><span class="lt-logo">GBC</span><span class="lt-text"><b>HANK GRIMSBY</b> · Dateline GBC<br><small>TO CATCH A COIN THIEF · LIVE</small></span></div><div id="tvRec">● REC</div>
-<div id="gamePanel"><div id="gpTitle"></div><div id="gpBody"></div><div id="gpBtns"></div></div><div id="fgMeter"><div id="fgFill"></div><span>POWER</span></div>
+<div id="gamePanel"><div id="gpTitle"></div><div id="gpBody"></div><div id="gpBtns"></div></div><div id="fgWind"></div><div id="fgMeter"><div id="fgFill"></div><span>POWER</span></div>
 <div id="cupPanel"><div class="cp-top">Pick for players without a phone <span id="cupTime"></span></div><div id="cupRows"></div></div>
 <div id="bossBar"><div class="bb-top"><span>👹 THE GOBLIN KING</span><span id="bossTime">10.0s</span></div><div class="bb-bar"><div id="bossFill"></div><span id="bossHp"></span></div></div>
 <div id="yugo">こんにちは、ユーゴ！<br>元気？ 大好きだよ！💖</div>
@@ -1635,7 +1662,8 @@ function bagPick(key, list) {
 const OUTFITS = ['reaper', 'arrow', 'cone', 'prisoner', 'tinfoil', 'clown', 'baby', 'angel', 'viking', 'chef', 'plunger', 'hospital', 'mummy'];
 const HEAD_OUTFITS = new Set(['reaper', 'arrow', 'cone', 'tinfoil', 'clown', 'angel', 'viking', 'chef', 'plunger', 'mummy']);
 function startGoblin(coinPos, forceAct) {
-  const plan = { entr: pickOther(['walk', 'sky', 'lid', 'burrow'], lastGob.entr), act: forceAct || bagPick('act', ['eat', 'burp', 'juggle', 'bite', 'hat', 'polish', 'casino', 'surf', 'golf', 'wedding', 'summon', 'sneeze', 'booger', 'fartcannon', 'rockstar', 'ballet', 'breakdance', 'opera', 'thief', 'insult', 'clones', 'giant', 'plane', 'neptune', 'sting', 'smite', 'duel']), exit: pickOther(['jump', 'rocket', 'burrow', 'run'], lastGob.exit) };
+  musicStyle('sneaky');
+  const plan = { entr: pickOther(['walk', 'sky', 'lid', 'burrow'], lastGob.entr), act: forceAct || bagPick('act', ['eat', 'burp', 'juggle', 'bite', 'hat', 'polish', 'casino', 'surf', 'golf', 'wedding', 'summon', 'sneeze', 'booger', 'fartcannon', 'rockstar', 'ballet', 'breakdance', 'opera', 'thief', 'insult', 'clones', 'giant', 'plane', 'neptune', 'sting', 'smite', 'duel', 'swipe']), exit: pickOther(['jump', 'rocket', 'burrow', 'run'], lastGob.exit) };
   if (plan.entr === 'burrow' && plan.exit === 'burrow') plan.exit = 'rocket';
   if (plan.act === 'plane') plan.exit = 'run';
   if (plan.act === 'sting') { plan.entr = 'walk'; plan.exit = 'run'; }
@@ -1749,7 +1777,7 @@ function startGoblin(coinPos, forceAct) {
   const unhide = () => { coin.visible = true; coin.scale.set(1, 1, 1); };
 
   const cleanups = []; let stomps = -1;
-  const NOGRAB = new Set(['duel', 'plane', 'neptune', 'sting', 'surf', 'golf', 'wedding', 'summon', 'sneeze', 'booger', 'fartcannon', 'rockstar', 'ballet', 'breakdance', 'insult', 'clones', 'giant']);
+  const NOGRAB = new Set(['swipe', 'duel', 'plane', 'neptune', 'sting', 'surf', 'golf', 'wedding', 'summon', 'sneeze', 'booger', 'fartcannon', 'rockstar', 'ballet', 'breakdance', 'insult', 'clones', 'giant']);
   if (plan.act === 'casino') plan.exit = 'run';
   if (!NOGRAB.has(plan.act)) grab();
   if (plan.act === 'sting') {
@@ -2187,6 +2215,58 @@ function startGoblin(coinPos, forceAct) {
     S2(1.0, u => { G.jaw.scale.y = 0.32; G.head.rotation.y = 0.8 * Math.sin(Math.PI * u * 0.5); G.head.rotation.x = 0; }, () => speak('Oops.', 0.7, 0.9));
     coinArc(() => onFloor(stand.clone().addScaledVector(fwd(), 1.0)), 0.8, 0.6, 2);
     land();
+  } else if (plan.act === 'swipe') {
+    // lonely goblin on "Snaggle": swipes left on every goblin… until the coin shows up
+    const PROFILES = [['Grizzle', 34, 'Swamp owner 🏚️ Looking for someone to share my mud with'], ['Wartina', 29, 'Not a witch. Stop asking.'], ['Moldy Pete', 41, "6'1 (with the hat) · I've never showered and I never will"], ['Snotlin', 27, 'Fluent in burps 🗣️ Collector of toenails'],
+      ['Brakka', 38, 'Recently divorced from a troll. Long story.'], ['Fungilda', 31, "Gym 3x a week (I live in the gym's dumpster)"], ['Gnasher', 23, 'Bite first, ask questions later 😈'], ['Sludge', 45, 'Looking for my 4th wife. The first three are under the bridge.'], ['Pip', 19, 'Just here to steal your socks 🧦'], ['Grubnak', 52, 'My mom says I am a catch']];
+    const pool = PROFILES.slice().sort(() => Math.random() - 0.5).slice(0, 7);
+    let pr = null; try { pr = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true, alpha: false }); pr.setSize(300, 380); pr.outputEncoding = renderer.outputEncoding; } catch (e) {}
+    const shoot = (obj, bg, frameTop, lit = 1) => { if (!pr) return ''; const sc = new THREE.Scene(); sc.background = new THREE.Color(bg); sc.add(new THREE.HemisphereLight('#ffffff', '#445533', 1.0 * lit)); const dl = new THREE.DirectionalLight('#ffffff', 0.9 * lit); dl.position.set(1.5, 3, 4); sc.add(dl); sc.add(obj);
+      const bb = new THREE.Box3().setFromObject(obj), sz = bb.getSize(new THREE.Vector3()), c = bb.getCenter(new THREE.Vector3()); const cam = new THREE.PerspectiveCamera(32, 300 / 380, 0.05, 50);
+      const fy = frameTop ? bb.max.y - sz.y * 0.32 : c.y, dist = (frameTop ? sz.y * 0.55 : Math.max(sz.x, sz.y) * 1.0) / Math.tan(16 * Math.PI / 180); cam.position.set(c.x + dist * 0.18, fy + sz.y * 0.05, c.z + dist); cam.lookAt(c.x, fy, c.z);
+      pr.render(sc, cam); const url = pr.domElement.toDataURL('image/jpeg', 0.85); sc.remove(obj); return url; };
+    const BGS = ['#c9e4a5', '#f2c6a0', '#b9d6f2', '#e8b9e0', '#f7e29c', '#a8e0d1', '#d9c2f0'];
+    const cards = pool.map((p2, i) => { const g2 = buildGoblin({ skin: SKINS[(i * 3 + 1) % SKINS.length], eye: ['#ffe14d', '#ff5a3c', '#7df9ff', '#b6ff4d'][i % 4], hat: ['none', 'party', 'none', 'tophat', 'crown'][i % 5], size: 1 }); g2.root.rotation.y = 0.35; g2.jaw.scale.y = 0.5 + (i % 3) * 0.2; return { name: p2[0], age: p2[1], bio: p2[2], img: shoot(g2.root, BGS[i % BGS.length], true) }; });
+    const cc = coin.clone(); cc.position.set(0, 0, 0); cc.rotation.set(Math.PI / 2 - 0.25, 0.3, 0); const coinImg = shoot(cc, '#ffe7a3', false, 2.4);
+    const meG = (() => { const o = G.root.clone(true); o.position.set(0, 0, 0); o.rotation.set(0, 0.35, 0); o.scale.setScalar(1); return shoot(o, '#c9f2b0', true); })();
+    if (pr) { pr.dispose(); pr.forceContextLoss && pr.forceContextLoss(); }
+    const app = document.createElement('div'); app.id = 'snaggle'; app.innerHTML = `<div class="sn-phone"><div class="sn-top"><span class="sn-logo">💚 snaggle</span><span class="sn-ic">⚙️</span></div><div class="sn-deck"></div><div class="sn-btns"><span class="sn-x">✕</span><span class="sn-h">💚</span></div></div>`;
+    document.body.appendChild(app); cleanups.push(() => app.remove());
+    const deck = app.querySelector('.sn-deck');
+    const card = (img, title, bio, cls = '') => { const d = document.createElement('div'); d.className = 'sn-card ' + cls; d.innerHTML = `<img src="${img}"><div class="sn-info"><b>${esc(title)}</b><p>${esc(bio)}</p></div><i class="sn-nope">NOPE</i><i class="sn-like">LIKE</i>`; deck.appendChild(d); return d; };
+    const phone = new THREE.Mesh(new THREE.BoxGeometry(0.13, 0.24, 0.02), [0, 0, 0, 0, 0, 0].map((_, i) => new THREE.MeshStandardMaterial(i === 4 ? { color: '#9fffb8', emissive: '#4cff7a', emissiveIntensity: 0.9 } : { color: '#1b1b1b', roughness: 0.3 })));
+    phone.position.set(0, -0.06, 0.06); phone.rotation.x = -0.3; phone.visible = false; G.arms[1].hand.add(phone);
+    const thumb = u => { G.arms[0].rotation.x = -1.25 + 0.12 * Math.sin(u * 40); G.arms[0].rotation.z = -0.35; };
+    let cur = null;
+    standUp(0.3);
+    // sits down next to the coin, phone out, sighs
+    S2(0.8, u => { const e = ease(u); G.body.position.y = 0.45 - 0.25 * e; G.legs.forEach(l => l.rotation.x = -1.3 * e); G.arms[1].rotation.x = -1.3 * e; G.arms[0].rotation.x = -1.2 * e; G.head.rotation.x = 0.35 * e; G.root.rotation.y = lerpAng(G.root.rotation.y, Math.atan2(camera.position.x - G.root.position.x, camera.position.z - G.root.position.z), e); },
+      () => { phone.visible = true; tone('sine', 1200, 1600, 0.08, 0.05); });
+    S2(1.0, u => { G.jaw.scale.y = 0.32 + 0.3 * Math.sin(Math.PI * u); }, () => speak('*sigh* … another lonely night.', 0.75, 1.0));
+    S2(0.45, u => { app.style.opacity = u; app.querySelector('.sn-phone').style.transform = `translateY(${(1 - ease(u)) * 60}px)`; }, () => { app.classList.add('on'); });
+    // swipe left, left, left… getting faster and more disgusted
+    pool.forEach((p2, i) => {
+      const d = Math.max(0.55, 1.35 - i * 0.14);
+      S2(d, u => { thumb(u); if (!cur) return; const k = Math.max(0, (u - 0.62) / 0.38); cur.style.transform = `translateX(${-k * 420}px) rotate(${-k * 24}deg)`; cur.querySelector('.sn-nope').style.opacity = Math.min(1, k * 3); G.head.rotation.y = 0.15 * Math.sin(u * 20) * (u > 0.4 ? 1 : 0); },
+        () => { if (cur) cur.remove(); cur = card(cards[i].img, `${cards[i].name}, ${cards[i].age}`, cards[i].bio); if (i === 2) setTimeout(() => speak('Ew.', 0.8, 1.0), 300); if (i === 4) setTimeout(() => speak('Nope. Nope. NOPE.', 0.75, 1.3), 200); setTimeout(() => goblin && whooshSfx(0.35), d * 640); });
+    });
+    // …then: the coin
+    S2(2.4, u => { thumb(0); G.head.rotation.x = 0.35 - 0.25 * Math.min(1, u * 4); G.jaw.scale.y = 0.32 + 0.6 * Math.min(1, u * 3); G.body.position.y = 0.2 + 0.03 * Math.sin(u * 50); },
+      () => { if (cur) cur.remove(); cur = card(coinImg, 'Coin, 2', "Shiny. Round. Heads or tails, I'm down 😉 Will land on you.", 'gold'); [660, 880, 1320].forEach((f, k) => tone('sine', f, f, 0.5, 0.05, k * 0.1)); setTimeout(() => speak('…hello there.', 0.7, 0.9), 700); });
+    S2(0.5, u => { thumb(u); const k = ease(u); cur.style.transform = `translateX(${k * 440}px) rotate(${k * 24}deg)`; cur.querySelector('.sn-like').style.opacity = Math.min(1, u * 3); }, () => { tone('sine', 900, 1500, 0.2, 0.08); });
+    S2(2.6, u => { G.body.position.y = 0.2 + 0.12 * Math.abs(Math.sin(u * 14)); G.arms[0].rotation.x = -2.6; G.jaw.scale.y = 0.9; if (Math.random() < 0.2) spawnParts(wpos(G.headTop), 2, { colors: ['#ff4f8b', '#ff9ec4'], size: 0.06, shape: 'box', speed: 0.6, up: 1.6, life: 1, gravity: -0.5 }); },
+      () => { if (cur) cur.remove(); const m = document.createElement('div'); m.className = 'sn-match'; m.innerHTML = `<h2>It's a Match! 💚</h2><div class="sn-pics"><img src="${meG}"><img src="${coinImg}"></div><p>You and Coin liked each other</p>`; deck.appendChild(m);
+        [523, 659, 784, 1047].forEach((f, k) => tone('triangle', f, f, 0.35, 0.07, k * 0.11)); setTimeout(() => speak('Finally! Someone with VALUE!', 0.8, 1.15), 600); });
+    S2(0.4, u => { app.style.opacity = 1 - u; }, () => {});
+    // the date: grabs the coin, slow-dances with it, kisses it, puts it back with a little wave
+    S2(0.5, u => { const e = ease(u); G.body.position.y = 0.2 + 0.25 * e; G.legs.forEach(l => l.rotation.x = -1.3 * (1 - e)); G.arms[0].rotation.x = -2.6 * (1 - e); G.head.rotation.x = 0; G.root.rotation.y = lerpAng(G.root.rotation.y, yawTo(G.root.position, coinRest), e); }, () => { app.remove(); phone.visible = false; });
+    grab();
+    S2(3.0, u => { G.root.rotation.y += 0.03; G.body.rotation.z = 0.12 * Math.sin(u * 9); G.arms[1].rotation.x = -1.6; G.arms[0].rotation.x = -1.4; G.head.rotation.z = 0.2 * Math.sin(u * 9); G.legs[0].rotation.x = 0.3 * Math.sin(u * 9); G.legs[1].rotation.x = -0.3 * Math.sin(u * 9);
+        if (Math.random() < 0.12) spawnParts(wpos(G.arms[1].hand).add(new THREE.Vector3(0, 0.2, 0)), 1, { colors: ['#ff4f8b', '#ff9ec4', '#ffffff'], size: 0.07, shape: 'box', speed: 0.4, up: 1.2, life: 1.2, gravity: -0.4 }); },
+      () => { [392, 494, 587, 523, 440, 494].forEach((f, k) => tone('sine', f, f, 0.45, 0.05, k * 0.45)); });
+    S2(0.9, u => { G.arms[1].rotation.x = -1.6 - 0.9 * Math.sin(Math.PI * u); G.head.rotation.x = -0.3 * Math.sin(Math.PI * u); }, () => { setTimeout(() => goblin && tone('sine', 1400, 2200, 0.12, 0.08), 400); setTimeout(() => goblin && spawnParts(wpos(G.headTop), 16, { colors: ['#ff4f8b', '#ff9ec4'], size: 0.07, shape: 'box', speed: 1.4, up: 2, life: 1.4, gravity: 1 }), 420); });
+    coinArc(() => coinRest.clone(), 0.25, 0.6, 1); land();
+    S2(1.0, u => { G.root.rotation.y = lerpAng(G.root.rotation.y, Math.atan2(camera.position.x - G.root.position.x, camera.position.z - G.root.position.z), Math.min(1, u * 3)); G.arms[0].rotation.x = -2.8; G.arms[0].rotation.z = -0.3 + 0.5 * Math.sin(u * 18); }, () => speak("Same time next round, gorgeous.", 0.75, 1.05));
   } else if (plan.act === 'duel') {
     // a rival goblin drops in, both want the coin: glowing pizza-cutter sword duel
     const mid = coinRest.clone().setY(TOP), dirX = new THREE.Vector3(stand.x - mid.x, 0, stand.z - mid.z).normalize(), R0 = 1.2;
@@ -2462,7 +2542,7 @@ function startRescue(coinPos) {
 function stepGoblin(dt) {
   if (!goblin || goblin.pending) return;
   const s = goblin.steps[goblin.i];
-  if (!s) { $('#bubble').classList.remove('on'); const after = goblin.after; scene.remove(goblin.G.root); goblin = null; coin.visible = true; coin.scale.set(1, 1, 1); jazzDuck(false); renderUI(); if (after) after(); return; }
+  if (!s) { $('#bubble').classList.remove('on'); const after = goblin.after; scene.remove(goblin.G.root); goblin = null; musicStyle('jazz'); coin.visible = true; coin.scale.set(1, 1, 1); jazzDuck(false); renderUI(); if (after) after(); return; }
   if (!goblin.started) { goblin.started = true; s.start && s.start(); }
   goblin.t += dt; const u = s.wait ? (s.wait() ? 1 : Math.min(0.999, goblin.t / (s.d || 1))) : Math.min(1, goblin.t / s.d); s.f(s.wait ? goblin.t : u, u);
   if (goblin && goblin.hold) coin.position.copy(wpos(goblin.G.arms[1].hand));
@@ -2470,14 +2550,14 @@ function stepGoblin(dt) {
 }
 
 // ---------- jazz band (generated live) ----------
-const BPM = 96, SPB = 60 / BPM, SW = 0.667; // swung 8ths
+const BPM = 96, SW = 0.667; let SPB = 60 / BPM; // swung 8ths
 const mtof = m => 440 * Math.pow(2, (m - 69) / 12);
 // 8-bar loop in C: Dm9 | G13 | Cmaj9 | A7b9 | Fmaj9 | Bb9 | Em9 A7b9 | Dm9 G7b9
 const PROG = [
   [[38, [53, 57, 60, 64]]], [[43, [53, 59, 64, 69]]], [[36, [52, 55, 59, 62]]], [[45, [55, 61, 64, 70]]],
   [[41, [57, 60, 64, 67]]], [[46, [56, 60, 62, 65]]], [[40, [55, 59, 62, 66]], [45, [55, 61, 64, 70]]], [[38, [53, 57, 60, 64]], [43, [53, 59, 64, 68]]]
 ];
-const jazz = { on: true, started: false, timer: null, beat: 0, next: 0, bass: 38, mel: 4, out: null };
+const jazz = { style: 'jazz', on: true, started: false, timer: null, beat: 0, next: 0, bass: 38, mel: 4, out: null };
 try { if (localStorage.getItem('pizzabox-jazz') === '0') jazz.on = false; } catch (e) {}
 const chordAt = b => { const bar = PROG[((Math.floor(b / 4) % 8) + 8) % 8], beat = ((b % 4) + 4) % 4; return bar.length === 2 ? bar[beat < 2 ? 0 : 1] : bar[0]; };
 function jazzGraph() {
@@ -2528,7 +2608,8 @@ function ride(t, vel) {
 }
 function kick(t) { const o = actx.createOscillator(), g = actx.createGain(); o.frequency.setValueAtTime(70, t); o.frequency.exponentialRampToValueAtTime(42, t + 0.12); g.gain.setValueAtTime(0.18, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.18); o.connect(g).connect(jazz.drum); o.start(t); o.stop(t + 0.2); }
 function nearest(pc, prev, lo = 31, hi = 50) { let best = null; for (let m = lo; m <= hi; m++) if (((m % 12) + 12) % 12 === ((pc % 12) + 12) % 12 && (best === null || Math.abs(m - prev) < Math.abs(best - prev))) best = m; return best; }
-function scheduleBeat(b, t) {
+function scheduleBeat(b, t) { if (jazz.style !== 'jazz' && STYLES[jazz.style]) return STYLES[jazz.style](b, t); return jazzBeat(b, t); }
+function jazzBeat(b, t) {
   const beat = b % 4, c = chordAt(b), nx = chordAt(b + 1), changes = nx !== c;
   const firstOfChord = chordAt(b - 1) !== c || b === 0;
   // walking bass
@@ -2565,10 +2646,78 @@ function jazzTick() {
   if (jazz.next < actx.currentTime - 0.05) jazz.next = actx.currentTime + 0.05;
   while (jazz.next < actx.currentTime + 0.3) { scheduleBeat(jazz.beat, jazz.next); jazz.next += SPB; jazz.beat++; }
 }
+// ---------- extra music styles (jazz is the default; others follow what's happening) ----------
+const STYLE_BPM = { jazz: 96, metal: 172, boss: 138, gameshow: 126, tension: 92, sneaky: 108 };
+const STYLE_NAME = { jazz: '🎷 Jazz', metal: '🤘 Metal', boss: '⚔️ Battle', gameshow: '🎉 Party', tension: '😰 Tension', sneaky: '👺 Sneaky' };
+let distCurve = null;
+function getDist() { if (distCurve) return distCurve; const n = 2048, c = new Float32Array(n); for (let i = 0; i < n; i++) { const x = i / n * 2 - 1; c[i] = Math.tanh(x * 9) * 0.9; } return (distCurve = c); }
+function mBus() { if (!jazz.gtr) { jazz.gtr = actx.createGain(); jazz.gtr.connect(jazz.out); jazz.syn = actx.createGain(); jazz.syn.connect(jazz.out); } }
+function gtrChord(t, root, dur, mute, vel = 1) {
+  const A = actx, ws = A.createWaveShaper(), lp = A.createBiquadFilter(), g = A.createGain(), pre = A.createGain();
+  ws.curve = getDist(); ws.oversample = '2x'; lp.type = 'lowpass'; lp.frequency.value = mute ? 900 : 3200; pre.gain.value = 1.2;
+  [0, 7, 12].forEach((iv, k) => [-6, 6].forEach(dt => { const o = A.createOscillator(); o.type = 'sawtooth'; o.frequency.value = mtof(root + iv); o.detune.value = dt; const og = A.createGain(); og.gain.value = k === 2 ? 0.12 : 0.2; o.connect(og).connect(pre); o.start(t); o.stop(t + dur + 0.08); }));
+  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.16 * vel, t + 0.005); g.gain.setValueAtTime(0.16 * vel, t + dur * (mute ? 0.4 : 0.9)); g.gain.exponentialRampToValueAtTime(0.0001, t + dur + 0.06);
+  pre.connect(ws).connect(lp).connect(g).connect(jazz.gtr);
+}
+function synNote(t, m, dur, type, vol, cutoff = 4000, bus) {
+  const A = actx, o = A.createOscillator(), g = A.createGain(), lp = A.createBiquadFilter(); o.type = type; o.frequency.value = mtof(m); lp.type = 'lowpass'; lp.frequency.value = cutoff;
+  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.008); g.gain.exponentialRampToValueAtTime(vol * 0.5, t + dur * 0.5); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  o.connect(lp).connect(g).connect(bus || jazz.syn); o.start(t); o.stop(t + dur + 0.02);
+}
+function bigKick(t, v = 1) { const o = actx.createOscillator(), g = actx.createGain(); o.frequency.setValueAtTime(140, t); o.frequency.exponentialRampToValueAtTime(45, t + 0.09); g.gain.setValueAtTime(0.5 * v, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.22); o.connect(g).connect(jazz.drum); o.start(t); o.stop(t + 0.25); }
+function snare(t, v = 1) { hitNoise(t, 'bandpass', 1900, 0.8, 0.32 * v, 0.2); const o = actx.createOscillator(), g = actx.createGain(); o.frequency.setValueAtTime(220, t); o.frequency.exponentialRampToValueAtTime(160, t + 0.08); g.gain.setValueAtTime(0.14 * v, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.1); o.connect(g).connect(jazz.drum); o.start(t); o.stop(t + 0.12); }
+function hat(t, v = 1, open) { hitNoise(t, 'highpass', 8500, 1, 0.07 * v, open ? 0.3 : 0.05); }
+function crash(t) { hitNoise(t, 'highpass', 5000, 0.5, 0.18, 1.6); }
+function clap(t) { [0, 0.012, 0.025].forEach(d => hitNoise(t + d, 'bandpass', 1500, 1.2, 0.18, 0.12)); }
+function taiko(t, v = 1) { const o = actx.createOscillator(), g = actx.createGain(); o.frequency.setValueAtTime(95, t); o.frequency.exponentialRampToValueAtTime(55, t + 0.25); g.gain.setValueAtTime(0.55 * v, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.6); o.connect(g).connect(jazz.drum); o.start(t); o.stop(t + 0.65); hitNoise(t, 'lowpass', 400, 0.7, 0.2 * v, 0.25); }
+function block(t, m) { synNote(t, m, 0.08, 'sine', 0.12, 6000); }
+const STYLES = {
+  metal(b, t) {
+    mBus(); const s = SPB / 2, bar = Math.floor(b / 4), beat = b % 4;
+    const riffs = [[40, 40, 40, 43, 40, 40, 46, 45], [40, 40, 40, 43, 40, 40, 38, 39], [40, 52, 40, 50, 40, 48, 47, 46], [43, 43, 45, 45, 46, 46, 47, 47]];
+    const rf = riffs[bar % 8 === 7 ? 3 : bar % 4 === 2 ? 2 : bar % 2], i0 = beat * 2;
+    for (let k = 0; k < 2; k++) { const n = rf[i0 + k], open = n !== 40; gtrChord(t + k * s, n, s * 0.95, !open, open ? 1 : 0.8); }
+    for (let k = 0; k < 4; k++) bigKick(t + k * SPB / 4, k ? 0.7 : 1);
+    if (beat % 2) snare(t); hat(t + s, 0.8); hat(t, 0.6);
+    if (beat === 0 && bar % 4 === 0) crash(t);
+    if (bar % 8 === 7 && beat === 3) [0, 1, 2, 3].forEach(k => snare(t + k * SPB / 4, 0.6 + k * 0.15));
+    if (bar % 4 === 3 && beat === 0) { const sc = [64, 67, 69, 70, 69, 67, 64, 62]; sc.forEach((m, k) => synNote(t + k * SPB / 2, m + 12, SPB * 0.45, 'sawtooth', 0.05, 2600)); }
+  },
+  boss(b, t) {
+    mBus(); const bar = Math.floor(b / 4), beat = b % 4, roots = [38, 38, 46, 45], r = roots[bar % 4];
+    for (let k = 0; k < 4; k++) synNote(t + k * SPB / 4, r + [0, 12, 0, 7][k], SPB / 4 * 0.9, 'sawtooth', 0.07, 1100);
+    if (beat === 0 || beat === 2) taiko(t, 1); if (beat === 3) { taiko(t, 0.6); taiko(t + SPB / 2, 0.8); }
+    if (beat % 2) snare(t, 0.5);
+    if (beat === 0 && bar % 2 === 0) { [r + 24, r + 27, r + 31].forEach(m => synNote(t, m, SPB * 3.5, 'sawtooth', 0.05, 1400)); crash(t); }
+  },
+  gameshow(b, t) {
+    mBus(); const bar = Math.floor(b / 4), beat = b % 4, prog = [[48, [60, 64, 67]], [45, [57, 60, 64]], [41, [57, 60, 65]], [43, [59, 62, 67]]], c = prog[bar % 4];
+    bigKick(t, 0.75); if (beat % 2) { clap(t); snare(t, 0.3); } hat(t + SPB / 2, 1, beat === 3); hat(t, 0.4);
+    synNote(t, c[0] - 12, SPB * 0.4, 'square', 0.09, 900); synNote(t + SPB / 2, c[0], SPB * 0.4, 'square', 0.07, 900);
+    if (beat === 0 || beat === 2) c[1].forEach(m => synNote(t + SPB / 2, m, SPB * 0.4, 'square', 0.03, 2400));
+    const arp = [...c[1], c[1][0] + 12]; if (bar % 2) for (let k = 0; k < 2; k++) synNote(t + k * SPB / 2, arp[(beat * 2 + k) % 4] + 12, SPB * 0.4, 'triangle', 0.06, 5000);
+  },
+  tension(b, t) {
+    mBus(); const bar = Math.floor(b / 4), beat = b % 4;
+    if (beat === 0 || beat === 2) { bigKick(t, 0.6); bigKick(t + 0.16, 0.4); }
+    hat(t, 0.5); hat(t + SPB / 2, 0.3); block(t, beat === 0 ? 84 : 79);
+    if (beat === 0) { synNote(t, 38, SPB * 4, 'sawtooth', 0.05, 300 + (bar % 4) * 150); [74, 75].forEach(m => synNote(t, m + (bar % 4), SPB * 4, 'triangle', 0.02, 3000)); }
+  },
+  sneaky(b, t) {
+    mBus(); const bar = Math.floor(b / 4), beat = b % 4, line = [[47, 0, 50, 0, 49, 0, 48, 0], [47, 0, 54, 53, 52, 0, 51, 0], [45, 0, 48, 0, 47, 0, 46, 0], [44, 47, 50, 53, 52, 0, 0, 0]][bar % 4];
+    for (let k = 0; k < 2; k++) { const m = line[beat * 2 + k]; if (m) synNote(t + k * SPB / 2, m, 0.14, 'triangle', 0.16, 1600, jazz.bassBus); }
+    hat(t + SPB / 2, 0.35); if (beat % 2) block(t, 77); if (beat === 3 && bar % 2) [83, 82, 81].forEach((m, k) => synNote(t + k * 0.09, m, 0.1, 'sine', 0.05, 6000));
+  }
+};
+function musicStyle(s) {
+  if (!STYLE_BPM[s] || jazz.style === s) return; jazz.style = s; SPB = 60 / STYLE_BPM[s]; jazz.beat = 0;
+  if (actx && jazz.timer) jazz.next = actx.currentTime + 0.12;
+  $('#jazzBtn').textContent = (jazz.on ? STYLE_NAME[s] : '🔇 Music off');
+}
 const JAZZ_VOL = 0.55;
 function jazzSet(on) {
   jazz.on = on; try { localStorage.setItem('pizzabox-jazz', on ? '1' : '0'); } catch (e) {}
-  $('#jazzBtn').textContent = on ? '🎷 Jazz: on' : '🎷 Jazz: off'; $('#jazzBtn').classList.toggle('off', !on);
+  $('#jazzBtn').textContent = on ? STYLE_NAME[jazz.style || 'jazz'] : '🔇 Music off'; $('#jazzBtn').classList.toggle('off', !on);
   if (!actx) return;
   if (on) {
     if (!jazz.out) jazzGraph();
@@ -2658,7 +2807,7 @@ function stepGuts(dt) {
 function clearGuts() { guts.forEach(g => scene.remove(g.m)); guts.length = 0; }
 // the guts hit the screen and become the game-over screen
 function gooScreen() {
-  gameOver = true; renderUI(); hideResult();
+  gameOver = true; musicStyle('boss'); renderUI(); hideResult();
   const ov = $('#gameover'), cv = $('#goo'), g = cv.getContext('2d');
   ov.classList.add('on'); ov.classList.remove('card');
   const W = cv.width = innerWidth * devicePixelRatio, H = cv.height = innerHeight * devicePixelRatio;
@@ -2693,7 +2842,7 @@ function showGameOverCard() {
   $('#gameover').classList.add('card');
 }
 function resetAfterDoom(full) {
-  $('#gameover').classList.remove('on', 'card'); clearGuts(); gameOver = false; shake = 0; jazzDuck(false);
+  $('#gameover').classList.remove('on', 'card'); clearGuts(); gameOver = false; shake = 0; musicStyle('jazz'); jazzDuck(false);
   if (full) state = { players: [], rules: [], turn: 0, log: [], playTime: 0, rounds: 0, drinks: {}, clockV2: true, lobby: [], started: false };
   else Object.assign(state, { rules: [], turn: 0, log: [], playTime: 0, rounds: 0, drinks: {}, clockV2: true });
   coin.visible = false; coin.scale.set(1, 1, 1); state.yugoWelcomed = false; drawTop(); save(); renderUI();
@@ -2883,7 +3032,8 @@ function screenFlash() { const f = $('#flash'); f.classList.remove('on'); void f
 function hostPublishSoon() { if (miniPubT) return; miniPubT = setTimeout(() => { miniPubT = null; hostPublish(); }, 150); }
 function miniPlayers() { return state.players.slice(); }
 // ---------- new mini-games: Higher or Lower · Truth or Shot · Field Goal (rule only) ----------
-const TRUTHS = ["What's the most embarrassing thing you've done while drunk?", "Who here would you call to help you move a couch at 3am?", "What's your worst habit?", "What's the last lie you told?", "What's the weirdest thing you've ever eaten?", "Who was your first crush?",
+const TRUTHS = ["Who in this room would you least want to be stuck in an elevator with?", "Who here do you think is the worst kisser — just a guess?", "Who in this room annoys you the most, and why?", "Rank everyone here from most to least attractive.", "Who here would you date if you had to pick one?", "What's something you've judged someone in this room for?", "Which person here has the worst taste in partners?", "Who here would you NOT trust with a secret?", "What's the meanest thing you've thought about someone here tonight?", "Who here is the most fake?", "Who in this room do you secretly think is the smartest?", "Show the last 3 photos in your camera roll.", "Read your last text message out loud.", "Who here owes you an apology?", "What's the worst thing you've ever said about someone behind their back?", "Who in this room would you swap bodies with, and who would you never?", "Who here would be the first to cheat in a relationship?", "What's the biggest lie you've told someone in this room?", "Who here has the most annoying laugh?", "Which friendship in this room do you think won't last?", "Who here would you call if you needed to hide a body?", "What did you really think of the last person you dated?", "Who here is the worst drunk?", "What's something about yourself you hope nobody here finds out?", "Have you ever had a crush on someone in this room? Who?", "Who here would you unfollow if they'd never know?", "Who was the last person you stalked online — say the name.", "What's the most embarrassing thing you've done to impress someone?", "Who here gives the worst advice?", "Hand your phone to the person on your left for 30 seconds — or answer: what are you hiding on it?",
+  "What's the most embarrassing thing you've done while drunk?", "Who here would you call to help you move a couch at 3am?", "What's your worst habit?", "What's the last lie you told?", "What's the weirdest thing you've ever eaten?", "Who was your first crush?",
   "What song do you secretly love but would never admit to?", "What's the worst gift you've ever received?", "What's something you've never told your parents?", "Have you ever ghosted someone?", "What's the pettiest thing you've ever done?", "What's your biggest red flag?",
   "Who in this room would survive a zombie apocalypse the longest?", "What's the most money you've wasted on something dumb?", "What's your worst date ever?", "What's the strangest dream you remember?", "What's a secret talent nobody here knows about?", "Who in this room is the funniest?",
   "What's the most trouble you got into at school?", "What's your guilty-pleasure TV show?", "Have you ever pretended to like a gift? What was it?", "What's the most childish thing you still do?", "What's your most-used emoji?", "What was the last thing you searched on your phone?",
@@ -2931,36 +3081,73 @@ function stepHL(dt) {
       showResult('🃏 Higher or Lower', d.length ? `Drinks: ${d.join(', ')}` : 'Everyone guessed right — nobody drinks!', '#ffd84a'); addLog(`🃏 Higher or Lower${d.length ? ' — ' + d.join(', ') + ' drank' : ''}`); renderUI(); hostPublish(); }
   }
 }
-// --- Truth or Shot ---
+// --- Truth or Shot: see the question first, then answer it (and survive the lie-detector vote) or take a 3-drink shot ---
 function tosBegin() { const ps = miniPlayers().slice().sort(() => Math.random() - 0.5); mini.order = ps.slice(0, ps.length >= 3 ? 2 : 1); mini.idx = 0; mini.n = 0; tosTurn(); }
 function tosTurn() {
-  const p = mini.order[mini.idx]; mini.who = p.id; mini.sub = 'choose'; mini.st = 0; mini.wait = 15; mini.q = null; mini.n++;
-  miniBanner('🥃 TRUTH OR SHOT? 🥃', `${pName(p)}, choose…`);
-  gp(`${pName(p)} — truth or shot?`, `<div class="tos-big">🤔 <small>or</small> 🥃</div>`, (hasPhone(p) ? `<small>📱 choose on your phone (or tap here)</small><br>` : '') + `<button data-gp="tos" data-v="truth">🤔 Truth</button><button data-gp="tos" data-v="shot">🥃 Shot</button>`);
+  const p = mini.order[mini.idx], others = miniPlayers().filter(q => String(q.id) !== String(p.id)), a = others[Math.floor(Math.random() * others.length)] || p;
+  mini.who = p.id; mini.asker = a.id; mini.sub = 'ask'; mini.st = 0; mini.wait = 50; mini.q = null; mini.verdict = null; mini.n++;
+  miniBanner('🥃 TRUTH OR SHOT 🥃', `${pName(a)} asks ${pName(p)} a question`);
+  gp(`🤔 ${pName(a)}, think of a truth for ${pName(p)}`, `<div class="tos-rule">${hasPhone(a) ? '📱 Type it on your phone — or just ask it out loud' : 'Ask it out loud, then tap the button'}</div>`,
+    `<button data-gp="tosq" data-v="say">🗣️ Asked it out loud</button><button data-gp="tosq" data-v="idea">💡 Use a random one</button>`);
   tone('sine', 500, 700, 0.3, 0.08); renderUI(); hostPublish();
 }
+function tosAsk(pid, text) {
+  if (!mini || mini.type !== 'tos' || mini.sub !== 'ask' || (pid != null && String(pid) !== String(mini.asker))) return;
+  const p = pById(mini.who), a = pById(mini.asker);
+  mini.q = text === 'idea' ? bagPick('truth', TRUTHS) : text === 'say' || !text ? null : String(text).replace(/\s+/g, ' ').trim().slice(0, 200) || null;
+  mini.sub = 'choose'; mini.st = 0; mini.wait = 25;
+  miniBanner('🥃 TRUTH OR SHOT 🥃', `${pName(p)} — answer it… or take a shot`);
+  gp(`${pName(a)} asks ${pName(p)}:`, mini.q ? `<div class="tos-q">“${esc(mini.q)}”</div><div class="tos-rule">Don't want to answer? Take a shot 🥃</div>` : `<div class="tos-q">🗣️ (asked out loud)</div><div class="tos-rule">Don't want to answer? Take a shot 🥃</div>`,
+    (hasPhone(p) ? `<small>📱 choose on your phone (or tap here)</small><br>` : '') + `<button data-gp="tos" data-v="truth">🗣️ I'll answer</button><button data-gp="tos" data-v="shot">🥃 Take the shot</button>`);
+  dingSfx(); if (mini.q) speak(mini.q, 0.95, 1.0); hostPublish();
+}
+function tosVoters() { return miniPlayers().filter(q => String(q.id) !== String(mini.who) && hasPhone(q)); }
 function tosChoose(pid, c) {
   if (!mini || mini.type !== 'tos' || (pid != null && String(pid) !== String(mini.who))) return;
   const p = pById(mini.who);
   if (c === 'truth' && mini.sub === 'choose') {
-    mini.sub = 'truth'; mini.st = 0; mini.wait = 45; mini.q = bagPick('truth', TRUTHS);
-    miniBanner('🤔 TRUTH!', `${pName(p)} has to answer — out loud, honestly!`);
-    gp(`${pName(p)} picked TRUTH`, `<div class="tos-q">“${esc(mini.q)}”</div>`, `<button data-gp="tos" data-v="done">✅ Answered</button><button data-gp="tos" data-v="shot">🐔 Chicken out → shot</button>`);
-    dingSfx(); speak(mini.q, 0.95, 1.0);
+    mini.sub = 'truth'; mini.st = 0; mini.wait = 45;
+    miniBanner('🗣️ TRUTH!', `${pName(p)} has to answer — out loud!`);
+    gp(`${pName(p)} is answering…`, `<div class="tos-q">“${esc(mini.q)}”</div>`, `<button data-gp="tos" data-v="done">✅ Answered</button><button data-gp="tos" data-v="shot">🥃 Nope — shot</button>`);
+    tone('sine', 500, 700, 0.25, 0.08);
   } else if (c === 'shot' && (mini.sub === 'choose' || mini.sub === 'truth')) {
-    const chicken = mini.sub === 'truth'; mini.sub = 'shot'; mini.st = 0; mini.wait = 3.8; drink(p, 2);
-    miniBanner('🥃 SHOT!', chicken ? `${pName(p)} chickened out 🐔` : `${pName(p)} takes the shot`);
-    gp(chicken ? `🐔 ${pName(p)} chickened out!` : `${pName(p)} picked SHOT`, `<div class="tos-big">🥃</div><div class="verdict bad">Take the shot!</div>`, '');
-    tone('sawtooth', 200, 400, 0.3, 0.1); addLog(`🥃 ${p.name} took a shot${chicken ? ' (chickened out of the truth)' : ''}`); renderUI();
-  } else if (c === 'done' && mini.sub === 'truth') { mini.sub = 'answered'; mini.st = 0; mini.wait = 1.6; gp(`${pName(p)} told the truth!`, `<div class="verdict ok">✅ Respect.</div>`, ''); dingSfx(); addLog(`🤔 ${p.name} answered a truth`); }
-  else return;
+    mini.sub = 'shot'; mini.st = 0; mini.wait = 3.8; drink(p, 1); mini.verdict = `🐔 ${p.name} chickened out — take a shot!`;
+    miniBanner('🐔 CHICKEN! 🐔', `${pName(p)} takes the shot`);
+    gp(`🐔 ${pName(p)} chickened out!`, `<div class="tos-big">🥃🐔</div><div class="verdict bad">Take the shot!</div>`, '');
+    [0, 0.15, 0.3].forEach(d => tone('square', 700, 900, 0.1, 0.06, d)); addLog(`🥃 ${p.name} took a shot instead of answering`); renderUI();
+  } else if (c === 'done' && mini.sub === 'truth') {
+    mini.sub = 'answered'; mini.st = 0; mini.wait = 2.2; mini.verdict = `✅ ${p.name} answered`;
+    miniBanner('✅ ANSWERED', `${pName(p)} told the truth`); gp(`✅ ${pName(p)} answered!`, `<div class="verdict ok">Respect.</div>`, ''); dingSfx(); addLog(`🗣️ ${p.name} answered a truth`);
+  } else return;
+  hostPublish();
+}
+function tosVoteUI() {
+  const p = pById(mini.who), ph = tosVoters().length;
+  gp(`Did ${pName(p)} tell the truth?`, `<div class="tos-votes"><span>👍 ${mini.vb}</span><span>🤥 ${mini.vl}</span></div>`,
+    `${ph ? '<small>📱 vote on your phones — or tap here for players without one</small><br>' : '<small>tap once per player</small><br>'}<button data-gp="vote" data-v="b">👍 Believe</button><button data-gp="vote" data-v="l">🤥 Lie!</button>`);
+}
+function tosVote(pid, v) {
+  if (!mini || mini.type !== 'tos' || mini.sub !== 'vote' || (v !== 'b' && v !== 'l')) return;
+  if (pid != null) { if (String(pid) === String(mini.who) || mini.votes[pid]) return; mini.votes[pid] = v; }
+  if (v === 'b') mini.vb++; else mini.vl++; tone('sine', v === 'b' ? 880 : 300, v === 'b' ? 880 : 250, 0.08, 0.06);
+  tosVoteUI(); hostPublish();
+  const need = tosVoters().length; if (need && Object.keys(mini.votes).length >= need && mini.st < mini.wait - 1) mini.st = mini.wait - 1;
+}
+function tosVoteEnd() {
+  const p = pById(mini.who), liar = mini.vl > mini.vb; mini.sub = 'answered'; mini.st = 0; mini.wait = 3.2;
+  if (liar) { drink(p, 2); mini.verdict = `🤥 LIAR! ${p.name} drinks 2`; tone('sawtooth', 300, 120, 0.6, 0.12); addLog(`🤥 ${p.name} was voted a liar — 2 drinks`); renderUI(); }
+  else { mini.verdict = `✅ The group believes ${p.name}`; dingSfx(); addLog(`🗣️ ${p.name} answered a truth`); }
+  miniBanner(liar ? '🤥 LIAR!' : '✅ BELIEVED', `👍 ${mini.vb} · 🤥 ${mini.vl}`);
+  gp(liar ? `🤥 ${pName(p)} is a LIAR!` : `✅ ${pName(p)} told the truth`, `<div class="verdict ${liar ? 'bad' : 'ok'}">${liar ? 'Drink 2!' : 'Respect.'}</div><div class="tos-votes"><span>👍 ${mini.vb}</span><span>🤥 ${mini.vl}</span></div>`, '');
   hostPublish();
 }
 function stepTOS(dt) {
   mini.st += dt;
   const l = Math.ceil(mini.wait - mini.st); if (l !== mini.left) { mini.left = l; hostPublishSoon(); }
-  if (mini.sub === 'choose' && mini.st > mini.wait) tosChoose(null, 'shot');
+  if (mini.sub === 'ask' && mini.st > mini.wait) tosAsk(null, 'idea');
+  else if (mini.sub === 'choose' && mini.st > mini.wait) tosChoose(null, 'shot');
   else if (mini.sub === 'truth' && mini.st > mini.wait) tosChoose(null, 'done');
+  else if (mini.sub === 'vote' && mini.st > mini.wait) tosVoteEnd();
   else if ((mini.sub === 'shot' || mini.sub === 'answered') && mini.st > mini.wait) {
     mini.idx++;
     if (mini.idx < mini.order.length) tosTurn();
@@ -2972,11 +3159,13 @@ function fgBegin() {
   const p = pById(mini.who) || miniPlayers()[0]; mini.who = p.id; mini.n = 1;
   const g = new THREE.Group(); scene.add(g); mini.fg = { g };
   const yel = new THREE.MeshStandardMaterial({ color: '#ffd400', roughness: 0.35, metalness: 0.2 });
-  const pz = -HALF + 0.55, cb = TOP + 1.05, hw = 0.9;
+  const pz = -HALF + 0.55, cb = TOP + 1.2, hw = 0.62;
   const cylY = (r, h, x, y, z) => { const m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, h, 12), yel); m.position.set(x, y, z); m.castShadow = true; g.add(m); return m; };
   cylY(0.05, cb - TOP, 0, TOP + (cb - TOP) / 2, pz - 0.35); const arm = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, 0.35, 10), yel); arm.rotation.x = Math.PI / 2; arm.position.set(0, cb, pz - 0.18); g.add(arm);
   const bar = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, hw * 2, 12), yel); bar.rotation.z = Math.PI / 2; bar.position.set(0, cb, pz); bar.castShadow = true; g.add(bar);
-  [-hw, hw].forEach(x => { cylY(0.04, 1.9, x, cb + 0.95, pz); const fl = new THREE.Mesh(new THREE.PlaneGeometry(0.12, 0.3), new THREE.MeshStandardMaterial({ color: '#ff3b30', side: THREE.DoubleSide })); fl.position.set(x + 0.07, cb + 1.85, pz); g.add(fl); });
+  mini.wind = (Math.random() < 0.5 ? -1 : 1) * (0.35 + Math.random() * 1.15); const flags = [];
+  [-hw, hw].forEach(x => { cylY(0.04, 1.9, x, cb + 0.95, pz); const fl = new THREE.Mesh(new THREE.PlaneGeometry(0.3, 0.12), new THREE.MeshStandardMaterial({ color: '#ff3b30', side: THREE.DoubleSide })); fl.geometry.translate(0.15, 0, 0); fl.position.set(x, cb + 1.85, pz); fl.scale.x = Math.sign(mini.wind); g.add(fl); flags.push(fl); });
+  mini.fg_flags = flags;
   // turf stripe + yard lines on the cardboard
   const turf = new THREE.Mesh(new THREE.PlaneGeometry(2.6, HALF * 2 - 0.4), new THREE.MeshStandardMaterial({ color: '#3f8f3a', roughness: 0.9 })); turf.rotation.x = -Math.PI / 2; turf.position.set(0, TOP + 0.004, 0); turf.receiveShadow = true; g.add(turf);
   for (let k = -3; k <= 3; k++) { const ln = new THREE.Mesh(new THREE.PlaneGeometry(2.6, 0.04), new THREE.MeshBasicMaterial({ color: '#ffffff' })); ln.rotation.x = -Math.PI / 2; ln.position.set(0, TOP + 0.007, k * 1.2); g.add(ln); }
@@ -2992,8 +3181,9 @@ function fgBegin() {
   // the kicker
   const K = buildGoblin({ skin: '#5fae3a', eye: '#ffe14d', hat: 'none', outfit: 'none', size: 0.5 }); K.root.position.set(-0.32, TOP, 3.55); K.root.rotation.y = Math.PI - 0.35; g.add(K.root); mini.fg.K = K;
   const helm = new THREE.Mesh(new THREE.SphereGeometry(0.3, 20, 14, 0, Math.PI * 2, 0, Math.PI * 0.55), new THREE.MeshStandardMaterial({ color: '#c8102e', roughness: 0.3, metalness: 0.2 })); helm.position.set(0, 0.2, 0.02); K.head.add(helm);
-  mini.fg.pz = pz; mini.fg.cb = cb; mini.fg.hw = hw;
-  mini.cam = { pos: new THREE.Vector3(1.6, TOP + 2.6, 7.4), tgt: new THREE.Vector3(0, TOP + 0.8, -1.2) };
+  mini.fg.pz = pz; mini.fg.cb = cb; mini.fg.hw = hw; mini.fg.flags = mini.fg_flags; document.body.classList.add('fgmode');
+  const mph = Math.round(Math.abs(mini.wind) * 9); $('#fgWind').innerHTML = `💨 Wind<br><b>${mini.wind < 0 ? '⬅️' : ''} ${mph} mph ${mini.wind > 0 ? '➡️' : ''}</b>`; $('#fgWind').classList.add('on');
+  mini.cam = { pos: new THREE.Vector3(1.4, TOP + 2.4, 7.6), tgt: new THREE.Vector3(0, TOP + 1.3, -1.6) };
   mini.sub = 'aim'; mini.st = 0; mini.ang = 0; mini.pow = 0; mini.wait = 10;
   miniBanner('🏈 FIELD GOAL! 🏈', `${pName(p)} — miss and you drink!`);
   fgUI(); renderUI(); hostPublish();
@@ -3009,20 +3199,21 @@ function fgPress(pid) {
   if (mini.sub === 'aim') { mini.sub = 'power'; mini.st = 0; tone('square', 700, 700, 0.08, 0.1); fgUI(); hostPublish(); }
   else if (mini.sub === 'power') {
     mini.sub = 'kick'; mini.st = 0; $('#fgMeter').classList.remove('on'); gpOff();
-    const v = 6.2 + mini.pow * 5.6, el = 0.82;
+    const v = 6.9 + mini.pow * 4.0, el = 0.82;
     mini.fg.v = new THREE.Vector3(Math.sin(mini.ang) * v * Math.cos(el), v * Math.sin(el), -Math.cos(mini.ang) * v * Math.cos(el)); hostPublish();
   }
 }
 function stepFG(dt) {
   const F = mini.fg; mini.st += dt;
-  if (mini.sub === 'aim') { mini.ang = 0.5 * Math.sin(mini.st * 2.7); F.ap.rotation.y = -mini.ang; if (mini.st > mini.wait) fgPress(null); }
-  else if (mini.sub === 'power') { const k = (mini.st * 2.1) % 2; mini.pow = k < 1 ? k : 2 - k; $('#fgFill').style.height = (mini.pow * 100) + '%'; if (mini.st > mini.wait) fgPress(null); }
+  if (mini.fg.flags) mini.fg.flags.forEach((f, i) => f.rotation.y = 0.35 * Math.sin(mini.st * 9 + i) * Math.min(1, Math.abs(mini.wind)));
+  if (mini.sub === 'aim') { mini.ang = 0.55 * Math.sin(mini.st * 3.5); F.ap.rotation.y = -mini.ang; if (mini.st > mini.wait) fgPress(null); }
+  else if (mini.sub === 'power') { const k = (mini.st * 2.7) % 2; mini.pow = k < 1 ? k : 2 - k; $('#fgFill').style.height = (mini.pow * 100) + '%'; if (mini.st > mini.wait) fgPress(null); }
   else if (mini.sub === 'kick') {
     const K = F.K, u = Math.min(1, mini.st / 0.45);
     K.root.position.lerpVectors(new THREE.Vector3(-0.32, TOP, 3.55), new THREE.Vector3(-0.12, TOP, 3.05), u); K.legs[1].rotation.x = u < 0.8 ? 0.9 * (u / 0.8) : 0.9 - 2.6 * ((u - 0.8) / 0.2); K.arms[0].rotation.x = -1.2 * u;
     if (u >= 1) { mini.sub = 'flight'; mini.st = 0; thudSfx(0.9); tone('square', 160, 90, 0.12, 0.2); F.ap.visible = false; F.crossed = false; }
   } else if (mini.sub === 'flight') {
-    const B = F.ball, prevZ = B.position.z; for (let i = 0; i < 4; i++) { F.v.y -= 9.8 * dt / 4; B.position.addScaledVector(F.v, dt / 4); } B.rotation.x -= dt * 14;
+    const B = F.ball, prevZ = B.position.z; for (let i = 0; i < 4; i++) { F.v.y -= 9.8 * dt / 4; F.v.x += mini.wind * dt / 4; B.position.addScaledVector(F.v, dt / 4); } B.rotation.x -= dt * 14;
     mini.cam.tgt.lerp(B.position, 0.06); mini.cam.pos.lerp(B.position.clone().add(new THREE.Vector3(1.4, 1.6, 5.0)), 0.025);
     if (!F.crossed && prevZ > F.pz && B.position.z <= F.pz) { F.crossed = true; F.good = Math.abs(B.position.x) < F.hw - 0.05 && B.position.y > F.cb + 0.05; fgResult(F.good, B.position.y <= F.cb + 0.05 ? (Math.abs(B.position.x) < F.hw ? 'short' : 'wide') : 'wide'); }
     if (B.position.y < TOP + 0.1) { B.position.y = TOP + 0.1; F.v.y = Math.abs(F.v.y) * 0.4; F.v.x *= 0.6; F.v.z *= 0.6; if (!F.crossed) { F.crossed = true; fgResult(false, 'short'); } }
@@ -3036,7 +3227,7 @@ function fgResult(good, why) {
   else { miniBanner('🏈 NO GOOD! 🏈', `${pName(p)} ${why === 'short' ? 'came up short' : 'went wide'} — drink! 🍺`); tone('sawtooth', 260, 110, 0.7, 0.14); drink(p); showResult('🏈 No good!', `${p.name} missed the field goal — drink! 🍺`, '#ff6b6b'); addLog(`🏈 ${p.name} missed the field goal and drank`); }
   renderUI(); hostPublish();
 }
-function fgCleanup() { if (mini.fg) scene.remove(mini.fg.g); $('#fgMeter').classList.remove('on'); $('#gamePanel').classList.remove('fg'); mini.cam = null; }
+function fgCleanup() { document.body.classList.remove('fgmode'); $('#fgWind').classList.remove('on'); if (mini.fg) scene.remove(mini.fg.g); $('#fgMeter').classList.remove('on'); $('#gamePanel').classList.remove('fg'); mini.cam = null; }
 
 function maybeStartMini() {
   if (CTRL || mini || !state.started || gameOver || toss || goblin || placing || aim.mode !== 'wander') return;
@@ -3046,7 +3237,8 @@ function maybeStartMini() {
 }
 function startMini(type) {
   if (mini || goblin || toss) return;
-  type = type || pickOther(['hot', 'boss', 'roulette', 'cups', 'hilo', 'tos'], state.lastMini); state.lastMini = type;
+  type = type || pickOther(['hot', 'boss', 'roulette', 'cups', 'hilo', 'tos'], state.lastMini);
+  musicStyle({ fieldgoal: 'metal', boss: 'boss', roulette: 'tension' }[type] || 'gameshow'); state.lastMini = type;
   hideResult(); clearPoop(); clearBurgers(); coin.visible = false; ensureAudio();
   mini = { type, stage: 'intro', t: 0, holder: null, hp: 0, max: 0, left: 10, G: null, hits: {}, flinch: 0, hitSnd: 0 };
   jazzDuck(true);
@@ -3054,7 +3246,7 @@ function startMini(type) {
   else if (type === 'roulette') miniBanner('🎰 RULE ROULETTE! 🎰', 'One rule for EVERYONE — for a whole round');
   else if (type === 'cups') miniBanner('🥤 COIN UNDER THE CUP! 🥤', 'Follow the coin… then pick the right cup');
   else if (type === 'hilo') miniBanner('🃏 HIGHER OR LOWER! 🃏', 'Guess if the next card is higher or lower — wrong (or a tie) and you drink');
-  else if (type === 'tos') miniBanner('🥃 TRUTH OR SHOT! 🥃', 'Answer honestly… or take the shot');
+  else if (type === 'tos') miniBanner('🥃 TRUTH OR SHOT! 🥃', "See the question — answer it, or take a shot");
   else if (type === 'fieldgoal') miniBanner('🏈 FIELD GOAL! 🏈', 'Kick it through the posts — miss and you drink');
   else miniBanner('👹 GOBLIN BOSS FIGHT! 👹', 'Mash <b>HIT</b> on your phones (or <b>Space</b>) — beat him in 10 seconds!');
   [0, 0.18, 0.36, 0.7].forEach((d, i) => tone('square', i === 3 ? 880 : 660, i === 3 ? 880 : 660, 0.14, 0.12, d));
@@ -3131,7 +3323,7 @@ function bossEnd(won) {
   state.rounds++; renderUI(); hostPublish();
 }
 function endMini() {
-  if (!mini) return;
+  if (!mini) return; musicStyle('jazz');
   $('#slot').classList.remove('on');
   if (mini.type === 'cups') cupsCleanup();
   if (mini.type === 'fieldgoal') fgCleanup();
@@ -3288,7 +3480,7 @@ function startIntro(after) {
   let speaking = false, raf = 0;
   const finish = () => {
     cancelAnimationFrame(raf); v.pause(); document.body.classList.remove('introvid'); endIntro();
-    goblin = null; jazzDuck(false); renderUI(); after && after();
+    goblin = null; musicStyle('jazz'); jazzDuck(false); renderUI(); after && after();
   };
   goblin.after = after; goblin.finishVideo = finish;
   const cue = (name, at, fn) => { if (!fired.has(name) && v.currentTime >= at) { fired.add(name); fn(); } };
@@ -3378,7 +3570,7 @@ const previewIntro = () => { ensureAudio(); if (toss || goblin || placing) retur
 $('#tryHot').onclick = () => { if (!canAim() && !mini) return toast('Start a game with 2+ players first (and wait for the turn to finish)'); startMini('hot'); };
 $('#cupRows').onclick = e => { const b = e.target.closest('[data-cp]'); if (b) cupPick(b.dataset.cp, b.dataset.n); };
 $('#tryHolo').onclick = () => sayYugo(true);
-const JACK_ACTS = [['duel', '⚔️ Pizza-cutter sword duel over the coin'], ['smite', '⚡ Dictator goblin steals it… and gets smitten'], ['sting', '📺 Dateline GBC: To Catch a Coin Thief'], ['neptune', '🔱 Steals Neptune\'s trident in Bologna'], ['plane', '✈️ Steals it in a plane… and crashes'], ['eat', '💩 Eats the coin, poops it out'], ['burp', '🤢 Swallows it, burps it up'], ['juggle', '🤹 Juggles the coin'], ['bite', '🦷 Bites it and chucks it'],
+const JACK_ACTS = [['swipe', '💚 Dating app: swipes left on every goblin… until the coin'], ['duel', '⚔️ Pizza-cutter sword duel over the coin'], ['smite', '⚡ Dictator goblin steals it… and gets smitten'], ['sting', '📺 Dateline GBC: To Catch a Coin Thief'], ['neptune', '🔱 Steals Neptune\'s trident in Bologna'], ['plane', '✈️ Steals it in a plane… and crashes'], ['eat', '💩 Eats the coin, poops it out'], ['burp', '🤢 Swallows it, burps it up'], ['juggle', '🤹 Juggles the coin'], ['bite', '🦷 Bites it and chucks it'],
   ['hat', '🎩 Wears the coin as a hat'], ['polish', '✨ Polishes the coin'], ['casino', '🎰 Loses a coin flip, tantrum'], ['surf', '🏄 Surfs the coin around'], ['golf', '⛳ Golfs the coin'], ['wedding', '💍 Proposes to the coin'],
   ['summon', '🔮 Summons a demon'], ['sneeze', '🤧 Giant sneeze'], ['booger', '👃 Booger flick'], ['fartcannon', '💨 Fart cannon'], ['rockstar', '🎸 Rock star guitar solo'], ['ballet', '🩰 Ballet'], ['breakdance', '🕺 Breakdance'],
   ['opera', '🎭 Opera'], ['thief', '🦹 Steals it and hides'], ['insult', '🗯️ Roasts the players'], ['clones', '👯 Clones himself'], ['giant', '🗿 Turns giant']];
@@ -3395,7 +3587,7 @@ $('#jackList').onclick = () => {
 };
 $('#jackActs').onclick = e => { const b = e.target.closest('[data-act]'); if (b) watchJack(b.dataset.act); };
 ['Hilo:hilo', 'Tos:tos', 'Fg:fieldgoal'].forEach(x => { const [id, t] = x.split(':'); $('#try' + id).onclick = () => { if (!canAim() && !mini) return toast('Start a game with 2+ players first (and wait for the turn to finish)'); startMini(t); if (mini && t === 'fieldgoal') mini.who = current().id; }; });
-document.addEventListener('click', e => { const b = e.target.closest('[data-gp]'); if (!b || !mini) return; const k = b.dataset.gp; if (k === 'hl') hlGuess(null, b.dataset.v); else if (k === 'tos') tosChoose(null, b.dataset.v); else if (k === 'kick') fgPress(null); });
+document.addEventListener('click', e => { const b = e.target.closest('[data-gp]'); if (!b || !mini) return; const k = b.dataset.gp; if (k === 'hl') hlGuess(null, b.dataset.v); else if (k === 'tos') tosChoose(null, b.dataset.v); else if (k === 'vote') tosVote(null, b.dataset.v); else if (k === 'tosq') tosAsk(null, b.dataset.v); else if (k === 'kick') fgPress(null); });
 $('#tryCups').onclick = () => { if (!canAim() && !mini) return toast('Start a game with 2+ players first (and wait for the turn to finish)'); startMini('cups'); };
 $('#tryRoul').onclick = () => { if (!canAim() && !mini) return toast('Start a game with 2+ players first (and wait for the turn to finish)'); startMini('roulette'); };
 $('#tryBoss').onclick = () => { if (!canAim() && !mini) return toast('Start a game with 2+ players first (and wait for the turn to finish)'); startMini('boss'); };
@@ -3403,7 +3595,7 @@ $('#introBtn').onclick = previewIntro; $('#introBtn2').onclick = previewIntro;
 $('#skipIntro').onclick = () => {
   if (goblin && goblin.video) return goblin.finishVideo();
   if (!goblin || !goblin.intro) return endIntro();
-  const after = goblin.after; scene.remove(goblin.G.root); goblin = null; shake = 0; jazzDuck(false); renderUI(); if (after) after();
+  const after = goblin.after; scene.remove(goblin.G.root); goblin = null; musicStyle('jazz'); shake = 0; jazzDuck(false); renderUI(); if (after) after();
 };
 function startJosh(coinPos, josh) {
   const G = buildGoblin({ skin: SKINS[Math.floor(Math.random() * SKINS.length)], eye: '#ff5a3c', hat: pickOther(['none', 'bandana', 'tophat', 'crown'], ''), size: 1.35 });
@@ -3666,7 +3858,7 @@ function hostPublish() {
   const g = {
     role: 'host', since: hostSince, phase: gamePhase(), turn: cur ? cur.id : null,
     ruleFor: pendingRule ? pendingRule.tosser.id : null, started: !!state.started, owners, roundRule: state.roundRule ? [String(state.roundRule.text).slice(0, 80), state.roundRule.left] : null,
-    mini: mini ? { type: mini.type, stage: mini.stage, holder: mini.holder ? mini.holder.id : null, hp: mini.hp, max: mini.max, left: Math.ceil(mini.type === 'cups' ? (mini.pickLeft || 0) : mini.left), sub: mini.sub || null, who: mini.who != null ? mini.who : null, n: mini.n || 0, card: mini.card ? cardTxt(mini.card) : null, cardS: mini.card ? mini.card.s : null, next: mini.next ? cardTxt(mini.next) : null, q: mini.q || null, verdict: mini.verdict || null } : null,
+    mini: mini ? { type: mini.type, stage: mini.stage, holder: mini.holder ? mini.holder.id : null, hp: mini.hp, max: mini.max, left: Math.ceil(mini.type === 'cups' ? (mini.pickLeft || 0) : mini.left), sub: mini.sub || null, who: mini.who != null ? mini.who : null, n: mini.n || 0, card: mini.card ? cardTxt(mini.card) : null, cardS: mini.card ? mini.card.s : null, next: mini.next ? cardTxt(mini.next) : null, q: mini.q || null, asker: mini.asker != null ? mini.asker : null, verdict: mini.verdict || null, vb: mini.vb || 0, vl: mini.vl || 0, voted: mini.votes ? Object.keys(mini.votes) : [] } : null,
     lobby: state.lobby.map(p => ({ id: p.id, name: p.name, color: p.color })),
     players: state.players.map(p => ({ id: p.id, name: p.name, color: p.color, x: +p.x.toFixed(2), z: +p.z.toFixed(2), r: +p.r.toFixed(2) })),
     spots: state.rules.map(r => [+r.x.toFixed(2), +r.z.toFixed(2), +r.r.toFixed(2)]).slice(-30), half: HALF, out: OUT,
@@ -3682,6 +3874,8 @@ function handleCmd(c, cmd) {
   if (cmd.type === 'hl') { hlGuess(pid, cmd.v === 'h' ? 'h' : 'l'); return; }
   if (cmd.type === 'tos') { tosChoose(pid, ['truth', 'shot', 'done'].includes(cmd.v) ? cmd.v : null); return; }
   if (cmd.type === 'kick') { fgPress(pid); return; }
+  if (cmd.type === 'vote') { tosVote(pid, cmd.v); return; }
+  if (cmd.type === 'tosq') { tosAsk(pid, typeof cmd.text === 'string' ? cmd.text : cmd.v === 'idea' ? 'idea' : 'say'); return; }
   if (cmd.type === 'pass') { if (mini && mini.type === 'hot' && mini.holder && String(mini.holder.id) === pid) passHot(); return; }
   if (cmd.type === 'flip') { const cur = current(); if (cur && String(cur.id) === pid && !$('#modal').classList.contains('on')) flipPressed(); }
   else if (cmd.type === 'rule' || cmd.type === 'norule') {
@@ -3797,7 +3991,7 @@ function setRoomCode(code) {
 
 // ----- phone: mini-game controls -----
 function renderMiniCtrl(body, mine, players) {
-  const M = H.mini, key = [M.type, M.stage, M.sub, M.holder, mine.id, M.who, M.n].join('|');
+  const M = H.mini, key = [M.type, M.stage, M.sub, M.holder, mine.id, M.who, M.n, (M.voted || []).map(String).includes(String(mine.id))].join('|');
   if (body.dataset.mk === key && $('#cMini')) { updateMiniCtrl(M); return; }
   body.dataset.mk = key;
   const holder = players.find(p => String(p.id) === String(M.holder));
@@ -3811,14 +4005,20 @@ function renderMiniCtrl(body, mine, players) {
     else if (M.sub === 'reveal') html = `<div class="c-card" id="cMini" style="text-align:center"><h3>${whoN}: ${esc(M.next || '')}</h3><p style="font-size:22px;font-weight:900">${esc(M.verdict || '')}</p></div>`;
     else html = `<div class="c-card" id="cMini" style="text-align:center"><h3>🃏 ${whoN} is guessing…</h3><p style="font-size:34px;font-weight:900">${esc(M.card || '')}</p><p>Watch the big screen 👀</p></div>`;
   } else if (M.type === 'tos') {
+    const voted = (M.voted || []).map(String).includes(String(mine.id));
     if (M.stage === 'intro') html = `<div class="c-card" id="cMini" style="text-align:center"><h3>🥃 TRUTH OR SHOT</h3><p>Someone's about to get put on the spot…</p></div>`;
     else if (M.stage === 'done') html = resCard();
-    else if (M.sub === 'choose' && myTurn) { html = `<div class="c-card" id="cMini" style="text-align:center"><h3>It's you! Truth or shot? <b id="cHlT">${M.left}s</b></h3></div><button class="c-big" data-tos="truth">🤔 TRUTH</button><button class="c-big hot" data-tos="shot" style="margin-top:10px">🥃 SHOT</button>`; try { navigator.vibrate && navigator.vibrate([150, 60, 150]); } catch (e) {} }
-    else if (M.sub === 'truth' && myTurn) html = `<div class="c-card" id="cMini" style="text-align:center"><h3>Answer out loud:</h3><p style="font-size:20px;font-weight:800;color:#fff">“${esc(M.q || '')}”</p></div><button class="c-big" data-tos="done">✅ I answered</button><button class="c-big hot" data-tos="shot" style="margin-top:10px">🐔 Chicken out → shot</button>`;
-    else if (M.sub === 'truth') html = `<div class="c-card" id="cMini" style="text-align:center"><h3>🤔 ${whoN} has to answer:</h3><p style="font-size:18px;font-weight:800;color:#fff">“${esc(M.q || '')}”</p></div>`;
+    else if (M.sub === 'ask' && String(M.asker) === String(mine.id)) html = `<div class="c-card" id="cMini" style="text-align:center"><h3>🤔 You ask ${whoN} a truth! <b id="cHlT">${M.left}s</b></h3><textarea id="cTosQ" maxlength="200" rows="3" placeholder="Type a truth question…" style="width:100%;font-size:17px;border-radius:12px;padding:10px;margin-top:6px"></textarea><button class="c-link" id="cTosIdea" style="margin-top:6px">💡 Give me an idea</button></div><button class="c-big" id="cTosSend">📨 ASK IT</button><button class="c-big" data-tosq="say" style="margin-top:10px;opacity:.85">🗣️ I asked out loud</button>`;
+    else if (M.sub === 'ask') html = `<div class="c-card" id="cMini" style="text-align:center"><h3>🤔 ${esc((players.find(p => String(p.id) === String(M.asker)) || {}).name || 'Someone')} is thinking of a truth for ${myTurn ? 'YOU 😬' : whoN}…</h3></div>`;
+    else if (M.sub === 'choose' && myTurn) { html = `<div class="c-card" id="cMini" style="text-align:center"><h3>It's you! <b id="cHlT">${M.left}s</b></h3><p style="font-size:19px;font-weight:800;color:#fff">${M.q ? '“' + esc(M.q) + '”' : '🗣️ (asked out loud)'}</p><p>Answer it out loud… or take a shot</p></div><button class="c-big" data-tos="truth">🗣️ I'LL ANSWER</button><button class="c-big hot" data-tos="shot" style="margin-top:10px">🥃 SHOT</button>`; try { navigator.vibrate && navigator.vibrate([150, 60, 150]); } catch (e) {} }
+    else if (M.sub === 'choose') html = `<div class="c-card" id="cMini" style="text-align:center"><h3>🥃 ${whoN}: answer or shot?</h3><p style="font-size:17px;font-weight:800;color:#fff">“${esc(M.q || '')}”</p></div>`;
+    else if (M.sub === 'truth' && myTurn) html = `<div class="c-card" id="cMini" style="text-align:center"><h3>Answer out loud — honestly:</h3><p style="font-size:20px;font-weight:800;color:#fff">“${esc(M.q || '')}”</p></div><button class="c-big" data-tos="done">✅ I answered</button><button class="c-big hot" data-tos="shot" style="margin-top:10px">🥃 Nope — shot</button>`;
+    else if (M.sub === 'truth') html = `<div class="c-card" id="cMini" style="text-align:center"><h3>🗣️ ${whoN} is answering:</h3><p style="font-size:17px;font-weight:800;color:#fff">“${esc(M.q || '')}”</p></div>`;
+    else if (M.sub === 'vote' && !myTurn && !voted) { html = `<div class="c-card" id="cMini" style="text-align:center"><h3>🕵️ Was ${whoN} telling the truth? <b id="cHlT">${M.left}s</b></h3></div><button class="c-big" data-vote="b">👍 BELIEVE</button><button class="c-big hot" data-vote="l" style="margin-top:10px">🤥 LIE!</button>`; try { navigator.vibrate && navigator.vibrate(120); } catch (e) {} }
+    else if (M.sub === 'vote') html = `<div class="c-card" id="cMini" style="text-align:center"><h3>${myTurn ? '😬 The group is voting on you…' : '🗳️ Vote in!'}</h3><p>Waiting for the others…</p></div>`;
     else if (M.sub === 'shot') html = `<div class="c-card c-result" id="cMini"><div class="t">🥃 ${whoN} takes the shot!</div></div>`;
-    else if (M.sub === 'answered') html = `<div class="c-card c-result" id="cMini" style="border-color:#7dff6a"><div class="t" style="color:#7dff6a">✅ ${whoN} told the truth</div></div>`;
-    else html = `<div class="c-card" id="cMini" style="text-align:center"><h3>🥃 ${whoN}: truth or shot?</h3><p>Watch the big screen 👀</p></div>`;
+    else if (M.sub === 'answered') html = `<div class="c-card c-result" id="cMini"><div class="t">${esc(M.verdict || '')}</div><p>👍 ${M.vb} · 🤥 ${M.vl}</p></div>`;
+    else html = `<div class="c-card" id="cMini" style="text-align:center"><h3>🥃 Truth or Shot</h3><p>Watch the big screen 👀</p></div>`;
   } else if (M.type === 'fieldgoal') {
     if (M.stage === 'done') html = resCard();
     else if (myTurn && (M.sub === 'aim' || M.sub === 'power')) { html = `<div class="c-card" id="cMini" style="text-align:center"><h3>🏈 ${M.sub === 'aim' ? 'Tap when the arrow points at the posts' : 'Tap to KICK — higher power goes further'}</h3><p>Watch the big screen 👀</p></div><button class="c-big hot" data-kick="1">${M.sub === 'aim' ? '🎯 LOCK AIM' : '🏈 KICK!'}</button>`; try { navigator.vibrate && navigator.vibrate(100); } catch (e) {} }
@@ -3844,6 +4044,11 @@ function renderMiniCtrl(body, mine, players) {
   body.querySelectorAll('[data-cup]').forEach(b => b.addEventListener('pointerdown', e => { e.preventDefault(); me.cupPick = +b.dataset.cup; cSend('cup', { i: me.cupPick }); body.querySelectorAll('[data-cup]').forEach(x => x.classList.toggle('sel', x === b)); }));
   body.querySelectorAll('[data-hl]').forEach(b => b.addEventListener('pointerdown', e => { e.preventDefault(); cSend('hl', { v: b.dataset.hl }); body.querySelectorAll('[data-hl]').forEach(x => x.disabled = true); }));
   body.querySelectorAll('[data-tos]').forEach(b => b.addEventListener('pointerdown', e => { e.preventDefault(); cSend('tos', { v: b.dataset.tos }); body.querySelectorAll('[data-tos]').forEach(x => x.disabled = true); }));
+  const tq = $('#cTosQ'), ti = $('#cTosIdea'), ts = $('#cTosSend');
+  if (ti) ti.onclick = () => { tq.value = TRUTHS[Math.floor(Math.random() * TRUTHS.length)]; };
+  if (ts) ts.onclick = () => { const v = tq.value.trim(); if (!v) { tq.focus(); return; } cSend('tosq', { text: v.slice(0, 200) }); ts.disabled = true; };
+  body.querySelectorAll('[data-tosq]').forEach(b => b.addEventListener('click', () => { cSend('tosq', { v: 'say' }); b.disabled = true; }));
+  body.querySelectorAll('[data-vote]').forEach(b => b.addEventListener('pointerdown', e => { e.preventDefault(); cSend('vote', { v: b.dataset.vote }); body.querySelectorAll('[data-vote]').forEach(x => x.disabled = true); }));
   body.querySelectorAll('[data-kick]').forEach(b => b.addEventListener('pointerdown', e => { e.preventDefault(); cSend('kick'); b.disabled = true; }));
   const ps = $('#cPass'); if (ps) ps.addEventListener('pointerdown', e => { e.preventDefault(); cSend('pass'); ps.disabled = true; ps.textContent = 'Passed! 😮‍💨'; });
   const ht = $('#cHit'); if (ht) ht.addEventListener('pointerdown', e => { e.preventDefault(); me.taps++; me.myHits++; sendCtrl(); const n = $('#cMyHits'); if (n) n.textContent = me.myHits; ht.style.transform = 'scale(.94)'; setTimeout(() => ht.style.transform = '', 60); });
@@ -4104,7 +4309,7 @@ $('#startBtn').onclick = () => {
 };
 
 // ---------- installable app + automatic updates (website version only) ----------
-const BUILD = '1795017429';
+const BUILD = '1795022539';
 if (STANDALONE) {
   try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
   let deferredInstall = null;
