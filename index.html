@@ -498,6 +498,9 @@ const CTRL = (() => {
   const h = (location.hash || '').slice(1); let saved = null; try { saved = localStorage.getItem('pizzabox-mode'); } catch (e) {}
   const hj = /^join-([a-z]{4})$/i.exec(h);
   if (hj) { ROOM_CODE = hj[1].toUpperCase(); try { localStorage.setItem('pizzabox-mode', 'ctrl'); localStorage.setItem('pizzabox-join', ROOM_CODE); } catch (e) {} return true; }
+  const inApp = matchMedia('(display-mode: standalone)').matches || matchMedia('(display-mode: window-controls-overlay)').matches || matchMedia('(display-mode: minimal-ui)').matches || navigator.standalone === true;
+  // the installed app is always the main screen, unless "controller" was chosen in this very session
+  if (inApp && h === 'controller') { let ok = false; try { ok = sessionStorage.getItem('pb-ctrl-session') === '1'; } catch (e) {} if (!ok) { try { history.replaceState(null, '', '#host'); localStorage.setItem('pizzabox-mode', 'host'); } catch (e) {} return false; } }
   if (h === 'controller') return true; if (h === 'host') return false;
   if (STANDALONE) {
     // on the website only the installed app is the main screen; any browser tab is a phone/controller
@@ -4327,7 +4330,7 @@ function renderCtrl() {
   }
 }
 $('#cSwitch').onclick = () => { me.joining = null; setPid(null); };
-function setMode(ctrl) { try { localStorage.setItem('pizzabox-mode', ctrl ? 'ctrl' : 'host'); } catch (e) {} location.hash = ctrl ? '#controller' : '#host'; location.reload(); }
+function setMode(ctrl) { try { localStorage.setItem('pizzabox-mode', ctrl ? 'ctrl' : 'host'); sessionStorage.setItem('pb-ctrl-session', ctrl ? '1' : '0'); } catch (e) {} location.hash = ctrl ? '#controller' : '#host'; location.reload(); }
 $('#cHost').onclick = () => setMode(false);
 $('#asCtrl').onclick = () => setMode(true);
 if (CTRL) { document.body.classList.add('ctrl'); renderCtrl(); }
@@ -4364,7 +4367,7 @@ $('#startBtn').onclick = () => {
 };
 
 // ---------- installable app + automatic updates (website version only) ----------
-const BUILD = '1795024271';
+const BUILD = '1795024318';
 if (STANDALONE) {
   try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
   let deferredInstall = null;
