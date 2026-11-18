@@ -276,6 +276,20 @@
   .sn-match h2{font:900 36px "Permanent Marker",cursive;margin:0 0 20px}.sn-pics{display:flex;gap:12px}.sn-pics img{width:120px;height:150px;object-fit:cover;border-radius:16px;border:4px solid #fff}
   .sn-match p{margin-top:18px;font-size:16px}
   body.ctrl #snaggle{display:none!important}
+  #fgFail{position:fixed;inset:0;z-index:30;pointer-events:none;display:none;overflow:hidden;text-align:center;background:radial-gradient(circle,rgba(120,0,0,.25),rgba(40,0,0,.6))}
+  #fgFail.on{display:block;animation:ffbg 4.6s ease-out forwards}@keyframes ffbg{0%{opacity:0}6%{opacity:1}85%{opacity:1}100%{opacity:0}}
+  .ff-stamp{position:absolute;left:50%;top:7%;transform:translateX(-50%) rotate(-8deg);font:900 clamp(50px,8vw,110px) "Permanent Marker",cursive;color:#ff2b2b;border:10px solid #ff2b2b;border-radius:22px;padding:0 30px;text-shadow:0 6px 0 #5a0000;box-shadow:0 0 40px rgba(255,0,0,.5);animation:ffstamp .5s cubic-bezier(.2,1.8,.4,1) both;background:rgba(0,0,0,.35)}
+  @keyframes ffstamp{0%{transform:translateX(-50%) rotate(-8deg) scale(3);opacity:0}100%{transform:translateX(-50%) rotate(-8deg) scale(1);opacity:1}}
+  .ff-why{position:absolute;left:0;right:0;top:34%;font:800 clamp(22px,2.6vw,34px) system-ui;color:#fff;text-shadow:0 3px 10px #000;animation:ffup .4s .35s both}
+  .ff-beer{position:absolute;left:0;right:0;top:48%;font-size:clamp(90px,13vw,170px);animation:ffup .45s .7s both}
+  .ff-beer span{display:inline-block;animation:ffchug .5s 1.1s ease-in-out 5 alternate}
+  @keyframes ffchug{0%{transform:rotate(-12deg)}100%{transform:rotate(28deg) translateY(-8px)}}
+  .ff-name{position:absolute;left:0;right:0;top:76%;font:900 clamp(34px,5vw,70px) "Permanent Marker",cursive;color:#fff;text-shadow:0 5px 0 #000,0 0 30px #f00;animation:ffup .4s 1s both,ffpulse .6s 1.4s ease-in-out infinite alternate}
+  @keyframes ffup{0%{opacity:0;transform:translateY(40px)}100%{opacity:1;transform:none}}
+  @keyframes ffpulse{0%{transform:scale(1)}100%{transform:scale(1.08)}}
+  .ff-trash i{position:absolute;top:-60px;font-style:normal;animation:fftrash linear both}
+  @keyframes fftrash{0%{transform:translateY(0) rotate(0)}100%{transform:translateY(115vh) rotate(540deg)}}
+  body.ctrl #fgFail{display:none!important}
   #fgWind{position:fixed;right:24px;top:64px;z-index:13;display:none;background:rgba(20,10,4,.85);border:2px solid #9fd0ff;border-radius:14px;padding:8px 14px;color:#fff;text-align:center;font-size:14px}
   #fgWind.on{display:block}#fgWind b{font-size:20px}
   body.fgmode #fgMeter{top:auto;bottom:24px;transform:none;height:34vh}
@@ -434,7 +448,7 @@
 <div id="roundRule"></div>
 <div id="fade"></div><div id="cutCap"></div>
 <div id="lowerThird"><span class="lt-logo">GBC</span><span class="lt-text"><b>HANK GRIMSBY</b> · Dateline GBC<br><small>TO CATCH A COIN THIEF · LIVE</small></span></div><div id="tvRec">● REC</div>
-<div id="gamePanel"><div id="gpTitle"></div><div id="gpBody"></div><div id="gpBtns"></div></div><div id="fgWind"></div><div id="fgMeter"><div id="fgFill"></div><span>POWER</span></div>
+<div id="gamePanel"><div id="gpTitle"></div><div id="gpBody"></div><div id="gpBtns"></div></div><div id="fgWind"></div><div id="fgFail"></div><div id="fgMeter"><div id="fgFill"></div><span>POWER</span></div>
 <div id="cupPanel"><div class="cp-top">Pick for players without a phone <span id="cupTime"></span></div><div id="cupRows"></div></div>
 <div id="bossBar"><div class="bb-top"><span>👹 THE GOBLIN KING</span><span id="bossTime">10.0s</span></div><div class="bb-bar"><div id="bossFill"></div><span id="bossHp"></span></div></div>
 <div id="yugo">こんにちは、ユーゴ！<br>元気？ 大好きだよ！💖</div>
@@ -1751,6 +1765,8 @@ function startGoblin(coinPos, forceAct) {
     // drops back into the pizza box, trident in hand
     S2(1.15, u => { G.root.position.set(stand.x, THREE.MathUtils.lerp(16, TOP, u * u), stand.z); G.root.rotation.y = faceYaw + (1 - u) * 14; G.arms[0].rotation.x = -2.8; G.legs.forEach((l, i) => l.rotation.x = Math.sin(u * 30 + i * 3) * 0.6); }, wheeSfx);
     S2(0.01, () => neutral()); squash(); cackle();
+  } else if (plan.act === 'swipe') {
+    S2(0.01, () => { G.root.position.copy(stand); G.root.visible = false; });
   } else if (plan.entr === 'walk') {
     const start = new THREE.Vector3(side * (OUT + 0.75), 0, -8.5), pOut = new THREE.Vector3(side * (OUT + 0.75), 0, zl), pIn = new THREE.Vector3(side * (HALF - 0.45), TOP, zl);
     S2(0.01, () => { G.root.position.copy(start); }, () => evilLaugh(8, laughBase));
@@ -2228,7 +2244,7 @@ function startGoblin(coinPos, forceAct) {
     const BGS = ['#c9e4a5', '#f2c6a0', '#b9d6f2', '#e8b9e0', '#f7e29c', '#a8e0d1', '#d9c2f0'];
     const cards = pool.map((p2, i) => { const g2 = buildGoblin({ skin: SKINS[(i * 3 + 1) % SKINS.length], eye: ['#ffe14d', '#ff5a3c', '#7df9ff', '#b6ff4d'][i % 4], hat: ['none', 'party', 'none', 'tophat', 'crown'][i % 5], size: 1 }); g2.root.rotation.y = 0.35; g2.jaw.scale.y = 0.5 + (i % 3) * 0.2; return { name: p2[0], age: p2[1], bio: p2[2], img: shoot(g2.root, BGS[i % BGS.length], true) }; });
     const cc = coin.clone(); cc.position.set(0, 0, 0); cc.rotation.set(Math.PI / 2 - 0.25, 0.3, 0); const coinImg = shoot(cc, '#ffe7a3', false, 2.4);
-    const meG = (() => { const o = G.root.clone(true); o.position.set(0, 0, 0); o.rotation.set(0, 0.35, 0); o.scale.setScalar(1); return shoot(o, '#c9f2b0', true); })();
+    const meG = (() => { const o = G.root.clone(true); o.visible = true; o.position.set(0, 0, 0); o.rotation.set(0, 0.35, 0); o.scale.setScalar(1); return shoot(o, '#c9f2b0', true); })();
     if (pr) { pr.dispose(); pr.forceContextLoss && pr.forceContextLoss(); }
     const app = document.createElement('div'); app.id = 'snaggle'; app.innerHTML = `<div class="sn-phone"><div class="sn-top"><span class="sn-logo">💚 snaggle</span><span class="sn-ic">⚙️</span></div><div class="sn-deck"></div><div class="sn-btns"><span class="sn-x">✕</span><span class="sn-h">💚</span></div></div>`;
     document.body.appendChild(app); cleanups.push(() => app.remove());
@@ -2237,29 +2253,32 @@ function startGoblin(coinPos, forceAct) {
     const phone = new THREE.Mesh(new THREE.BoxGeometry(0.13, 0.24, 0.02), [0, 0, 0, 0, 0, 0].map((_, i) => new THREE.MeshStandardMaterial(i === 4 ? { color: '#9fffb8', emissive: '#4cff7a', emissiveIntensity: 0.9 } : { color: '#1b1b1b', roughness: 0.3 })));
     phone.position.set(0, -0.06, 0.06); phone.rotation.x = -0.3; phone.visible = false; G.arms[1].hand.add(phone);
     const thumb = u => { G.arms[0].rotation.x = -1.25 + 0.12 * Math.sin(u * 40); G.arms[0].rotation.z = -0.35; };
-    let cur = null;
-    standUp(0.3);
-    // sits down next to the coin, phone out, sighs
-    S2(0.8, u => { const e = ease(u); G.body.position.y = 0.45 - 0.25 * e; G.legs.forEach(l => l.rotation.x = -1.3 * e); G.arms[1].rotation.x = -1.3 * e; G.arms[0].rotation.x = -1.2 * e; G.head.rotation.x = 0.35 * e; G.root.rotation.y = lerpAng(G.root.rotation.y, Math.atan2(camera.position.x - G.root.position.x, camera.position.z - G.root.position.z), e); },
-      () => { phone.visible = true; tone('sine', 1200, 1600, 0.08, 0.05); });
-    S2(1.0, u => { G.jaw.scale.y = 0.32 + 0.3 * Math.sin(Math.PI * u); }, () => speak('*sigh* … another lonely night.', 0.75, 1.0));
-    S2(0.45, u => { app.style.opacity = u; app.querySelector('.sn-phone').style.transform = `translateY(${(1 - ease(u)) * 60}px)`; }, () => { app.classList.add('on'); });
+    let cur = null; const hideG = () => { G.root.visible = false; };
+    const coinEl = card(coinImg, 'Coin, 2', "Shiny. Round. Heads or tails, I'm down 😉 Will land on you.", 'gold');
+    const els = cards.slice().reverse().map(c2 => card(c2.img, `${c2.name}, ${c2.age}`, c2.bio)).reverse();
+    // the app comes first — we only hear the goblin
+    S2(0.5, u => { hideG(); app.style.opacity = u; app.querySelector('.sn-phone').style.transform = `translateY(${(1 - ease(u)) * 60}px)`; }, () => { app.classList.add('on'); tone('sine', 1200, 1600, 0.08, 0.05); speak('*sigh* … another lonely night.', 0.75, 1.0); });
+    S2(1.0, hideG);
     // swipe left, left, left… getting faster and more disgusted
     pool.forEach((p2, i) => {
       const d = Math.max(0.55, 1.35 - i * 0.14);
-      S2(d, u => { thumb(u); if (!cur) return; const k = Math.max(0, (u - 0.62) / 0.38); cur.style.transform = `translateX(${-k * 420}px) rotate(${-k * 24}deg)`; cur.querySelector('.sn-nope').style.opacity = Math.min(1, k * 3); G.head.rotation.y = 0.15 * Math.sin(u * 20) * (u > 0.4 ? 1 : 0); },
-        () => { if (cur) cur.remove(); cur = card(cards[i].img, `${cards[i].name}, ${cards[i].age}`, cards[i].bio); if (i === 2) setTimeout(() => speak('Ew.', 0.8, 1.0), 300); if (i === 4) setTimeout(() => speak('Nope. Nope. NOPE.', 0.75, 1.3), 200); setTimeout(() => goblin && whooshSfx(0.35), d * 640); });
+      S2(d, u => { hideG(); if (!cur) return; const k = Math.max(0, (u - 0.62) / 0.38); cur.style.transform = `translateX(${-k * 420}px) rotate(${-k * 24}deg)`; cur.querySelector('.sn-nope').style.opacity = Math.min(1, k * 3); },
+        () => { if (cur) cur.remove(); cur = els[i]; if (i === 2) setTimeout(() => speak('Ew.', 0.8, 1.0), 300); if (i === 4) setTimeout(() => speak('Nope. Nope. NOPE.', 0.75, 1.3), 200); setTimeout(() => goblin && whooshSfx(0.35), d * 640); });
     });
     // …then: the coin
-    S2(2.4, u => { thumb(0); G.head.rotation.x = 0.35 - 0.25 * Math.min(1, u * 4); G.jaw.scale.y = 0.32 + 0.6 * Math.min(1, u * 3); G.body.position.y = 0.2 + 0.03 * Math.sin(u * 50); },
-      () => { if (cur) cur.remove(); cur = card(coinImg, 'Coin, 2', "Shiny. Round. Heads or tails, I'm down 😉 Will land on you.", 'gold'); [660, 880, 1320].forEach((f, k) => tone('sine', f, f, 0.5, 0.05, k * 0.1)); setTimeout(() => speak('…hello there.', 0.7, 0.9), 700); });
-    S2(0.5, u => { thumb(u); const k = ease(u); cur.style.transform = `translateX(${k * 440}px) rotate(${k * 24}deg)`; cur.querySelector('.sn-like').style.opacity = Math.min(1, u * 3); }, () => { tone('sine', 900, 1500, 0.2, 0.08); });
-    S2(2.6, u => { G.body.position.y = 0.2 + 0.12 * Math.abs(Math.sin(u * 14)); G.arms[0].rotation.x = -2.6; G.jaw.scale.y = 0.9; if (Math.random() < 0.2) spawnParts(wpos(G.headTop), 2, { colors: ['#ff4f8b', '#ff9ec4'], size: 0.06, shape: 'box', speed: 0.6, up: 1.6, life: 1, gravity: -0.5 }); },
-      () => { if (cur) cur.remove(); const m = document.createElement('div'); m.className = 'sn-match'; m.innerHTML = `<h2>It's a Match! 💚</h2><div class="sn-pics"><img src="${meG}"><img src="${coinImg}"></div><p>You and Coin liked each other</p>`; deck.appendChild(m);
-        [523, 659, 784, 1047].forEach((f, k) => tone('triangle', f, f, 0.35, 0.07, k * 0.11)); setTimeout(() => speak('Finally! Someone with VALUE!', 0.8, 1.15), 600); });
-    S2(0.4, u => { app.style.opacity = 1 - u; }, () => {});
+    S2(2.4, hideG, () => { if (cur) cur.remove(); cur = coinEl; [660, 880, 1320].forEach((f, k) => tone('sine', f, f, 0.5, 0.05, k * 0.1)); setTimeout(() => speak('…hello there.', 0.7, 0.9), 700); });
+    S2(0.5, u => { hideG(); const k = ease(u); cur.style.transform = `translateX(${k * 440}px) rotate(${k * 24}deg)`; cur.querySelector('.sn-like').style.opacity = Math.min(1, u * 3); }, () => { tone('sine', 900, 1500, 0.2, 0.08); });
+    S2(2.4, hideG, () => { if (cur) cur.remove(); const m = document.createElement('div'); m.className = 'sn-match'; m.innerHTML = `<h2>It's a Match! 💚</h2><div class="sn-pics"><img src="${meG}"><img src="${coinImg}"></div><p>You and Coin liked each other</p>`; deck.appendChild(m);
+        [523, 659, 784, 1047].forEach((f, k) => tone('triangle', f, f, 0.35, 0.07, k * 0.11)); setTimeout(() => speak('A MATCH?! I am on my way, baby!', 0.8, 1.2), 500); });
+    S2(0.4, u => { hideG(); app.style.opacity = 1 - u; }, () => {});
+    // NOW the goblin shows up: drops in from the sky, phone still in hand
+    S2(1.1, u => { G.root.visible = true; phone.visible = true; G.root.position.set(stand.x, THREE.MathUtils.lerp(16, TOP, u * u), stand.z); G.root.rotation.y = yawTo(stand, coinRest) + (1 - u) * 12; G.arms[0].rotation.x = -2.8; G.arms[1].rotation.x = -1.4; G.legs.forEach((l, k) => l.rotation.x = Math.sin(u * 30 + k * 3) * 0.6); },
+      () => { app.remove(); wheeSfx && wheeSfx(); });
+    S2(0.3, u => { const k = Math.sin(Math.PI * u); G.body.scale.set(1 + 0.25 * k, 1 - 0.3 * k, 1 + 0.25 * k); G.legs.forEach(l => l.rotation.x = 0); G.arms[0].rotation.x = 0; }, () => { thudSfx(1); shake = 0.25; });
+    S2(1.6, u => { G.root.rotation.y = yawTo(stand, coinRest); G.arms[1].rotation.x = -1.6; G.head.rotation.x = 0.25 * Math.sin(Math.PI * u); G.body.position.y = 0.45 + 0.1 * Math.abs(Math.sin(u * 16)); if (Math.random() < 0.25) spawnParts(wpos(G.headTop), 2, { colors: ['#ff4f8b', '#ff9ec4'], size: 0.06, shape: 'box', speed: 0.6, up: 1.6, life: 1, gravity: -0.5 }); },
+      () => { tone('sine', 1500, 1500, 0.08, 0.05); setTimeout(() => speak('Finally! Someone with VALUE!', 0.8, 1.15), 200); });
+    S2(0.3, u => { G.arms[1].rotation.x = -1.6 * (1 - u); G.body.position.y = 0.45; }, () => { phone.visible = false; });
     // the date: grabs the coin, slow-dances with it, kisses it, puts it back with a little wave
-    S2(0.5, u => { const e = ease(u); G.body.position.y = 0.2 + 0.25 * e; G.legs.forEach(l => l.rotation.x = -1.3 * (1 - e)); G.arms[0].rotation.x = -2.6 * (1 - e); G.head.rotation.x = 0; G.root.rotation.y = lerpAng(G.root.rotation.y, yawTo(G.root.position, coinRest), e); }, () => { app.remove(); phone.visible = false; });
     grab();
     S2(3.0, u => { G.root.rotation.y += 0.03; G.body.rotation.z = 0.12 * Math.sin(u * 9); G.arms[1].rotation.x = -1.6; G.arms[0].rotation.x = -1.4; G.head.rotation.z = 0.2 * Math.sin(u * 9); G.legs[0].rotation.x = 0.3 * Math.sin(u * 9); G.legs[1].rotation.x = -0.3 * Math.sin(u * 9);
         if (Math.random() < 0.12) spawnParts(wpos(G.arms[1].hand).add(new THREE.Vector3(0, 0.2, 0)), 1, { colors: ['#ff4f8b', '#ff9ec4', '#ffffff'], size: 0.07, shape: 'box', speed: 0.4, up: 1.2, life: 1.2, gravity: -0.4 }); },
@@ -3218,16 +3237,38 @@ function stepFG(dt) {
     if (!F.crossed && prevZ > F.pz && B.position.z <= F.pz) { F.crossed = true; F.good = Math.abs(B.position.x) < F.hw - 0.05 && B.position.y > F.cb + 0.05; fgResult(F.good, B.position.y <= F.cb + 0.05 ? (Math.abs(B.position.x) < F.hw ? 'short' : 'wide') : 'wide'); }
     if (B.position.y < TOP + 0.1) { B.position.y = TOP + 0.1; F.v.y = Math.abs(F.v.y) * 0.4; F.v.x *= 0.6; F.v.z *= 0.6; if (!F.crossed) { F.crossed = true; fgResult(false, 'short'); } }
     if (B.position.z < -HALF + 0.15) { B.position.z = -HALF + 0.15; F.v.z = Math.abs(F.v.z) * 0.3; }
-    if (mini.st > 3.2 && mini.stage !== 'done') { mini.stage = 'done'; mini.t = 0; }
+    if (F.sad) { const K = F.K, k = Math.min(1, (F.sadT = (F.sadT || 0) + dt) * 2); K.head.rotation.x = 0.7 * k; K.body.rotation.x = 0.35 * k; K.arms.forEach(a => { a.rotation.x = 0; a.rotation.z = 0; }); K.root.rotation.y = Math.PI - 0.35 + 0.25 * Math.sin(F.sadT * 3) * k; }
+    if (mini.st > (F.sad ? 4.6 : 3.2) && mini.stage !== 'done') { mini.stage = 'done'; mini.t = 0; }
   }
+}
+function booSfx() {
+  if (!actx) return; const A = actx, t0 = A.currentTime, out = A.createGain(); out.gain.value = 0.9; out.connect(A.destination);
+  for (let k = 0; k < 16; k++) {
+    const st = t0 + Math.random() * 0.35, f = 105 + Math.random() * 90, dur = 2.2 + Math.random() * 0.8, o = A.createOscillator(), bp = A.createBiquadFilter(), bp2 = A.createBiquadFilter(), g = A.createGain();
+    o.type = 'sawtooth'; o.frequency.setValueAtTime(f * 1.08, st); o.frequency.linearRampToValueAtTime(f, st + 0.4); o.frequency.linearRampToValueAtTime(f * 0.86, st + dur);
+    const vib = A.createOscillator(), vg = A.createGain(); vib.frequency.value = 4 + Math.random() * 3; vg.gain.value = f * 0.03; vib.connect(vg).connect(o.frequency); vib.start(st); vib.stop(st + dur + 0.1);
+    bp.type = 'bandpass'; bp.frequency.value = 320; bp.Q.value = 3; bp2.type = 'lowpass'; bp2.frequency.value = 900;
+    g.gain.setValueAtTime(0.0001, st); g.gain.exponentialRampToValueAtTime(0.05, st + 0.35); g.gain.setValueAtTime(0.05, st + dur - 0.6); g.gain.exponentialRampToValueAtTime(0.0001, st + dur);
+    o.connect(bp).connect(bp2).connect(g).connect(out); o.start(st); o.stop(st + dur + 0.05);
+  }
+  noiseSfx('lowpass', 700, 500, 2.6, 0.25, 1);
+  [[392, 0], [370, 0.45], [349, 0.9], [330, 1.35]].forEach(([f, d], i) => tone('sawtooth', f * 0.5, i === 3 ? f * 0.45 : f * 0.5, i === 3 ? 1.1 : 0.4, 0.09, 0.4 + d));
+}
+function cheerSfx() { if (!actx) return; noiseSfx('bandpass', 900, 2600, 2.4, 0.5, 1); for (let k = 0; k < 10; k++) tone('triangle', 500 + Math.random() * 500, 700 + Math.random() * 700, 0.6 + Math.random() * 0.8, 0.025, Math.random() * 0.8); }
+function fgFailFX(p, why) {
+  const el = $('#fgFail'); el.innerHTML = `<div class="ff-stamp">NO GOOD!</div><div class="ff-why">${why === 'short' ? 'Came up short 😬' : 'Wide ' + (mini.fg && mini.fg.ball.position.x < 0 ? 'left' : 'right') + ' 🙈'}</div><div class="ff-beer"><span>🍺</span></div><div class="ff-name"><b style="color:${lighten(p.color)}">${esc(p.name)}</b> — DRINK!</div><div class="ff-trash"></div>`;
+  const tr = el.querySelector('.ff-trash'); for (let i = 0; i < 26; i++) { const t = document.createElement('i'); t.textContent = ['🍿', '🥤', '🍅', '🧻', '🍕', '👎'][i % 6]; t.style.left = (Math.random() * 100) + '%'; t.style.animationDelay = (0.4 + Math.random() * 1.6) + 's'; t.style.animationDuration = (1.2 + Math.random() * 0.9) + 's'; t.style.fontSize = (26 + Math.random() * 26) + 'px'; tr.appendChild(t); }
+  el.classList.remove('on'); void el.offsetWidth; el.classList.add('on'); clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove('on'), 4600);
+  booSfx(); shake = Math.max(shake, 0.35);
+  if (mini.fg) { const F = mini.fg; for (let i = 0; i < 4; i++) setTimeout(() => { if (mini && mini.fg === F) spawnParts(new THREE.Vector3((Math.random() - 0.5) * 2.4, TOP + 3.5, 1 + Math.random() * 2.5), 14, { colors: ['#ffffff', '#ffe28a', '#e8352e', '#f5f0e0'], size: 0.06, shape: 'box', speed: 1.2, up: 0, life: 2.2, gravity: 7 }); }, 300 + i * 350); F.sad = true; }
 }
 function fgResult(good, why) {
   const p = pById(mini.who); if (!p) return;
-  if (good) { miniBanner("🏈 IT'S GOOD! 🏈", `${pName(p)} nailed it — no drink!`); dingSfx(); noiseSfx('bandpass', 800, 2400, 1.4, 0.35, 1); for (let i = 0; i < 3; i++) setTimeout(() => spawnParts(new THREE.Vector3((Math.random() - 0.5) * 2, TOP + 2, mini.fg.pz), 30, { colors: ['#ffd400', '#ffffff', '#3a86ff', '#ff3b30'], size: 0.05, shape: 'box', speed: 4, up: 4, life: 2, gravity: 6 }), i * 250); showResult("🏈 It's good!", `${p.name} nailed the field goal — no drink!`, '#7dff6a'); addLog(`🏈 ${p.name} kicked the field goal`); }
-  else { miniBanner('🏈 NO GOOD! 🏈', `${pName(p)} ${why === 'short' ? 'came up short' : 'went wide'} — drink! 🍺`); tone('sawtooth', 260, 110, 0.7, 0.14); drink(p); showResult('🏈 No good!', `${p.name} missed the field goal — drink! 🍺`, '#ff6b6b'); addLog(`🏈 ${p.name} missed the field goal and drank`); }
+  if (good) { miniBanner("🏈 IT'S GOOD! 🏈", `${pName(p)} nailed it — no drink!`); dingSfx(); cheerSfx(); noiseSfx('bandpass', 800, 2400, 1.4, 0.35, 1); for (let i = 0; i < 3; i++) setTimeout(() => spawnParts(new THREE.Vector3((Math.random() - 0.5) * 2, TOP + 2, mini.fg.pz), 30, { colors: ['#ffd400', '#ffffff', '#3a86ff', '#ff3b30'], size: 0.05, shape: 'box', speed: 4, up: 4, life: 2, gravity: 6 }), i * 250); showResult("🏈 It's good!", `${p.name} nailed the field goal — no drink!`, '#7dff6a'); addLog(`🏈 ${p.name} kicked the field goal`); }
+  else { miniBanner('🏈 NO GOOD! 🏈', `${pName(p)} ${why === 'short' ? 'came up short' : 'went wide'} — drink! 🍺`); fgFailFX(p, why); drink(p); showResult('🏈 No good!', `${p.name} missed the field goal — drink! 🍺`, '#ff6b6b'); addLog(`🏈 ${p.name} missed the field goal and drank`); }
   renderUI(); hostPublish();
 }
-function fgCleanup() { document.body.classList.remove('fgmode'); $('#fgWind').classList.remove('on'); if (mini.fg) scene.remove(mini.fg.g); $('#fgMeter').classList.remove('on'); $('#gamePanel').classList.remove('fg'); mini.cam = null; }
+function fgCleanup() { $('#fgFail').classList.remove('on'); document.body.classList.remove('fgmode'); $('#fgWind').classList.remove('on'); if (mini.fg) scene.remove(mini.fg.g); $('#fgMeter').classList.remove('on'); $('#gamePanel').classList.remove('fg'); mini.cam = null; }
 
 function maybeStartMini() {
   if (CTRL || mini || !state.started || gameOver || toss || goblin || placing || aim.mode !== 'wander') return;
@@ -4309,7 +4350,7 @@ $('#startBtn').onclick = () => {
 };
 
 // ---------- installable app + automatic updates (website version only) ----------
-const BUILD = '1795022539';
+const BUILD = '1795023440';
 if (STANDALONE) {
   try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
   let deferredInstall = null;
