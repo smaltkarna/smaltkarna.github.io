@@ -533,9 +533,9 @@ function ruleCap(x, z, skip) {
   const minName = Math.min(...state.players.map(p => p.r), 1.2);
   const others = [...state.players, ...state.rules.filter(q => q !== skip)];
   const gap = Math.min(9, ...others.map(c => Math.hypot(c.x - x, c.z - z) - c.r * 1.1));
-  return Math.max(0.22, Math.min(minName * 0.75, gap / 1.12 - 0.08, HALF - Math.max(Math.abs(x), Math.abs(z)) - 0.05));
+  return Math.max(0.22, Math.min(minName * 0.95, gap / 1.06 - 0.04, HALF - Math.max(Math.abs(x), Math.abs(z)) - 0.05));
 }
-function fixRules() { state.rules.forEach(r => { r.r = Math.min(r.r || 0.5, ruleCap(r.x, r.z, r)); }); }
+function fixRules() { state.rules.forEach(r => { const cap = ruleCap(r.x, r.z, r); r.r = Math.min(Math.max(r.r || 0.5, cap * 0.85), cap); }); }
 fixRules();
 state.playTime = state.playTime || 0; state.rounds = state.rounds || 0; state.drinks = state.drinks || {};
 if (!state.clockV2) { if (state.players.length >= 2) state.playTime = Math.max(state.playTime, 30 * 60); state.clockV2 = true; }
@@ -1215,8 +1215,8 @@ $('#saveRule').onclick = () => {
   const { x, z, tosser } = pendingRule;
   const gap = Math.min(...state.players.map(p => Math.hypot(p.x - x, p.z - z) - p.r), ...state.rules.map(r => Math.hypot(r.x - x, r.z - z) - r.r), 9);
   // never bigger than the name circles, never overlapping another circle, never through the wall
-  const maxR = ruleCap(x, z, null), minR = Math.min(0.3, maxR);
-  const r = minR + Math.random() * (maxR - minR);
+  const maxR = ruleCap(x, z, null);
+  const r = maxR * (0.85 + Math.random() * 0.15);
   const rule = { id: newId(), text, by: tosser.name, byId: tosser.id, color: tosser.color, r, x: clamp(x, -HALF + r, HALF - r), z: clamp(z, -HALF + r, HALF - r) };
   state.rules.push(rule); drawTop(); pulse(rule);
   showResult(`✍️ ${text}`, `New rule by ${tosser.name} — whoever lands here has to do it!`, tosser.color, 'big');
@@ -4370,7 +4370,7 @@ $('#startBtn').onclick = () => {
 };
 
 // ---------- installable app + automatic updates (website version only) ----------
-const BUILD = '1795031909';
+const BUILD = '1795032666';
 if (STANDALONE) {
   try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
   let deferredInstall = null;
