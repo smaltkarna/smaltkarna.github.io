@@ -881,7 +881,6 @@ function goblinTargetId() {
   if (!ok.length) { state.gobPid = null; return null; }
   if (!ok.some(p => String(p.id) === String(state.gobPid))) {
     const pk = ok[Math.floor(Math.random() * ok.length)]; state.gobPid = pk.id;
-    if (state.started) addLog(`👺 No Jack here… the goblins have chosen ${pk.name}!`);
     save();
   }
   return state.gobPid;
@@ -890,8 +889,8 @@ const isGoblinSpot = p => normName(p) === 'jack' || (state.gobPid != null && Str
 function renderUI() {
   if (state.started) goblinTargetId();
   const cur = current();
-  $('#playerList').innerHTML = (state.players.length || state.lobby.length) ? state.lobby.map(p => `<li class="player"><span class="dot" style="background:${p.color};opacity:.5"></span><span class="nm" style="opacity:.75">${esc(p.name)}${isGoblinSpot(p) ? ' 👺' : ''}${claimed.has(String(p.id)) ? ' <span class="ph">📱</span>' : ''}</span>${state.started ? `<button class="x" data-draw="${p.id}" title="Draw their circle here">✏️</button><button class="x" data-rand="${p.id}" title="Random spot">🎲</button>` : '<span class="tag" style="color:var(--muted)">in lobby</span>'}<button class="x" data-l="${p.id}" title="Remove">×</button></li>`).join('') + state.players.map(p =>
-    `<li class="player ${cur && p.id === cur.id && state.players.length > 1 ? 'up' : ''}"><span class="dot" style="background:${p.color}"></span><span class="nm" style="color:${p.color === '#1f2937' ? '#e8e2d8' : p.color};filter:brightness(1.6)">${esc(p.name)}${isGoblinSpot(p) ? ' <span title="Goblin spot">👺</span>' : ''}${claimed.has(String(p.id)) ? ' <span class="ph">📱</span>' : ''}</span>${cur && p.id === cur.id && state.players.length > 1 ? '<span class="tag">flipping</span>' : ''}<button class="x" data-p="${p.id}" title="Remove">×</button></li>`).join('')
+  $('#playerList').innerHTML = (state.players.length || state.lobby.length) ? state.lobby.map(p => `<li class="player"><span class="dot" style="background:${p.color};opacity:.5"></span><span class="nm" style="opacity:.75">${esc(p.name)}${claimed.has(String(p.id)) ? ' <span class="ph">📱</span>' : ''}</span>${state.started ? `<button class="x" data-draw="${p.id}" title="Draw their circle here">✏️</button><button class="x" data-rand="${p.id}" title="Random spot">🎲</button>` : '<span class="tag" style="color:var(--muted)">in lobby</span>'}<button class="x" data-l="${p.id}" title="Remove">×</button></li>`).join('') + state.players.map(p =>
+    `<li class="player ${cur && p.id === cur.id && state.players.length > 1 ? 'up' : ''}"><span class="dot" style="background:${p.color}"></span><span class="nm" style="color:${p.color === '#1f2937' ? '#e8e2d8' : p.color};filter:brightness(1.6)">${esc(p.name)}${claimed.has(String(p.id)) ? ' <span class="ph">📱</span>' : ''}</span>${cur && p.id === cur.id && state.players.length > 1 ? '<span class="tag">flipping</span>' : ''}<button class="x" data-p="${p.id}" title="Remove">×</button></li>`).join('')
     : '<p class="empty">No one in the box yet. Add names, then tap inside the box to circle them.</p>';
   $('#ruleList').innerHTML = state.rules.length ? state.rules.map(r =>
     `<li class="rule"><span class="dot" style="background:${r.color};margin-top:3px"></span><span class="txt"><b>#${state.rules.indexOf(r) + 1}</b> ${esc(r.text)}<span class="by">by ${esc(r.by)}</span></span><button class="x" data-r="${r.id}" title="Erase">×</button></li>`).join('')
@@ -3726,7 +3725,7 @@ $('#startBtn').onclick = () => {
 };
 
 // ---------- installable app + automatic updates (website version only) ----------
-const BUILD = '1795012699';
+const BUILD = '1795013139';
 if (STANDALONE) {
   try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
   let deferredInstall = null;
