@@ -498,6 +498,9 @@ const CTRL = (() => {
   const h = (location.hash || '').slice(1); let saved = null; try { saved = localStorage.getItem('pizzabox-mode'); } catch (e) {}
   const hj = /^join-([a-z]{4})$/i.exec(h);
   if (hj) { ROOM_CODE = hj[1].toUpperCase(); try { localStorage.setItem('pizzabox-mode', 'ctrl'); localStorage.setItem('pizzabox-join', ROOM_CODE); } catch (e) {} return true; }
+  // phones are always controllers — they can never become the main screen (not even with #host or an installed app)
+  const isPhone = matchMedia('(pointer: coarse)').matches && Math.min(screen.width, screen.height) < 600;
+  if (isPhone) { try { localStorage.setItem('pizzabox-mode', 'ctrl'); } catch (e) {} return true; }
   const inApp = matchMedia('(display-mode: standalone)').matches || matchMedia('(display-mode: window-controls-overlay)').matches || matchMedia('(display-mode: minimal-ui)').matches || navigator.standalone === true;
   // the installed app is always the main screen, unless "controller" was chosen in this very session
   if (inApp && h === 'controller') { let ok = false; try { ok = sessionStorage.getItem('pb-ctrl-session') === '1'; } catch (e) {} if (!ok) { try { history.replaceState(null, '', '#host'); localStorage.setItem('pizzabox-mode', 'host'); } catch (e) {} return false; } }
@@ -4247,7 +4250,7 @@ function renderCtrl() {
   if (roomState === 'failed' || roomState === 'connecting' || !H) $('#cLive').classList.remove('on');
   $('#cTurn').innerHTML = '';
   if (roomState === 'failed') { meEl.textContent = ''; body.innerHTML = `<div class="c-card"><h3>Can't connect 😕</h3><p>${STANDALONE ? 'This phone can\'t reach the game. Check your internet connection and reload.' : 'This phone can\'t reach the live game. Make sure you\'re signed in to Claude and the page has been shared with you, then reload. (Phones can\'t join through a public link.)'}</p></div>`; return; }
-  { const app = matchMedia('(display-mode: standalone)').matches || matchMedia('(display-mode: window-controls-overlay)').matches || matchMedia('(display-mode: minimal-ui)').matches || navigator.standalone === true; $('#cHost').style.display = (app || !(H || STANDALONE)) ? '' : 'none'; }
+  { const app = matchMedia('(display-mode: standalone)').matches || matchMedia('(display-mode: window-controls-overlay)').matches || matchMedia('(display-mode: minimal-ui)').matches || navigator.standalone === true; const phone = matchMedia('(pointer: coarse)').matches && Math.min(screen.width, screen.height) < 600; $('#cHost').style.display = !phone && (app || !(H || STANDALONE)) ? '' : 'none'; }
   if (STANDALONE && CTRL && roomState === 'ok' && !ROOM_CODE) {
     meEl.textContent = '';
     body.innerHTML = `<div class="c-card"><h3>Enter the room code</h3><p>It's on the main screen (top right).</p></div>
@@ -4367,7 +4370,7 @@ $('#startBtn').onclick = () => {
 };
 
 // ---------- installable app + automatic updates (website version only) ----------
-const BUILD = '1795024318';
+const BUILD = '1795024406';
 if (STANDALONE) {
   try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
   let deferredInstall = null;
