@@ -3851,7 +3851,7 @@ function stepHolo(dt) {
     holo = null; jazzDuck(false);
   }
 }
-function scheduleYugo() { setTimeout(sayYugo, 45000 + Math.random() * 105000); }
+function scheduleYugo() { setTimeout(sayYugo, 360000 + Math.random() * 480000); }
 let yugoArmed = false;
 addEventListener('pointerdown', () => { if (!yugoArmed) { yugoArmed = true; try { speechSynthesis.getVoices(); } catch (e) {} scheduleYugo(); } });
 
@@ -4370,7 +4370,7 @@ $('#startBtn').onclick = () => {
 };
 
 // ---------- installable app + automatic updates (website version only) ----------
-const BUILD = '1795024406';
+const BUILD = '1795025742';
 if (STANDALONE) {
   try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
   let deferredInstall = null;
