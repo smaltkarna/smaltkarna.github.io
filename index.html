@@ -143,6 +143,8 @@
   .c-btn{background:var(--accent);color:#2a1a08;font-weight:800;padding:0 18px;font-size:16px;border-radius:12px;min-height:50px}
   .c-ghost{background:rgba(255,255,255,.08);color:var(--ink);border:1px solid var(--line)}
   .c-link{background:none;color:var(--muted);font-size:13px;text-decoration:underline;padding:6px}
+  #extras{display:none}#extras.on{display:block}
+  #extrasBtn{display:block;margin:6px 0 0 auto;background:none;color:var(--muted);opacity:.35;font-size:16px;line-height:1;padding:2px 8px}#extrasBtn:hover{opacity:.8}
   .c-foot{display:flex;justify-content:space-between;flex-wrap:wrap}
   .c-result{text-align:center;border-width:2px}
   .c-result .t{font-family:"Permanent Marker",cursive;font-size:26px;line-height:1.15}
@@ -384,8 +386,9 @@
     <h2>📱 Play from your phones</h2>
     <p class="empty" id="phoneHelp">This computer is the main screen. Everyone else opens this same page on their phone (share it from its page on claude.ai) — phones are controllers: draw your circle, take your turn, write your rules.</p>
     <button id="asCtrl" class="c-link" style="margin-top:6px">Use this device as a controller instead</button>
-    <div><button id="introBtn2" class="c-link">▶ Watch the rules intro</button></div>
-    <div><button id="tryHot" class="c-link">🔥 Play Hot Goblin now</button> <button id="tryBoss" class="c-link">👹 Play Boss Fight now</button> <button id="tryRoul" class="c-link">🎰 Play Rule Roulette now</button> <button id="tryCups" class="c-link">🥤 Play Coin Under the Cup now</button> <button id="tryHilo" class="c-link">🃏 Play Higher or Lower now</button> <button id="tryTos" class="c-link">🥃 Play Truth or Shot now</button> <button id="tryFg" class="c-link">🏈 Kick a field goal now</button> <button id="tryHolo" class="c-link">💠 Show Yugo's hologram</button> <a class="c-link" href="https://smaltkarna.github.io/classic/#host" target="_blank" rel="noopener">🕰️ Play the classic version (original goblins)</a> <button id="jackList" class="c-link">👺 All Jack animations</button><div id="jackActs"></div></div>
+    <button id="extrasBtn" title="Extras">⋯</button>
+    <div id="extras"><div><button id="introBtn2" class="c-link">▶ Watch the rules intro</button></div>
+    <div><button id="tryHot" class="c-link">🔥 Play Hot Goblin now</button> <button id="tryBoss" class="c-link">👹 Play Boss Fight now</button> <button id="tryRoul" class="c-link">🎰 Play Rule Roulette now</button> <button id="tryCups" class="c-link">🥤 Play Coin Under the Cup now</button> <button id="tryHilo" class="c-link">🃏 Play Higher or Lower now</button> <button id="tryTos" class="c-link">🥃 Play Truth or Shot now</button> <button id="tryFg" class="c-link">🏈 Kick a field goal now</button> <button id="tryHolo" class="c-link">💠 Show Yugo's hologram</button> <a class="c-link" href="https://smaltkarna.github.io/classic/#host" target="_blank" rel="noopener">🕰️ Play the classic version (original goblins)</a> <button id="jackList" class="c-link">👺 All Jack animations</button><div id="jackActs"></div></div></div>
   </section>
   <footer>
     <button id="clearRules">Wipe rules</button>
@@ -436,7 +439,7 @@
   <div id="lbList"></div>
   <form id="lbAdd" autocomplete="off"><input id="lbName" maxlength="16" placeholder="No phone? Add a name here"><button type="submit">Add</button></form>
   <button id="startBtn">Start game ▶</button>
-  <div><button id="introBtn" class="c-link" style="font-size:14px;margin-top:8px">▶ Watch the rules intro</button></div>
+  <div style="display:none"><button id="introBtn" class="c-link">▶ Watch the rules intro</button></div>
   <p class="lb-note">After you start, everyone draws their circle — on their phone, or right here.</p>
 </div></div>
 <div id="subs"><div id="subsText"></div><button id="skipIntro">Skip intro ⏭</button></div>
@@ -3632,6 +3635,7 @@ document.addEventListener('click', e => { const b = e.target.closest('[data-gp]'
 $('#tryCups').onclick = () => { if (!canAim() && !mini) return toast('Start a game with 2+ players first (and wait for the turn to finish)'); startMini('cups'); };
 $('#tryRoul').onclick = () => { if (!canAim() && !mini) return toast('Start a game with 2+ players first (and wait for the turn to finish)'); startMini('roulette'); };
 $('#tryBoss').onclick = () => { if (!canAim() && !mini) return toast('Start a game with 2+ players first (and wait for the turn to finish)'); startMini('boss'); };
+$('#extrasBtn').onclick = () => $('#extras').classList.toggle('on');
 $('#introBtn').onclick = previewIntro; $('#introBtn2').onclick = previewIntro;
 $('#skipIntro').onclick = () => {
   if (goblin && goblin.video) return goblin.finishVideo();
@@ -4350,7 +4354,7 @@ $('#startBtn').onclick = () => {
 };
 
 // ---------- installable app + automatic updates (website version only) ----------
-const BUILD = '1795023440';
+const BUILD = '1795023768';
 if (STANDALONE) {
   try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
   let deferredInstall = null;
