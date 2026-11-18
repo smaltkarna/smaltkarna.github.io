@@ -1635,7 +1635,7 @@ function bagPick(key, list) {
 const OUTFITS = ['reaper', 'arrow', 'cone', 'prisoner', 'tinfoil', 'clown', 'baby', 'angel', 'viking', 'chef', 'plunger', 'hospital', 'mummy'];
 const HEAD_OUTFITS = new Set(['reaper', 'arrow', 'cone', 'tinfoil', 'clown', 'angel', 'viking', 'chef', 'plunger', 'mummy']);
 function startGoblin(coinPos, forceAct) {
-  const plan = { entr: pickOther(['walk', 'sky', 'lid', 'burrow'], lastGob.entr), act: forceAct || bagPick('act', ['eat', 'burp', 'juggle', 'bite', 'hat', 'polish', 'casino', 'surf', 'golf', 'wedding', 'summon', 'sneeze', 'booger', 'fartcannon', 'rockstar', 'ballet', 'breakdance', 'opera', 'thief', 'insult', 'clones', 'giant', 'plane', 'neptune', 'sting', 'smite']), exit: pickOther(['jump', 'rocket', 'burrow', 'run'], lastGob.exit) };
+  const plan = { entr: pickOther(['walk', 'sky', 'lid', 'burrow'], lastGob.entr), act: forceAct || bagPick('act', ['eat', 'burp', 'juggle', 'bite', 'hat', 'polish', 'casino', 'surf', 'golf', 'wedding', 'summon', 'sneeze', 'booger', 'fartcannon', 'rockstar', 'ballet', 'breakdance', 'opera', 'thief', 'insult', 'clones', 'giant', 'plane', 'neptune', 'sting', 'smite', 'duel']), exit: pickOther(['jump', 'rocket', 'burrow', 'run'], lastGob.exit) };
   if (plan.entr === 'burrow' && plan.exit === 'burrow') plan.exit = 'rocket';
   if (plan.act === 'plane') plan.exit = 'run';
   if (plan.act === 'sting') { plan.entr = 'walk'; plan.exit = 'run'; }
@@ -1749,7 +1749,7 @@ function startGoblin(coinPos, forceAct) {
   const unhide = () => { coin.visible = true; coin.scale.set(1, 1, 1); };
 
   const cleanups = []; let stomps = -1;
-  const NOGRAB = new Set(['plane', 'neptune', 'sting', 'surf', 'golf', 'wedding', 'summon', 'sneeze', 'booger', 'fartcannon', 'rockstar', 'ballet', 'breakdance', 'insult', 'clones', 'giant']);
+  const NOGRAB = new Set(['duel', 'plane', 'neptune', 'sting', 'surf', 'golf', 'wedding', 'summon', 'sneeze', 'booger', 'fartcannon', 'rockstar', 'ballet', 'breakdance', 'insult', 'clones', 'giant']);
   if (plan.act === 'casino') plan.exit = 'run';
   if (!NOGRAB.has(plan.act)) grab();
   if (plan.act === 'sting') {
@@ -2187,6 +2187,91 @@ function startGoblin(coinPos, forceAct) {
     S2(1.0, u => { G.jaw.scale.y = 0.32; G.head.rotation.y = 0.8 * Math.sin(Math.PI * u * 0.5); G.head.rotation.x = 0; }, () => speak('Oops.', 0.7, 0.9));
     coinArc(() => onFloor(stand.clone().addScaledVector(fwd(), 1.0)), 0.8, 0.6, 2);
     land();
+  } else if (plan.act === 'duel') {
+    // a rival goblin drops in, both want the coin: glowing pizza-cutter sword duel
+    const mid = coinRest.clone().setY(TOP), dirX = new THREE.Vector3(stand.x - mid.x, 0, stand.z - mid.z).normalize(), R0 = 1.2;
+    const R = buildGoblin({ skin: '#8a6fc4', eye: '#ff5a3c', hat: 'none', size: 1.25 }); R.root.visible = false; scene.add(R.root); cleanups.push(() => scene.remove(R.root));
+    const mkSword = (col, holder) => { const s = new THREE.Group(); s.position.y = -0.02; holder.add(s);
+      const hdl = new THREE.Mesh(new THREE.CylinderGeometry(0.028, 0.034, 0.26, 10), new THREE.MeshStandardMaterial({ color: '#2b2b2b', roughness: 0.4, metalness: 0.6 })); hdl.position.y = -0.1; s.add(hdl);
+      const fork = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.12, 0.05), new THREE.MeshStandardMaterial({ color: '#c0c4c8', metalness: 0.9, roughness: 0.25 })); fork.position.y = -0.27; s.add(fork);
+      const blade = new THREE.Group(); blade.position.y = -0.4; s.add(blade);
+      const disc = new THREE.Mesh(new THREE.CylinderGeometry(0.17, 0.17, 0.018, 32), new THREE.MeshBasicMaterial({ color: '#ffffff' })); disc.rotation.z = Math.PI / 2; blade.add(disc);
+      const glow = new THREE.Mesh(new THREE.CylinderGeometry(0.21, 0.21, 0.05, 32), new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending, depthWrite: false })); glow.rotation.z = Math.PI / 2; blade.add(glow);
+      const glow2 = new THREE.Mesh(new THREE.CylinderGeometry(0.27, 0.27, 0.02, 32), new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0.18, blending: THREE.AdditiveBlending, depthWrite: false })); glow2.rotation.z = Math.PI / 2; blade.add(glow2);
+      const light = new THREE.PointLight(col, 0, 2.2); blade.add(light); blade.scale.setScalar(0.001);
+      return { s, blade, disc, light, col }; };
+    const SG = mkSword('#3cff6a', G.arms[1].hand), SR = mkSword('#ff3c8a', R.arms[1].hand); SG.s.visible = SR.s.visible = false;
+    let hum = null, ang0 = Math.atan2(dirX.z, dirX.x), ang = ang0, cA, cB, cD, cH, cS;
+    const humOn = () => { if (!actx || hum) return; try { const o = actx.createOscillator(), o2 = actx.createOscillator(), g = actx.createGain(); o.type = 'sawtooth'; o.frequency.value = 72; o2.type = 'sine'; o2.frequency.value = 109; g.gain.value = 0; o.connect(g); o2.connect(g); g.connect(actx.destination); o.start(); o2.start(); g.gain.setTargetAtTime(0.035, actx.currentTime, 0.1); hum = { o, o2, g }; } catch (e) {} };
+    const humOff = () => { if (!hum) return; try { hum.g.gain.setTargetAtTime(0, actx.currentTime, 0.05); hum.o.stop(actx.currentTime + 0.3); hum.o2.stop(actx.currentTime + 0.3); } catch (e) {} hum = null; };
+    const humWobble = k => { if (hum) try { hum.o.frequency.setTargetAtTime(72 + k * 40, actx.currentTime, 0.03); } catch (e) {} };
+    cleanups.push(humOff);
+    const clang = (p, big) => { tone('square', 1900 + Math.random() * 500, 700, 0.12, big ? 0.12 : 0.07); noiseSfx('highpass', 7000, 3000, 0.12, big ? 0.5 : 0.3, 1); spawnParts(p, big ? 26 : 12, { colors: ['#ffffff', '#fff36b', '#9dffb4', '#ff9dc4'], size: 0.035, shape: 'box', speed: big ? 4 : 2.6, up: 2, life: 0.6, gravity: 9 }); if (big) shake = Math.max(shake, 0.25); };
+    const posAt = (a, r = R0) => new THREE.Vector3(mid.x + Math.cos(a) * r, TOP, mid.z + Math.sin(a) * r);
+    const inBox = v => { v.x = clamp(v.x, -HALF + 0.35, HALF - 0.35); v.z = clamp(v.z, -HALF + 0.35, HALF - 0.35); return v; };
+    const place = () => { G.root.position.copy(inBox(posAt(ang))); R.root.position.copy(inBox(posAt(ang + Math.PI))); G.root.rotation.y = yawTo(G.root.position, R.root.position); R.root.rotation.y = yawTo(R.root.position, G.root.position); };
+    const swingG = k => { G.arms[1].rotation.x = -2.7 + 1.5 * k; G.arms[1].rotation.z = 0.35; G.body.rotation.x = 0.25 * k; }, swingR = k => { R.arms[1].rotation.x = -2.7 + 1.5 * k; R.arms[1].rotation.z = 0.35; R.body.rotation.x = 0.25 * k; };
+    const talk = (W, u) => { W.jaw.scale.y = 0.32 + 0.6 * Math.abs(Math.sin(u * 26)); W.head.rotation.x = 0.08 * Math.sin(u * 13); };
+    const tipG = () => wpos(SG.blade), tipR = () => wpos(SR.blade);
+    const duelCam = on => { if (!on) { goblin.cam = null; return; } let perp = new THREE.Vector3(-dirX.z, 0, dirX.x); const toCam = camera.position.clone().sub(mid).setY(0); if (perp.dot(toCam) < 0) perp.negate();
+      goblin.cam = { pos: mid.clone().addScaledVector(perp, 6.4).add(new THREE.Vector3(0, 2.9, 0)), tgt: mid.clone().add(new THREE.Vector3(0, 0.9, 0)) }; };
+    cleanups.push(() => { if (goblin) goblin.cam = null; });
+    S2(0.01, () => {}, () => duelCam(true));
+    standUp(0.3);
+    // rival crash-lands opposite, both lunge for the coin
+    S2(0.75, u => { R.root.visible = true; R.root.position.copy(inBox(posAt(ang + Math.PI))).setY(TOP + 6 * (1 - u * u)); R.root.rotation.y = yawTo(R.root.position, G.root.position); R.arms.forEach(a2 => a2.rotation.x = -2.6); G.root.rotation.y = lerpAng(G.root.rotation.y, yawTo(G.root.position, posAt(ang + Math.PI)), u); G.head.rotation.x = -0.5 * (1 - u); },
+      () => { neutral(); whooshSfx(0.9); G.root.position.copy(inBox(posAt(ang))); });
+    S2(0.3, u => { const k = Math.sin(Math.PI * u); R.body.scale.set(1 + 0.25 * k, 1 - 0.3 * k, 1 + 0.25 * k); R.arms.forEach(a2 => a2.rotation.x = 0); }, () => { thudSfx(1); shake = 0.3; });
+    S2(0.45, u => { const e = ease(u); [G, R].forEach(W => { W.body.rotation.x = 0.7 * e; W.arms[1].rotation.x = -1.1 * e; W.arms[0].rotation.x = -0.9 * e; }); });
+    S2(0.6, () => {}, () => tone('triangle', 300, 200, 0.4, 0.05));
+    S2(0.4, u => { const e = ease(u); [G, R].forEach(W => { W.body.rotation.x = 0.7 * (1 - e); W.arms[1].rotation.x = -1.1 * (1 - e); W.arms[0].rotation.x = -0.9 * (1 - e); }); });
+    S2(2.0, u => talk(G, u), () => speak('Hands off. That coin landed in MY spot.', 0.7, 1.15));
+    S2(2.2, u => talk(R, u), () => speak("Your spot? I've waited all game for that coin, you sticky little gremlin!", 1.35, 1.25));
+    S2(1.4, u => talk(G, u), () => speak('Then come and take it.', 0.6, 1.0));
+    // ignite
+    S2(0.7, u => { const e = ease(u); [SG, SR].forEach(S => { S.blade.scale.setScalar(Math.max(0.001, e)); S.light.intensity = 2.5 * e; }); swingG(1 - 0.6 * e); swingR(1 - 0.6 * e); },
+      () => { SG.s.visible = SR.s.visible = true; tone('sawtooth', 80, 420, 0.5, 0.08); tone('sawtooth', 90, 380, 0.5, 0.06, 0.15); humOn(); });
+    // coin juggling: knocked back and forth between the blades
+    S2(0.5, u => { coin.position.lerpVectors(coinRest, tipG().setY(TOP + 1.25), u); coin.position.y += 0.6 * Math.sin(Math.PI * u); coin.rotation.x = u * 8; G.legs[1].rotation.x = -1.2 * Math.sin(Math.PI * u); }, () => { goblin.hold = false; boingSfx(); });
+    for (let i = 0; i < 6; i++) {
+      const toR = i % 2 === 0;
+      S2(0.5, u => { const a = toR ? tipG() : tipR(), b = toR ? tipR() : tipG(); a.y = b.y = TOP + 1.25; coin.position.lerpVectors(a, b, u); coin.position.y += 0.9 * Math.sin(Math.PI * u); coin.rotation.x = u * 10; ang += 0.006;
+        place(); const k = toR ? u : 1 - u; swingG(toR ? Math.max(0, 1 - u * 3) * 0.6 + 0.4 : 0.4 + 0.6 * Math.max(0, u * 3 - 2)); swingR(!toR ? Math.max(0, 1 - u * 3) * 0.6 + 0.4 : 0.4 + 0.6 * Math.max(0, u * 3 - 2)); humWobble(k); },
+        () => clang(coin.position.clone(), false));
+    }
+    S2(0.55, u => { cA = cA || coin.position.clone(); coin.position.lerpVectors(cA, coinRest, u); coin.position.y += 0.5 * Math.sin(Math.PI * u); coin.rotation.x = u * 6; }, () => { cA = null; clang(coin.position.clone(), true); });
+    S2(0.05, () => {}, () => { coin.position.copy(coinRest); coin.rotation.set(0, 0, 0); clink(0.5, false); });
+    // circling, trash talk
+    S2(1.9, u => { ang = ang0 + Math.PI * 0.22 * ease(u); place(); swingG(0.3); swingR(0.3); pose(u * 16, 0.6); [G, R].forEach(W => { W.legs[0].rotation.x = Math.sin(u * 16) * 0.4; W.legs[1].rotation.x = -Math.sin(u * 16) * 0.4; }); talk(R, u); humWobble(Math.sin(u * 9)); },
+      () => speak('You flip like a drunk pigeon!', 1.35, 1.25));
+    S2(1.5, u => { talk(G, u); swingG(0.3); }, () => speak('And you smell like a pizza box nobody threw out.', 0.7, 1.2));
+    // flurry
+    S2(2.2, u => { const ph = u * 22, k = Math.abs(Math.sin(ph)); swingG(k); swingR(1 - k); ang = ang0 + Math.PI * 0.22 + 0.2 * Math.sin(u * 5); place();
+      const n = Math.floor(ph / Math.PI * 2); if (n !== cH) { cH = n; clang(tipG().lerp(tipR(), 0.5), n % 3 === 0); } humWobble(k); });
+    // leap-frog: rival flips over to the other side
+    S2(0.01, () => {}, () => { cA = R.root.position.clone(); cB = inBox(posAt(ang + Math.PI + 0.45, R0)).clone(); });
+    S2(0.75, u => { R.root.position.lerpVectors(cA, cB, u); R.root.position.y = TOP + 4 * 1.3 * u * (1 - u); R.root.rotation.x = -Math.PI * 2 * ease(u); R.root.rotation.y = yawTo(R.root.position, G.root.position); G.root.rotation.y = yawTo(G.root.position, R.root.position); G.head.rotation.x = -0.6 * Math.sin(Math.PI * u); swingG(0.2); }, () => { boingSfx(); whooshSfx(0.8); });
+    S2(0.35, u => { R.root.rotation.x = 0; swingR(u); swingG(1 - u * 0.5); }, () => { R.root.rotation.x = 0; clang(tipG().lerp(tipR(), 0.5), true); });
+    // finisher: big overhead strike snaps the rival's blade off
+    S2(0.5, u => { G.arms[1].rotation.x = -2.7 - 0.3 * ease(u); G.body.rotation.x = -0.2 * ease(u); swingR(0.35); });
+    S2(0.25, u => { G.arms[1].rotation.x = -3.0 + 2.2 * ease(u); G.body.rotation.x = -0.2 + 0.55 * ease(u); }, () => {});
+    S2(1.1, u => { if (cS) { cS.v.y -= 9 * 0.016; cS.o.position.addScaledVector(cS.v, 0.016); cS.o.rotation.x += 0.3; if (cS.o.position.y < TOP + 0.05) { cS.o.position.y = TOP + 0.05; cS.v.multiplyScalar(0.3); cS.v.y = Math.abs(cS.v.y); } cS.o.children.forEach(c => { if (c.material && c.material.opacity != null && c.material.transparent) c.material.opacity *= 0.95; }); }
+        R.head.rotation.x = 0.5 * ease(u); R.head.rotation.y = 0.3 * Math.sin(u * 6); swingR(0.2); },
+      () => { clang(tipR(), true); screenFlash(); boomSfx(); const p = wpos(SR.blade); scene.attach(SR.blade); SR.blade.position.copy(p); SR.light.intensity = 0; cS = { o: SR.blade, v: new THREE.Vector3((Math.random() - .5) * 2, 3.5, (Math.random() - .5) * 2) }; cleanups.push(() => scene.remove(SR.blade)); setTimeout(() => speak('…uh oh.', 1.4, 0.9), 400); });
+    // a flick of the blade launches the coin… which comes down on the rival's head
+    S2(0.35, u => { G.arms[1].rotation.x = -0.8 - 0.9 * Math.sin(Math.PI * u); G.body.rotation.x = 0.4; }, () => { tone('sine', 900, 1400, 0.15, 0.06); });
+    S2(1.25, u => { const top = wpos(R.headTop).add(new THREE.Vector3(0, 0.05, 0)); coin.position.lerpVectors(coinRest, top, u); coin.position.y += 4 * 2.4 * u * (1 - u); coin.rotation.x = u * 22; R.head.rotation.x = -0.9 * ease(u); },
+      () => { goblin.hold = false; whooshSfx(0.6); });
+    S2(0.7, u => { R.root.rotation.x = -1.5 * ease(u); R.root.position.y = TOP + 0.1 * Math.sin(Math.PI * u); R.arms.forEach(a2 => a2.rotation.x = -2.2 * ease(u)); R.legs.forEach(l => l.rotation.x = -0.8 * ease(u)); R.jaw.scale.y = 0.9;
+        if (!cD) cD = coin.position.clone(); coin.position.lerpVectors(cD, coinRest, u); coin.position.y += 4 * 0.8 * u * (1 - u); coin.rotation.x = u * 12; },
+      () => { cD = null; tone('triangle', 600, 180, 0.35, 0.18); thudSfx(1); spawnParts(wpos(R.headTop), 14, { colors: ['#ffe14d', '#ffffff'], size: 0.06, shape: 'box', speed: 1.2, up: 1.5, life: 1.4, gravity: 2 }); });
+    S2(0.05, () => {}, () => { coin.position.copy(coinRest); coin.rotation.set(0, Math.random() * 6, 0); clink(0.6, false); thudSfx(0.8); });
+    // the winner twirls, powers down and bows
+    S2(0.01, () => {}, () => duelCam(false));
+    S2(0.9, u => { G.root.rotation.y = lerpAng(G.root.rotation.y, Math.atan2(camera.position.x - G.root.position.x, camera.position.z - G.root.position.z), ease(u)); G.arms[1].rotation.x = -1.6; G.arms[1].rotation.z = 0.35 + 0.6 * Math.sin(u * 18); },
+      () => speak('Better luck next flip.', 0.7, 1.05));
+    S2(0.5, u => { SG.blade.scale.setScalar(Math.max(0.001, 1 - ease(u))); SG.light.intensity = 2.5 * (1 - u); }, () => { tone('sawtooth', 380, 70, 0.5, 0.06); humOff(); });
+    S2(0.8, u => { G.body.rotation.x = 0.8 * Math.sin(Math.PI * u); G.arms[0].rotation.x = -0.6 * Math.sin(Math.PI * u); G.arms[1].rotation.x = -0.3; }, () => { SG.s.visible = false; });
   } else if (plan.act === 'smite') {
     // a strutting little dictator grabs the coin, rants, marches off… and gets smitten from above
     const camY = () => Math.atan2(camera.position.x - G.root.position.x, camera.position.z - G.root.position.z);
@@ -3293,7 +3378,7 @@ const previewIntro = () => { ensureAudio(); if (toss || goblin || placing) retur
 $('#tryHot').onclick = () => { if (!canAim() && !mini) return toast('Start a game with 2+ players first (and wait for the turn to finish)'); startMini('hot'); };
 $('#cupRows').onclick = e => { const b = e.target.closest('[data-cp]'); if (b) cupPick(b.dataset.cp, b.dataset.n); };
 $('#tryHolo').onclick = () => sayYugo(true);
-const JACK_ACTS = [['smite', '⚡ Dictator goblin steals it… and gets smitten'], ['sting', '📺 Dateline GBC: To Catch a Coin Thief'], ['neptune', '🔱 Steals Neptune\'s trident in Bologna'], ['plane', '✈️ Steals it in a plane… and crashes'], ['eat', '💩 Eats the coin, poops it out'], ['burp', '🤢 Swallows it, burps it up'], ['juggle', '🤹 Juggles the coin'], ['bite', '🦷 Bites it and chucks it'],
+const JACK_ACTS = [['duel', '⚔️ Pizza-cutter sword duel over the coin'], ['smite', '⚡ Dictator goblin steals it… and gets smitten'], ['sting', '📺 Dateline GBC: To Catch a Coin Thief'], ['neptune', '🔱 Steals Neptune\'s trident in Bologna'], ['plane', '✈️ Steals it in a plane… and crashes'], ['eat', '💩 Eats the coin, poops it out'], ['burp', '🤢 Swallows it, burps it up'], ['juggle', '🤹 Juggles the coin'], ['bite', '🦷 Bites it and chucks it'],
   ['hat', '🎩 Wears the coin as a hat'], ['polish', '✨ Polishes the coin'], ['casino', '🎰 Loses a coin flip, tantrum'], ['surf', '🏄 Surfs the coin around'], ['golf', '⛳ Golfs the coin'], ['wedding', '💍 Proposes to the coin'],
   ['summon', '🔮 Summons a demon'], ['sneeze', '🤧 Giant sneeze'], ['booger', '👃 Booger flick'], ['fartcannon', '💨 Fart cannon'], ['rockstar', '🎸 Rock star guitar solo'], ['ballet', '🩰 Ballet'], ['breakdance', '🕺 Breakdance'],
   ['opera', '🎭 Opera'], ['thief', '🦹 Steals it and hides'], ['insult', '🗯️ Roasts the players'], ['clones', '👯 Clones himself'], ['giant', '🗿 Turns giant']];
@@ -4019,7 +4104,7 @@ $('#startBtn').onclick = () => {
 };
 
 // ---------- installable app + automatic updates (website version only) ----------
-const BUILD = '1795016045';
+const BUILD = '1795017429';
 if (STANDALONE) {
   try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
   let deferredInstall = null;
