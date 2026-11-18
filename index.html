@@ -533,9 +533,23 @@ function ruleCap(x, z, skip) {
   const minName = Math.min(...state.players.map(p => p.r), 1.2);
   const others = [...state.players, ...state.rules.filter(q => q !== skip)];
   const gap = Math.min(9, ...others.map(c => Math.hypot(c.x - x, c.z - z) - c.r * 1.1));
-  return Math.max(0.22, Math.min(minName * 0.95, gap / 1.06 - 0.04, HALF - Math.max(Math.abs(x), Math.abs(z)) - 0.05));
+  return Math.max(0.22, Math.min(minName * 1.15, gap / 1.04 - 0.03, HALF - Math.max(Math.abs(x), Math.abs(z)) - 0.05));
 }
-function fixRules() { state.rules.forEach(r => { const cap = ruleCap(r.x, r.z, r); r.r = Math.min(Math.max(r.r || 0.5, cap * 0.85), cap); }); }
+function seedRules() {
+  if (state.seeded || !state.started || state.lobby.length || state.players.length < 2 || placing) return;
+  state.seeded = true; const texts = pickSugs(7, state.rules.map(r => r.text)), cols = ['#7a4b1e', '#3b5b2a', '#2b4a6b', '#6b2b4a', '#5a3d7a', '#7a2e2e', '#2e6b62'];
+  let n = 0;
+  texts.forEach((text, i) => {
+    let best = null, bd = -1;
+    for (let k = 0; k < 500; k++) { const x = (Math.random() * 2 - 1) * (HALF - 0.4), z = (Math.random() * 2 - 1) * (HALF - 0.4), c = ruleCap(x, z, null); if (c > bd) { bd = c; best = { x, z }; } }
+    if (!best || bd < 0.32) return;
+    const r = bd * (0.92 + Math.random() * 0.08);
+    state.rules.push({ id: newId(), text, by: '🍕 the house', byId: null, color: cols[i % cols.length], r, x: clamp(best.x, -HALF + r, HALF - r), z: clamp(best.z, -HALF + r, HALF - r) }); n++;
+  });
+  if (n) { addLog(`🍕 ${n} house rules are already on the box`); drawTop(); state.rules.slice(-n).forEach(r => pulse(r)); toast(`🍕 ${n} random house rules are on the box — good luck`); }
+  save(); renderUI();
+}
+function fixRules() { state.rules.forEach(r => { const cap = ruleCap(r.x, r.z, r); r.r = Math.min(Math.max(r.r || 0.5, cap * 0.92), cap); }); }
 fixRules();
 state.playTime = state.playTime || 0; state.rounds = state.rounds || 0; state.drinks = state.drinks || {};
 if (!state.clockV2) { if (state.players.length >= 2) state.playTime = Math.max(state.playTime, 30 * 60); state.clockV2 = true; }
@@ -912,8 +926,20 @@ $('#addForm').addEventListener('submit', e => {
 function nameTaken(n) { n = n.toLowerCase(); return [...state.players, ...state.lobby].some(p => p.name.toLowerCase() === n); }
 function addToLobby(name) { state.lobby.push({ id: newId(), name, color: nextColor() }); addLog(`👋 ${name} joined`); save(); renderUI(); renderLobby(); }
 // a lobby player (joined but no circle yet) gets drawn: on the computer, or at a random spot
+// circles are drawn one at a time, in lobby order, so nobody draws on top of someone else
+const drawerId = () => state.started && state.lobby.length ? state.lobby[0].id : null;
+function fitSpot(x, z, r) {
+  const gapAt = (x, z) => Math.min(9, ...state.players.map(p => Math.hypot(p.x - x, p.z - z) - p.r - 0.06), ...state.rules.map(q => Math.hypot(q.x - x, q.z - z) - q.r - 0.04), HALF - Math.max(Math.abs(x), Math.abs(z)) - 0.02);
+  const need = Math.min(r, 0.5), g = gapAt(x, z);
+  if (g >= need) return { x, z, r: Math.min(r, g) };
+  let best = null, bd = 1e9;
+  for (let i = 0; i < 900; i++) { const a = Math.random() * Math.PI * 2, d = Math.random() * HALF * 1.5, nx = clamp(x + Math.cos(a) * d, -HALF + need, HALF - need), nz = clamp(z + Math.sin(a) * d, -HALF + need, HALF - need), gg = gapAt(nx, nz);
+    if (gg >= need) { const dd = Math.hypot(nx - x, nz - z); if (dd < bd) { bd = dd; best = { x: nx, z: nz, r: Math.min(r, gg) }; } } }
+  return best || { x, z, r: Math.max(0.35, Math.min(r, g)) };
+}
 function drawLobbyPlayer(id, random) {
   const q = state.lobby.find(p => p.id === id); if (!q || placing) return;
+  if (drawerId() != null && q.id !== drawerId()) return toast(`Taking turns — ${state.lobby[0].name} draws first`);
   placing = { id: q.id, name: q.name, color: q.color };
   if (random) return autoPlace();
   document.body.classList.add('placing'); $('#panel').classList.remove('open'); hideResult();
@@ -945,8 +971,10 @@ function autoPlace() {
 function commitPlayer(x, z, r) {
   if (!placing) return;
   if (placing.id) state.lobby = state.lobby.filter(q => q.id !== placing.id);
-  const p = { id: placing.id || newId(), name: placing.name, color: placing.color, r, x: clamp(x, -HALF + r, HALF - r), z: clamp(z, -HALF + r, HALF - r) };
+  const f = fitSpot(clamp(x, -HALF + r, HALF - r), clamp(z, -HALF + r, HALF - r), r); r = f.r;
+  const p = { id: placing.id || newId(), name: placing.name, color: placing.color, r, x: clamp(f.x, -HALF + r, HALF - r), z: clamp(f.z, -HALF + r, HALF - r) };
   state.players.push(p); squeezeCircles(); fixRules(); endPlacing(); drawTop();
+  if (state.started && !state.lobby.length && !state.seeded) setTimeout(seedRules, 400);
   if (!state.lobby.length && lastResult && /^Game on/.test(lastResult.t)) hideResult(); addLog(`✍️ ${p.name} joined`); save(); renderUI();
 }
 function removePlayer(id) {
@@ -977,7 +1005,7 @@ const isGoblinSpot = p => normName(p) === 'jack' || (state.gobPid != null && Str
 function renderUI() {
   if (state.started) goblinTargetId();
   const cur = current();
-  $('#playerList').innerHTML = (state.players.length || state.lobby.length) ? state.lobby.map(p => `<li class="player"><span class="dot" style="background:${p.color};opacity:.5"></span><span class="nm" style="opacity:.75">${esc(p.name)}${claimed.has(String(p.id)) ? ' <span class="ph">📱</span>' : ''}</span>${state.started ? `<button class="x" data-draw="${p.id}" title="Draw their circle here">✏️</button><button class="x" data-rand="${p.id}" title="Random spot">🎲</button>` : '<span class="tag" style="color:var(--muted)">in lobby</span>'}<button class="x" data-l="${p.id}" title="Remove">×</button></li>`).join('') + state.players.map(p =>
+  $('#playerList').innerHTML = (state.players.length || state.lobby.length) ? state.lobby.map(p => `<li class="player"><span class="dot" style="background:${p.color};opacity:.5"></span><span class="nm" style="opacity:.75">${esc(p.name)}${claimed.has(String(p.id)) ? ' <span class="ph">📱</span>' : ''}</span>${state.started ? (p.id === drawerId() ? `<span class="tag">drawing</span><button class="x" data-draw="${p.id}" title="Draw their circle here">✏️</button><button class="x" data-rand="${p.id}" title="Random spot">🎲</button>` : '<span class="tag" style="color:var(--muted)">⏳ waiting</span>') : '<span class="tag" style="color:var(--muted)">in lobby</span>'}<button class="x" data-l="${p.id}" title="Remove">×</button></li>`).join('') + state.players.map(p =>
     `<li class="player ${cur && p.id === cur.id && state.players.length > 1 ? 'up' : ''}"><span class="dot" style="background:${p.color}"></span><span class="nm" style="color:${p.color === '#1f2937' ? '#e8e2d8' : p.color};filter:brightness(1.6)">${esc(p.name)}${claimed.has(String(p.id)) ? ' <span class="ph">📱</span>' : ''}</span>${cur && p.id === cur.id && state.players.length > 1 ? '<span class="tag">flipping</span>' : ''}<button class="x" data-p="${p.id}" title="Remove">×</button></li>`).join('')
     : '<p class="empty">No one in the box yet. Add names, then tap inside the box to circle them.</p>';
   $('#ruleList').innerHTML = state.rules.length ? state.rules.map(r =>
@@ -1216,7 +1244,7 @@ $('#saveRule').onclick = () => {
   const gap = Math.min(...state.players.map(p => Math.hypot(p.x - x, p.z - z) - p.r), ...state.rules.map(r => Math.hypot(r.x - x, r.z - z) - r.r), 9);
   // never bigger than the name circles, never overlapping another circle, never through the wall
   const maxR = ruleCap(x, z, null);
-  const r = maxR * (0.85 + Math.random() * 0.15);
+  const r = maxR * (0.92 + Math.random() * 0.08);
   const rule = { id: newId(), text, by: tosser.name, byId: tosser.id, color: tosser.color, r, x: clamp(x, -HALF + r, HALF - r), z: clamp(z, -HALF + r, HALF - r) };
   state.rules.push(rule); drawTop(); pulse(rule);
   showResult(`✍️ ${text}`, `New rule by ${tosser.name} — whoever lands here has to do it!`, tosser.color, 'big');
@@ -2883,7 +2911,7 @@ function resetAfterDoom(full) {
   $('#gameover').classList.remove('on', 'card'); clearGuts(); gameOver = false; shake = 0; musicStyle('jazz'); jazzDuck(false);
   if (full) state = { players: [], rules: [], turn: 0, log: [], playTime: 0, rounds: 0, drinks: {}, clockV2: true, lobby: [], started: false };
   else Object.assign(state, { rules: [], turn: 0, log: [], playTime: 0, rounds: 0, drinks: {}, clockV2: true });
-  coin.visible = false; coin.scale.set(1, 1, 1); state.yugoWelcomed = false; drawTop(); save(); renderUI();
+  coin.visible = false; coin.scale.set(1, 1, 1); state.yugoWelcomed = false; state.seeded = false; if (!full) seedRules(); drawTop(); save(); renderUI();
 }
 $('#goAgain').onclick = () => resetAfterDoom(false);
 $('#goNew').onclick = () => resetAfterDoom(true);
@@ -3920,7 +3948,7 @@ function hostPublish() {
     role: 'host', since: hostSince, phase: gamePhase(), turn: cur ? cur.id : null,
     ruleFor: pendingRule ? pendingRule.tosser.id : null, started: !!state.started, fr: +fairR().toFixed(2), fm: +maxDrawR().toFixed(2), owners, roundRule: state.roundRule ? [String(state.roundRule.text).slice(0, 80), state.roundRule.left] : null,
     mini: mini ? { type: mini.type, stage: mini.stage, holder: mini.holder ? mini.holder.id : null, hp: mini.hp, max: mini.max, left: Math.ceil(mini.type === 'cups' ? (mini.pickLeft || 0) : mini.left), sub: mini.sub || null, who: mini.who != null ? mini.who : null, n: mini.n || 0, card: mini.card ? cardTxt(mini.card) : null, cardS: mini.card ? mini.card.s : null, next: mini.next ? cardTxt(mini.next) : null, q: mini.q || null, asker: mini.asker != null ? mini.asker : null, verdict: mini.verdict || null, vb: mini.vb || 0, vl: mini.vl || 0, voted: mini.votes ? Object.keys(mini.votes) : [] } : null,
-    lobby: state.lobby.map(p => ({ id: p.id, name: p.name, color: p.color })),
+    lobby: state.lobby.map(p => ({ id: p.id, name: p.name, color: p.color })), drawer: drawerId(),
     players: state.players.map(p => ({ id: p.id, name: p.name, color: p.color, x: +p.x.toFixed(2), z: +p.z.toFixed(2), r: +p.r.toFixed(2) })),
     spots: state.rules.map(r => [+r.x.toFixed(2), +r.z.toFixed(2), +r.r.toFixed(2)]).slice(-30), half: HALF, out: OUT,
     result: lastResult, rules: state.rules.map((r, i) => [i + 1, String(r.text).slice(0, 60), r.by]).slice(-12)
@@ -3944,6 +3972,7 @@ function handleCmd(c, cmd) {
     if (cmd.type === 'rule') { const t = String(cmd.text || '').trim().slice(0, 70); if (!t) return; $('#ruleText').value = t; $('#saveRule').click(); } else $('#skipRule').click();
   } else if (cmd.type === 'place') {
     const q = state.lobby.find(p => String(p.id) === pid); if (!q || !state.started || placing) return;
+    if (drawerId() != null && q.id !== drawerId()) return;
     placing = { id: q.id, name: q.name, color: q.color };
     const x = +cmd.x, z = +cmd.z, r = +cmd.r;
     if (isFinite(x) && isFinite(z) && isFinite(r)) { const rr = clamp(r, 0.45, maxDrawR()); commitPlayer(clamp(x, -HALF + rr, HALF - rr), clamp(z, -HALF + rr, HALF - rr), rr); } else autoPlace();
@@ -4277,8 +4306,14 @@ function renderCtrl() {
         <div class="c-card"><h3>Who's playing</h3><div style="display:flex;flex-wrap:wrap;gap:8px">${all.map(p => `<span style="background:${p.color};color:#fff;border-radius:999px;padding:6px 14px;font-family:'Permanent Marker',cursive;font-size:18px">${esc(p.name)}</span>`).join('')}</div></div>`;
       return;
     }
-    // game started: draw your circle
+    // game started: draw your circle — one at a time
     $('#cLive').classList.remove('on');
+    if (H.drawer != null && String(H.drawer) !== String(inLobby.id)) {
+      const pos = lobbyL.findIndex(p => String(p.id) === String(inLobby.id)), dr = lobbyL.find(p => String(p.id) === String(H.drawer));
+      body.innerHTML = `<div class="c-card" style="text-align:center"><h3>⏳ Wait your turn</h3><p><b style="color:${dr ? dr.color : '#fff'}">${esc(dr ? dr.name : 'Someone')}</b> is drawing their circle right now.</p><p>You're number <b>${pos + 1}</b> in line — your phone will buzz when it's your turn.</p></div>`;
+      cPlace = null; return;
+    }
+    if (!cPlace) { try { navigator.vibrate && navigator.vibrate([120, 60, 120]); } catch (e) {} }
     if (!cPlace || cName !== inLobby.name) { cName = inLobby.name; cPlace = { x: null, z: null, r: (H && H.fr) || 1, lobbyId: inLobby.id }; }
     drawPlacer(body, players);
     return;
@@ -4365,12 +4400,12 @@ function renderLobby() {
 $('#lbAdd').addEventListener('submit', e => { e.preventDefault(); const n = $('#lbName').value.trim(); if (!n) return; if (nameTaken(n)) return toast('That name is already in the game'); addToLobby(n); $('#lbName').value = ''; });
 $('#startBtn').onclick = () => {
   if ([...state.lobby, ...state.players].length < 2) return;
-  state.started = true; state.gobPid = null; save(); goblinTargetId(); renderUI(); renderLobby(); ensureAudio();
+  state.started = true; state.seeded = false; state.gobPid = null; save(); goblinTargetId(); renderUI(); renderLobby(); ensureAudio();
   startIntro(() => showResult('Game on! 🍕', state.lobby.length ? 'Everyone draw your circle — on your phone, or ✏️ / 🎲 next to your name here.' : 'Flip the coin!'));
 };
 
 // ---------- installable app + automatic updates (website version only) ----------
-const BUILD = '1795032666';
+const BUILD = '1795036023';
 if (STANDALONE) {
   try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
   let deferredInstall = null;
