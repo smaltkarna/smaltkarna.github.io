@@ -194,9 +194,9 @@
   #subsText b{color:#9be15d}
   #skipIntro{pointer-events:auto;background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.3);padding:8px 14px;font-size:13px;font-weight:700}
   body.ctrl #subs{display:none!important}
-  #introVid{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;z-index:25;background:transparent;display:none;pointer-events:none}
-  body.introvid #introVid{display:block}
-  body.ctrl #introVid{display:none!important}
+  .introVid{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;z-index:25;background:transparent;display:none;pointer-events:none}
+  body.introvid .introVid.on{display:block}
+  body.ctrl .introVid{display:none!important}
   body.intro #lobby{display:none!important}
   body.intro #hud,body.intro #help,body.intro #result,body.intro #panel,body.intro #menuBtn,body.intro #inviteBtn,body.intro #installBtn,body.intro #jazzBtn{display:none!important}
   #splat{position:fixed;z-index:28;width:min(38vw,380px);height:min(30vw,300px);transform:translate(-50%,-50%) scale(.2);opacity:0;pointer-events:none;
@@ -387,7 +387,7 @@
     <p class="empty" id="phoneHelp">This computer is the main screen. Everyone else opens this same page on their phone (share it from its page on claude.ai) — phones are controllers: draw your circle, take your turn, write your rules.</p>
     <button id="asCtrl" class="c-link" style="margin-top:6px">Use this device as a controller instead</button>
     <button id="extrasBtn" title="Extras">⋯</button>
-    <div id="extras"><div><button id="introBtn2" class="c-link">▶ Watch the rules intro</button></div>
+    <div id="extras"><div><button id="introBtn2" class="c-link">▶ Watch the rules intro</button> <button id="newsBtn" class="c-link">🆕 Watch what's new</button></div>
     <div><button id="tryHot" class="c-link">🔥 Play Hot Goblin now</button> <button id="tryBoss" class="c-link">👹 Play Boss Fight now</button> <button id="tryRoul" class="c-link">🎰 Play Rule Roulette now</button> <button id="tryCups" class="c-link">🥤 Play Coin Under the Cup now</button> <button id="tryHilo" class="c-link">🃏 Play Higher or Lower now</button> <button id="tryTos" class="c-link">🥃 Play Truth or Shot now</button> <button id="tryFg" class="c-link">🏈 Kick a field goal now</button> <button id="tryHolo" class="c-link">💠 Show Yugo's hologram</button> <a class="c-link" href="https://smaltkarna.github.io/classic/#host" target="_blank" rel="noopener">🕰️ Play the classic version (original goblins)</a> <button id="jackList" class="c-link">👺 All Jack animations</button><div id="jackActs"></div></div></div>
   </section>
   <footer>
@@ -3545,22 +3545,42 @@ function endIntro() {
   try { speechSynthesis.cancel(); } catch (e) {}
   $('#subs').classList.remove('on'); document.body.classList.remove('intro');
 }
-// ---------- prerecorded rules video (rendered in Blender); the live 3D intro is the fallback ----------
-const INTRO_VID = { src: 'intro.mp4', cues: {"drop": 0.6, "land": 1.5, "laugh": 1.85, "cackle": 44.15, "squat": 45.05, "fart": 46.15, "linger": 48.95, "end": 50.15, "lines": [2.95, 6.35, 12.55, 19.15, 22.95, 29.15, 35.35, 39.15]} };
-let introVid = null, introVidOk = null;
-function prepIntroVideo() {
-  if (CTRL || introVid) return;
-  introVid = document.createElement('video'); introVid.id = 'introVid';
-  Object.assign(introVid, { muted: true, playsInline: true, preload: 'auto' }); introVid.setAttribute('playsinline', ''); introVid.setAttribute('muted', '');
-  introVid.addEventListener('canplaythrough', () => { if (introVidOk === null) introVidOk = true; }, { once: true });
-  introVid.addEventListener('error', () => { introVidOk = false; });
-  introVid.src = introVid.canPlayType('video/mp4; codecs="avc1.640028"') ? INTRO_VID.src : INTRO_VID.src.replace('.mp4', '.webm'); document.body.appendChild(introVid);
+// ---------- prerecorded goblin videos (rendered in Blender); the live 3D intro is the fallback for the rules ----------
+const INTRO_VID = { src: 'intro.mp4', live: true, linger: "Wait… he's not done 👀", cues: {"drop": 0.6, "land": 1.5, "laugh": 1.85, "cackle": 44.15, "squat": 45.05, "fart": 46.15, "linger": 48.95, "end": 50.15, "lines": [2.95, 6.35, 12.55, 19.15, 22.95, 29.15, 35.35, 39.15]} };
+const NEWS_VID = { src: 'news.mp4', live: false, cues: {"drop": 0.6, "land": 1.5, "laugh": 1.85, "cackle": 53.375, "squat": 54.275, "fart": 55.375, "linger": 58.175, "end": 59.375, "lines": [2.958, 7.167, 12.167, 16.75, 22.167, 30.75, 37.75, 47.167]} };
+const NEWS_LINES = [
+  ["I'm back, mortals… and I brought <b>NEW rules!</b>", "I'm back, mortals. And I brought NEW rules!"],
+  ['The box now starts with <b>7 house rules.</b> Obey them!', 'The box now starts with seven house rules. Obey them!'],
+  ['Draw your circles <b>one at a time.</b> No overlapping!', 'Draw your circles one at a time. No overlapping!'],
+  ['Land on your own rule? Too bad — <b>you do it too!</b>', 'Land on your own rule? Too bad. You do it too!'],
+  ['Every few rounds, a <b>CHALLENGE</b> appears! 🔥 Hot Goblin · 👹 Boss fights · 🎰 Roulette · 🥤 Cups · 🃏 Higher or Lower · 🥃 Truth or Shot', 'Every few rounds, a challenge appears! Hot Goblin, boss fights, roulette, cups, higher or lower, and truth or shot!'],
+  ['Play along on your <b>phone</b> 📱 — or the <b>space bar</b> — when the screen tells you.', 'Play along on your phone, or with the space bar, when the screen tells you.'],
+  ['Write a rule that says <b>"kick a field goal"</b> 🏈 … and the unlucky one has to kick it. <b>Miss, and you drink!</b>', 'Write a rule that says kick a field goal, and the unlucky one has to kick it. Miss, and you drink!'],
+  ['And if I ever show up on your circle… <b>hide your coin.</b> Hehehe!', 'And if I ever show up on your circle, hide your coin. Hehehe!'],
+];
+INTRO_VID.lines = INTRO_LINES; NEWS_VID.lines = NEWS_LINES;
+let introVid = null, introSkipAll = false;
+function prepVid(cfg) {
+  if (CTRL || cfg.el) return;
+  const el = document.createElement('video'); el.className = 'introVid'; cfg.el = el; cfg.ok = null; if (cfg === INTRO_VID) introVid = el;
+  Object.assign(el, { muted: true, playsInline: true, preload: 'auto' }); el.setAttribute('playsinline', ''); el.setAttribute('muted', '');
+  el.addEventListener('canplaythrough', () => { if (cfg.ok === null) cfg.ok = true; }, { once: true });
+  el.addEventListener('error', () => { cfg.ok = false; });
+  el.src = el.canPlayType('video/mp4; codecs="avc1.640028"') ? cfg.src : cfg.src.replace('.mp4', '.webm'); document.body.appendChild(el);
 }
+function prepIntroVideo() { prepVid(INTRO_VID); prepVid(NEWS_VID); }
+// the rules video, then straight into the "what's new" clip (Skip skips both)
 function startIntro(after) {
+  introSkipAll = false;
+  playIntroVideo(INTRO_VID, () => { if (introSkipAll) { introSkipAll = false; after && after(); return; } setTimeout(() => playIntroVideo(NEWS_VID, after), 150); });
+}
+function playIntroVideo(cfg, after) {
   if (goblin) { after && after(); return; }
-  prepIntroVideo();
-  if (!introVid || introVidOk === false) return startIntroLive(after);
-  const v = introVid, C = INTRO_VID.cues, fired = new Set();
+  prepVid(cfg);
+  const fallback = () => (cfg.live ? fallback() : (after && after()));
+  if (!cfg.el || cfg.ok === false) return fallback();
+  const v = cfg.el, C = cfg.cues, fired = new Set();
+  document.querySelectorAll('video.introVid').forEach(x => x.classList.toggle('on', x === v));
   goblin = { pending: true, intro: true, video: true };
   document.body.classList.add('intro', 'introvid'); $('#subs').classList.add('on'); $('#subsText').innerHTML = '…';
   try { speechSynthesis.cancel(); speechSynthesis.getVoices(); } catch (e) {}
@@ -3577,7 +3597,7 @@ function startIntro(after) {
     cue('drop', C.drop, () => wheeSfx());
     cue('land', C.land, () => { thudSfx(1); });
     cue('laugh', C.laugh, () => evilLaugh(5, 260));
-    INTRO_LINES.forEach(([sub, say], i) => cue('l' + i, C.lines[i], () => {
+    cfg.lines.forEach(([sub, say], i) => cue('l' + i, C.lines[i], () => {
       $('#subsText').innerHTML = sub; speaking = true;
       introSpeak(say, () => { speaking = false; if (v.paused && !v.ended) v.play().catch(() => {}); });
     }));
@@ -3588,17 +3608,17 @@ function startIntro(after) {
     cue('cackle', C.cackle, () => evilLaugh(8, 250));
     cue('squat', C.squat, () => { $('#subsText').innerHTML = '…uh oh. 💨'; tone('sine', 120, 260, 1.1, 0.12); });
     cue('fart', C.fart, () => { $('#subsText').innerHTML = '<b>BRRRRAAAAAAP!!!</b> 💨🚀'; fartSfx(); setTimeout(fartSfx, 250); setTimeout(fartSfx, 600); whooshSfx(2.4); tone('sawtooth', 70, 35, 2.2, 0.35); noiseSfx('lowpass', 500, 80, 2.4, 0.9, 1); });
-    cue('linger', C.linger, () => { $('#subsText').innerHTML = 'Now — <b>draw your circles!</b> 🍕'; });
+    cue('linger', C.linger, () => { $('#subsText').innerHTML = cfg.linger || 'Now — <b>draw your circles!</b> 🍕'; });
     if (v.ended) { setTimeout(finish, 900); return; }
     raf = requestAnimationFrame(tick);
   };
   // give the video a few seconds to start (some browsers only load it when asked to play); otherwise use the live intro
   let started = false;
-  const giveUp = setTimeout(() => { if (started) return; try { v.pause(); } catch (e) {} goblin = null; document.body.classList.remove('introvid'); endIntro(); jazzDuck(false); startIntroLive(after); }, 6000);
+  const giveUp = setTimeout(() => { if (started) return; try { v.pause(); } catch (e) {} goblin = null; document.body.classList.remove('introvid'); endIntro(); jazzDuck(false); fallback(); }, 6000);
   const go = () => { if (started || !goblin || !goblin.video) return; started = true; clearTimeout(giveUp); raf = requestAnimationFrame(tick); };
   v.addEventListener('playing', go, { once: true });
   try { v.currentTime = 0; } catch (e) {}
-  v.play().then(go).catch(() => { if (started) return; clearTimeout(giveUp); goblin = null; document.body.classList.remove('introvid'); endIntro(); jazzDuck(false); startIntroLive(after); });
+  v.play().then(go).catch(() => { if (started) return; clearTimeout(giveUp); goblin = null; document.body.classList.remove('introvid'); endIntro(); jazzDuck(false); fallback(); });
 }
 
 function startIntroLive(after) {
@@ -3679,10 +3699,11 @@ document.addEventListener('click', e => { const b = e.target.closest('[data-gp]'
 $('#tryCups').onclick = () => { if (!canAim() && !mini) return toast('Start a game with 2+ players first (and wait for the turn to finish)'); startMini('cups'); };
 $('#tryRoul').onclick = () => { if (!canAim() && !mini) return toast('Start a game with 2+ players first (and wait for the turn to finish)'); startMini('roulette'); };
 $('#tryBoss').onclick = () => { if (!canAim() && !mini) return toast('Start a game with 2+ players first (and wait for the turn to finish)'); startMini('boss'); };
+$('#newsBtn').onclick = () => { ensureAudio(); if (toss || goblin || placing || mini) return toast('Wait for the current turn to finish'); playIntroVideo(NEWS_VID, () => renderUI()); };
 $('#extrasBtn').onclick = () => $('#extras').classList.toggle('on');
 $('#introBtn').onclick = previewIntro; $('#introBtn2').onclick = previewIntro;
 $('#skipIntro').onclick = () => {
-  if (goblin && goblin.video) return goblin.finishVideo();
+  if (goblin && goblin.video) { introSkipAll = true; return goblin.finishVideo(); }
   if (!goblin || !goblin.intro) return endIntro();
   const after = goblin.after; scene.remove(goblin.G.root); goblin = null; musicStyle('jazz'); shake = 0; jazzDuck(false); renderUI(); if (after) after();
 };
@@ -4405,7 +4426,7 @@ $('#startBtn').onclick = () => {
 };
 
 // ---------- installable app + automatic updates (website version only) ----------
-const BUILD = '1795036023';
+const BUILD = '1795036788';
 if (STANDALONE) {
   try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
   let deferredInstall = null;
