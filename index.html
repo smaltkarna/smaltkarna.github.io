@@ -532,8 +532,8 @@ try { const s = JSON.parse(localStorage.getItem('pizzabox-v1')); if (s && Array.
 function ruleCap(x, z, skip) {
   const minName = Math.min(...state.players.map(p => p.r), 1.2);
   const others = [...state.players, ...state.rules.filter(q => q !== skip)];
-  const gap = Math.min(9, ...others.map(c => Math.hypot(c.x - x, c.z - z) - c.r * 1.1));
-  return Math.max(0.22, Math.min(minName * 1.15, gap / 1.04 - 0.03, HALF - Math.max(Math.abs(x), Math.abs(z)) - 0.05));
+  const gap = Math.min(9, ...others.map(c => Math.hypot(c.x - x, c.z - z) - c.r * 1.04));
+  return Math.max(0.22, Math.min(minName * 1.5, gap / 1.02 - 0.02, HALF - Math.max(Math.abs(x), Math.abs(z)) - 0.04));
 }
 function seedRules() {
   if (state.seeded || !state.started || state.lobby.length || state.players.length < 2 || placing) return;
@@ -543,13 +543,13 @@ function seedRules() {
     let best = null, bd = -1;
     for (let k = 0; k < 500; k++) { const x = (Math.random() * 2 - 1) * (HALF - 0.4), z = (Math.random() * 2 - 1) * (HALF - 0.4), c = ruleCap(x, z, null); if (c > bd) { bd = c; best = { x, z }; } }
     if (!best || bd < 0.32) return;
-    const r = bd * (0.92 + Math.random() * 0.08);
+    const r = bd * 0.98;
     state.rules.push({ id: newId(), text, by: '🍕 the house', byId: null, color: cols[i % cols.length], r, x: clamp(best.x, -HALF + r, HALF - r), z: clamp(best.z, -HALF + r, HALF - r) }); n++;
   });
   if (n) { addLog(`🍕 ${n} house rules are already on the box`); drawTop(); state.rules.slice(-n).forEach(r => pulse(r)); toast(`🍕 ${n} random house rules are on the box — good luck`); }
   save(); renderUI();
 }
-function fixRules() { state.rules.forEach(r => { const cap = ruleCap(r.x, r.z, r); r.r = Math.min(Math.max(r.r || 0.5, cap * 0.92), cap); }); }
+function fixRules() { for (let pass = 0; pass < 3; pass++) state.rules.forEach(r => { const cap = ruleCap(r.x, r.z, r); r.r = Math.min(Math.max(r.r || 0.5, cap * 0.97), cap); }); }
 fixRules();
 state.playTime = state.playTime || 0; state.rounds = state.rounds || 0; state.drinks = state.drinks || {};
 if (!state.clockV2) { if (state.players.length >= 2) state.playTime = Math.max(state.playTime, 30 * 60); state.clockV2 = true; }
@@ -751,7 +751,7 @@ function drawRule(g, r, k, n) {
   sketchCircle(g, cx, cy, R, r.color, r.id, false);
   g.save(); g.translate(cx, cy); g.rotate((rnd() - .5) * 0.4);
   g.globalCompositeOperation = 'multiply'; g.fillStyle = r.color; g.textAlign = 'center'; g.textBaseline = 'middle';
-  g.font = `${R * (n > 9 ? 0.95 : 1.15)}px "Permanent Marker"`; g.fillText(String(n), 0, R * 0.06);
+  g.font = `${R * (n > 9 ? 1.1 : 1.35)}px "Permanent Marker"`; g.fillText(String(n), 0, R * 0.06);
   g.restore();
 }
 
@@ -1244,7 +1244,7 @@ $('#saveRule').onclick = () => {
   const gap = Math.min(...state.players.map(p => Math.hypot(p.x - x, p.z - z) - p.r), ...state.rules.map(r => Math.hypot(r.x - x, r.z - z) - r.r), 9);
   // never bigger than the name circles, never overlapping another circle, never through the wall
   const maxR = ruleCap(x, z, null);
-  const r = maxR * (0.92 + Math.random() * 0.08);
+  const r = maxR * 0.98;
   const rule = { id: newId(), text, by: tosser.name, byId: tosser.id, color: tosser.color, r, x: clamp(x, -HALF + r, HALF - r), z: clamp(z, -HALF + r, HALF - r) };
   state.rules.push(rule); drawTop(); pulse(rule);
   showResult(`✍️ ${text}`, `New rule by ${tosser.name} — whoever lands here has to do it!`, tosser.color, 'big');
@@ -3577,7 +3577,7 @@ function startIntro(after) {
 function playIntroVideo(cfg, after) {
   if (goblin) { after && after(); return; }
   prepVid(cfg);
-  const fallback = () => (cfg.live ? fallback() : (after && after()));
+  const fallback = () => (cfg.live ? startIntroLive(after) : (after && after()));
   if (!cfg.el || cfg.ok === false) return fallback();
   const v = cfg.el, C = cfg.cues, fired = new Set();
   document.querySelectorAll('video.introVid').forEach(x => x.classList.toggle('on', x === v));
@@ -4426,7 +4426,7 @@ $('#startBtn').onclick = () => {
 };
 
 // ---------- installable app + automatic updates (website version only) ----------
-const BUILD = '1795036788';
+const BUILD = '1795037821';
 if (STANDALONE) {
   try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
   let deferredInstall = null;
