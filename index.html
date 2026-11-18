@@ -417,7 +417,13 @@ const TOP = 0.05;          // inside floor height
 const WALL_H = 0.95;       // wall height
 const COIN_R = 0.38, COIN_T = 0.07;
 const COLORS = ['#c81e1e','#1d4ed8','#15803d','#7c3aed','#d9480f','#0f766e','#be185d','#1f2937','#a16207','#0369a1'];
-const SUGGESTIONS = ['Drink with your other hand','Waterfall — everyone drinks','Speak in an accent till your next turn','Pick a drinking buddy','Finish your drink','Give out 3 sips','No first names allowed','Compliment everyone, then drink','Thumb master','Rhyme your next sentence','Take a sip standing up','Swap seats with someone'];
+const SUGGESTIONS = ["Drink with your other hand", "Waterfall — everyone drinks", "Speak in an accent till your next turn", "Pick a drinking buddy", "Finish your drink", "Give out 3 sips", "No first names allowed", "Compliment everyone, then drink", "Thumb master", "Rhyme your next sentence", "Take a sip standing up", "Swap seats with someone", "Question master — answer a question from you, drink", "Talk like a pirate till your next turn", "Do your best celebrity impression or drink 2", "Make a toast to the person on your left", "Everyone with the same drink as you sips", "Tell an embarrassing story or drink 3", "Drink for every vowel in your name", "Pick someone to drink with you every time you drink", "Say 'cheers' in another language", "Waterfall, but you go last", "Sing the chorus of any song", "Never have I ever — one round", "Truth or drink", "Point at the person most likely to get lost — they drink", "Last person to touch their nose drinks", "Last person to raise a hand drinks", "Hum a song, first to guess gives out 2", "Do 5 squats or drink 2", "Speak only in questions until your next turn", "Rock-paper-scissors the next player — loser drinks", "Name a pizza topping in 3 seconds or drink", "Categories: pick one, first to blank drinks", "Everyone with a phone out drinks", "Guys drink", "Girls drink", "Oldest player drinks", "Youngest player drinks", "Tallest player picks someone to drink", "Swap drinks with the next player for a sip", "Make up a new handshake with someone", "No pointing — drink if you do", "No swearing till your next turn", "Say the alphabet backwards from F or drink", "Do your best goblin laugh", "Drink and tell us your worst date", "Two truths and a lie — guessers who miss drink", "Staring contest with the next player — loser drinks", "Speak in slow motion for one round", "Narrate your next throw like a sports commentator", "Everyone wearing black drinks", "Everyone wearing glasses drinks", "Drink if you've been to Italy", "Drink if you've ever lost your phone this week", "Give a 10-second speech about pizza", "Invent a rule for the next player", "Everyone toasts to you — you drink", "Rename someone for the rest of the game", "Bow to the coin before every throw", "Clap twice before you drink", "Throw your next coin with your eyes closed", "Throw your next coin with your other hand", "Do the robot until your next turn starts", "Say something nice about the goblin", "Call everyone 'sir' or 'madam' for a round", "Drink if you laughed in the last minute", "Mime your favourite movie — first to guess picks who drinks", "Snake eyes — anyone who looks you in the eye drinks", "Freeze! Last to stop moving drinks", "Sip for every person in your circle's colour", "Say a tongue twister 3 times fast or drink", "Share your phone's last photo or drink 2", "Pick a word — anyone who says it drinks", "Speak in third person until your next turn", "Phone a friend and say 'pizza' — or drink 3", "Make everyone laugh or drink", "Hold your drink above your head until your next turn", "Take a sip and do a spin", "Pick two players to arm-wrestle — loser drinks", "Everyone born in summer drinks", "Everyone who's single drinks", "Everyone in a couple drinks together", "Do your best evil laugh — the table votes, loser drinks", "Shout 'MAMMA MIA!' — last to shout drinks", "Tell a joke — if nobody laughs, drink", "Switch accents with the next player", "Point to the person with the best laugh — they give out 2", "Make a sound effect every time you drink", "Count to 10 round the table — mess up, drink", "Drink with your pinky out", "Whisper everything until your next turn", "Give the coin a name — say it before every throw", "Bonus round: double drinks till your next turn", "Social — everyone drinks", "Pick a song — everyone sings it, worst singer drinks", "High-five everyone or drink", "Everyone with a pet drinks", "Say your full name backwards or drink", "The thrower picks who drinks"];
+// pick n suggestions from a shuffled deck of all 100, skipping rules already on the box
+function pickSugs(n, onBox) {
+  const used = new Set((onBox || []).map(t => String(t).toLowerCase())), out = [];
+  for (let tries = 0; out.length < n && tries < n * 4; tries++) { const t = bagPick('sug', SUGGESTIONS); if (!used.has(t.toLowerCase()) && !out.includes(t)) out.push(t); }
+  return out;
+}
 
 const $ = s => document.querySelector(s);
 // standalone website (GitHub Pages) uses room codes; on claude.ai the page uses Claude's live room
@@ -1114,7 +1120,7 @@ let pendingRule = null;
 function openRuleModal(x, z, tosser) {
   pendingRule = { x, z, tosser }; state.rounds++;
   $('#ruleWho').textContent = tosser.name; $('#ruleText').value = '';
-  const picks = SUGGESTIONS.slice().sort(() => Math.random() - .5).slice(0, 5);
+  const picks = pickSugs(5, state.rules.map(r => r.text));
   $('#sugs').innerHTML = picks.map(s => `<button type="button">${esc(s)}</button>`).join('');
   renderUI(); $('#modal').classList.add('on'); hostPublish(); setTimeout(() => $('#ruleText').focus(), 50);
 }
@@ -3594,7 +3600,7 @@ function onCtrlPeers(peers) {
   const gj = H ? JSON.stringify(H) : ''; if (gj === lastGJ) return; lastGJ = gj;
   renderCtrl();
 }
-const SUGS_C = ['Drink with your other hand', 'Waterfall — everyone drinks', 'Give out 3 sips', 'Pick a drinking buddy', 'Speak in an accent till your next turn', 'No first names allowed', 'Rhyme your next sentence', 'Swap seats with someone'];
+let SUGS_C = [], sugsKey = null;
 function renderCtrl() {
   if (!CTRL) return;
   if (cPlace && cPlace.lobbyId && H && !(H.lobby || []).some(p => String(p.id) === String(cPlace.lobbyId))) cPlace = null; // got drawn already
@@ -3664,6 +3670,7 @@ function renderCtrl() {
   else tEl.innerHTML = turnP ? `<span style="color:${lighten(turnP.color)}">🍕 ${esc(turnP.name)}'s turn</span><small>Watch the big screen — your phone buzzes when you're up.</small>` : 'Waiting for players…';
   if (H.phase === 'over') html += `<div class="c-card c-result" style="border-color:#d7263d"><div class="t" style="color:#ff3b4f">GAME OVER 💀</div><p>The goblin ate the coin and exploded. Check the main screen.</p></div>`;
   else if (H.phase === 'rule' && String(H.ruleFor) === String(mine.id)) {
+    const sk = H.ruleFor + '|' + (H.rules || []).length + '|' + (H.turn || ''); if (sk !== sugsKey) { sugsKey = sk; SUGS_C = pickSugs(8, (H.rules || []).map(r => Array.isArray(r) ? r[1] : r.text)); }
     html += `<div class="c-card"><h3>Empty spot! ✍️</h3><p>Write a rule — whoever lands on it next has to do it.</p></div>
       <textarea id="cRule" maxlength="70" placeholder="e.g. Drink with your left hand"></textarea>
       <div class="sugs">${SUGS_C.map(t => `<button type="button" data-sug="${esc(t)}">${esc(t)}</button>`).join('')}</div>
@@ -3725,7 +3732,7 @@ $('#startBtn').onclick = () => {
 };
 
 // ---------- installable app + automatic updates (website version only) ----------
-const BUILD = '1795013139';
+const BUILD = '1795013349';
 if (STANDALONE) {
   try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
   let deferredInstall = null;
