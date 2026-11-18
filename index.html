@@ -233,6 +233,26 @@
   body.ctrl #fade,body.ctrl #cutCap{display:none!important}
   #cupPanel{position:fixed;left:50%;bottom:86px;transform:translateX(calc(-50% + var(--off)));z-index:13;display:none;background:rgba(20,10,4,.92);border:2px solid #ffd84a;border-radius:16px;padding:10px 14px;max-height:40vh;overflow:auto}
   #cupPanel.on{display:block}
+  #gamePanel{position:fixed;left:50%;top:54%;transform:translate(calc(-50% + var(--off)),-50%);z-index:13;display:none;background:rgba(20,10,4,.93);border:3px solid #ffd84a;border-radius:22px;padding:18px 26px;text-align:center;color:#fff;min-width:min(560px,90vw);max-width:92vw;box-shadow:0 14px 40px rgba(0,0,0,.6)}
+  #gamePanel.on{display:block}
+  #gamePanel.fg{top:auto;bottom:26px;transform:translateX(calc(-50% + var(--off)));min-width:0;padding:10px 20px}
+  #gpTitle{font-family:"Permanent Marker",cursive;font-size:clamp(22px,2.6vw,34px);margin-bottom:10px}
+  #gpBtns button{font:800 clamp(18px,2vw,26px) system-ui;margin:8px 8px 0;padding:12px 26px;border-radius:14px;border:0;background:#ffd84a;color:#2a1400;cursor:pointer;box-shadow:0 5px 0 #a8791a}
+  #gpBtns button:active{transform:translateY(3px);box-shadow:0 2px 0 #a8791a}
+  #gpBtns small{opacity:.8;font-size:14px}
+  .cards{display:flex;gap:26px;justify-content:center;perspective:800px}
+  .pcard{width:clamp(110px,11vw,160px);aspect-ratio:5/7;border-radius:14px;background:#fffdf7;color:#111;position:relative;box-shadow:0 8px 22px rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center}
+  .pcard.red{color:#d0142c}.pcard i{font-style:normal;font-size:clamp(54px,6vw,84px)}
+  .pcard b{position:absolute;left:10px;top:6px;font:900 clamp(22px,2.4vw,32px) Georgia,serif}.pcard b.b2{left:auto;top:auto;right:10px;bottom:6px;transform:rotate(180deg)}
+  .pcard.back{background:repeating-linear-gradient(45deg,#b3122b 0 10px,#8a0d20 10px 20px);border:6px solid #fffdf7}
+  .pcard.flip{animation:cflip .55s ease-out}@keyframes cflip{0%{transform:rotateY(90deg)}100%{transform:rotateY(0)}}
+  .verdict{margin-top:14px;font:900 clamp(22px,2.6vw,34px) system-ui}.verdict.ok{color:#7dff6a}.verdict.bad{color:#ff6b6b}
+  .tos-big{font-size:clamp(60px,8vw,110px)}.tos-big small{font-size:28px;vertical-align:middle;opacity:.7}
+  .tos-q{font:800 clamp(24px,3vw,40px) system-ui;line-height:1.25;max-width:780px;margin:6px auto;color:#fff3c4}
+  #fgMeter{position:fixed;right:40px;top:50%;transform:translateY(-50%);z-index:13;width:46px;height:44vh;border:3px solid #fff;border-radius:14px;background:linear-gradient(#2ecc71 0 30%,#ffd84a 30% 50%,#ff4d4d 50%);display:none;overflow:hidden}
+  #fgMeter.on{display:block}#fgFill{position:absolute;left:0;right:0;bottom:0;background:rgba(255,255,255,.82);border-top:4px solid #111}
+  #fgMeter span{position:absolute;bottom:6px;left:50%;transform:translateX(-50%) rotate(-90deg);font-weight:900;color:#111;font-size:12px}
+  body.ctrl #gamePanel,body.ctrl #fgMeter{display:none!important}
   .cp-top{font-weight:800;font-size:13px;color:#fff3c4;margin-bottom:6px;display:flex;justify-content:space-between;gap:16px}
   #cupTime{color:#ffd84a;font-size:16px}
   .cup-row{display:flex;align-items:center;gap:6px;margin:4px 0}
@@ -324,7 +344,7 @@
     <p class="empty" id="phoneHelp">This computer is the main screen. Everyone else opens this same page on their phone (share it from its page on claude.ai) — phones are controllers: draw your circle, take your turn, write your rules.</p>
     <button id="asCtrl" class="c-link" style="margin-top:6px">Use this device as a controller instead</button>
     <div><button id="introBtn2" class="c-link">▶ Watch the rules intro</button></div>
-    <div><button id="tryHot" class="c-link">🔥 Play Hot Goblin now</button> <button id="tryBoss" class="c-link">👹 Play Boss Fight now</button> <button id="tryRoul" class="c-link">🎰 Play Rule Roulette now</button> <button id="tryCups" class="c-link">🥤 Play Coin Under the Cup now</button> <button id="tryHolo" class="c-link">💠 Show Yugo's hologram</button> <a class="c-link" href="https://smaltkarna.github.io/classic/#host" target="_blank" rel="noopener">🕰️ Play the classic version (original goblins)</a> <button id="jackList" class="c-link">👺 All Jack animations</button><div id="jackActs"></div></div>
+    <div><button id="tryHot" class="c-link">🔥 Play Hot Goblin now</button> <button id="tryBoss" class="c-link">👹 Play Boss Fight now</button> <button id="tryRoul" class="c-link">🎰 Play Rule Roulette now</button> <button id="tryCups" class="c-link">🥤 Play Coin Under the Cup now</button> <button id="tryHilo" class="c-link">🃏 Play Higher or Lower now</button> <button id="tryTos" class="c-link">🥃 Play Truth or Shot now</button> <button id="tryFg" class="c-link">🏈 Kick a field goal now</button> <button id="tryHolo" class="c-link">💠 Show Yugo's hologram</button> <a class="c-link" href="https://smaltkarna.github.io/classic/#host" target="_blank" rel="noopener">🕰️ Play the classic version (original goblins)</a> <button id="jackList" class="c-link">👺 All Jack animations</button><div id="jackActs"></div></div>
   </section>
   <footer>
     <button id="clearRules">Wipe rules</button>
@@ -387,6 +407,7 @@
 <div id="roundRule"></div>
 <div id="fade"></div><div id="cutCap"></div>
 <div id="lowerThird"><span class="lt-logo">GBC</span><span class="lt-text"><b>HANK GRIMSBY</b> · Dateline GBC<br><small>TO CATCH A COIN THIEF · LIVE</small></span></div><div id="tvRec">● REC</div>
+<div id="gamePanel"><div id="gpTitle"></div><div id="gpBody"></div><div id="gpBtns"></div></div><div id="fgMeter"><div id="fgFill"></div><span>POWER</span></div>
 <div id="cupPanel"><div class="cp-top">Pick for players without a phone <span id="cupTime"></span></div><div id="cupRows"></div></div>
 <div id="bossBar"><div class="bb-top"><span>👹 THE GOBLIN KING</span><span id="bossTime">10.0s</span></div><div class="bb-bar"><div id="bossFill"></div><span id="bossHp"></span></div></div>
 <div id="yugo">こんにちは、ユーゴ！<br>元気？ 大好きだよ！💖</div>
@@ -417,7 +438,7 @@ const TOP = 0.05;          // inside floor height
 const WALL_H = 0.95;       // wall height
 const COIN_R = 0.38, COIN_T = 0.07;
 const COLORS = ['#c81e1e','#1d4ed8','#15803d','#7c3aed','#d9480f','#0f766e','#be185d','#1f2937','#a16207','#0369a1'];
-const SUGGESTIONS = ["Drink with your other hand", "Waterfall — everyone drinks", "Speak in an accent till your next turn", "Pick a drinking buddy", "Finish your drink", "Give out 3 sips", "No first names allowed", "Compliment everyone, then drink", "Thumb master", "Rhyme your next sentence", "Take a sip standing up", "Swap seats with someone", "Question master — answer a question from you, drink", "Talk like a pirate till your next turn", "Do your best celebrity impression or drink 2", "Make a toast to the person on your left", "Everyone with the same drink as you sips", "Tell an embarrassing story or drink 3", "Drink for every vowel in your name", "Pick someone to drink with you every time you drink", "Say 'cheers' in another language", "Waterfall, but you go last", "Sing the chorus of any song", "Never have I ever — one round", "Truth or drink", "Point at the person most likely to get lost — they drink", "Last person to touch their nose drinks", "Last person to raise a hand drinks", "Hum a song, first to guess gives out 2", "Do 5 squats or drink 2", "Speak only in questions until your next turn", "Rock-paper-scissors the next player — loser drinks", "Name a pizza topping in 3 seconds or drink", "Categories: pick one, first to blank drinks", "Everyone with a phone out drinks", "Guys drink", "Girls drink", "Oldest player drinks", "Youngest player drinks", "Tallest player picks someone to drink", "Swap drinks with the next player for a sip", "Make up a new handshake with someone", "No pointing — drink if you do", "No swearing till your next turn", "Say the alphabet backwards from F or drink", "Do your best goblin laugh", "Drink and tell us your worst date", "Two truths and a lie — guessers who miss drink", "Staring contest with the next player — loser drinks", "Speak in slow motion for one round", "Narrate your next throw like a sports commentator", "Everyone wearing black drinks", "Everyone wearing glasses drinks", "Drink if you've been to Italy", "Drink if you've ever lost your phone this week", "Give a 10-second speech about pizza", "Invent a rule for the next player", "Everyone toasts to you — you drink", "Rename someone for the rest of the game", "Bow to the coin before every throw", "Clap twice before you drink", "Throw your next coin with your eyes closed", "Throw your next coin with your other hand", "Do the robot until your next turn starts", "Say something nice about the goblin", "Call everyone 'sir' or 'madam' for a round", "Drink if you laughed in the last minute", "Mime your favourite movie — first to guess picks who drinks", "Snake eyes — anyone who looks you in the eye drinks", "Freeze! Last to stop moving drinks", "Sip for every person in your circle's colour", "Say a tongue twister 3 times fast or drink", "Share your phone's last photo or drink 2", "Pick a word — anyone who says it drinks", "Speak in third person until your next turn", "Phone a friend and say 'pizza' — or drink 3", "Make everyone laugh or drink", "Hold your drink above your head until your next turn", "Take a sip and do a spin", "Pick two players to arm-wrestle — loser drinks", "Everyone born in summer drinks", "Everyone who's single drinks", "Everyone in a couple drinks together", "Do your best evil laugh — the table votes, loser drinks", "Shout 'MAMMA MIA!' — last to shout drinks", "Tell a joke — if nobody laughs, drink", "Switch accents with the next player", "Point to the person with the best laugh — they give out 2", "Make a sound effect every time you drink", "Count to 10 round the table — mess up, drink", "Drink with your pinky out", "Whisper everything until your next turn", "Give the coin a name — say it before every throw", "Bonus round: double drinks till your next turn", "Social — everyone drinks", "Pick a song — everyone sings it, worst singer drinks", "High-five everyone or drink", "Everyone with a pet drinks", "Say your full name backwards or drink", "The thrower picks who drinks"];
+const SUGGESTIONS = ["Kick a field goal — miss and you drink", "Drink with your other hand", "Waterfall — everyone drinks", "Speak in an accent till your next turn", "Pick a drinking buddy", "Finish your drink", "Give out 3 sips", "No first names allowed", "Compliment everyone, then drink", "Thumb master", "Rhyme your next sentence", "Take a sip standing up", "Swap seats with someone", "Question master — answer a question from you, drink", "Talk like a pirate till your next turn", "Do your best celebrity impression or drink 2", "Make a toast to the person on your left", "Everyone with the same drink as you sips", "Tell an embarrassing story or drink 3", "Drink for every vowel in your name", "Pick someone to drink with you every time you drink", "Say 'cheers' in another language", "Waterfall, but you go last", "Sing the chorus of any song", "Never have I ever — one round", "Truth or drink", "Point at the person most likely to get lost — they drink", "Last person to touch their nose drinks", "Last person to raise a hand drinks", "Hum a song, first to guess gives out 2", "Do 5 squats or drink 2", "Speak only in questions until your next turn", "Rock-paper-scissors the next player — loser drinks", "Name a pizza topping in 3 seconds or drink", "Categories: pick one, first to blank drinks", "Everyone with a phone out drinks", "Guys drink", "Girls drink", "Oldest player drinks", "Youngest player drinks", "Tallest player picks someone to drink", "Swap drinks with the next player for a sip", "Make up a new handshake with someone", "No pointing — drink if you do", "No swearing till your next turn", "Say the alphabet backwards from F or drink", "Do your best goblin laugh", "Drink and tell us your worst date", "Two truths and a lie — guessers who miss drink", "Staring contest with the next player — loser drinks", "Speak in slow motion for one round", "Narrate your next throw like a sports commentator", "Everyone wearing black drinks", "Everyone wearing glasses drinks", "Drink if you've been to Italy", "Drink if you've ever lost your phone this week", "Give a 10-second speech about pizza", "Invent a rule for the next player", "Everyone toasts to you — you drink", "Rename someone for the rest of the game", "Bow to the coin before every throw", "Clap twice before you drink", "Throw your next coin with your eyes closed", "Throw your next coin with your other hand", "Do the robot until your next turn starts", "Say something nice about the goblin", "Call everyone 'sir' or 'madam' for a round", "Drink if you laughed in the last minute", "Mime your favourite movie — first to guess picks who drinks", "Snake eyes — anyone who looks you in the eye drinks", "Freeze! Last to stop moving drinks", "Sip for every person in your circle's colour", "Say a tongue twister 3 times fast or drink", "Share your phone's last photo or drink 2", "Pick a word — anyone who says it drinks", "Speak in third person until your next turn", "Phone a friend and say 'pizza' — or drink 3", "Make everyone laugh or drink", "Hold your drink above your head until your next turn", "Take a sip and do a spin", "Pick two players to arm-wrestle — loser drinks", "Everyone born in summer drinks", "Everyone who's single drinks", "Everyone in a couple drinks together", "Do your best evil laugh — the table votes, loser drinks", "Shout 'MAMMA MIA!' — last to shout drinks", "Tell a joke — if nobody laughs, drink", "Switch accents with the next player", "Point to the person with the best laugh — they give out 2", "Make a sound effect every time you drink", "Count to 10 round the table — mess up, drink", "Drink with your pinky out", "Whisper everything until your next turn", "Give the coin a name — say it before every throw", "Bonus round: double drinks till your next turn", "Social — everyone drinks", "Pick a song — everyone sings it, worst singer drinks", "High-five everyone or drink", "Everyone with a pet drinks", "Say your full name backwards or drink", "The thrower picks who drinks"];
 // pick n suggestions from a shuffled deck of all 100, skipping rules already on the box
 function pickSugs(n, onBox) {
   const used = new Set((onBox || []).map(t => String(t).toLowerCase())), out = [];
@@ -771,6 +792,7 @@ const cam = { theta: 0, phi: 0.95, r: 21 }, goal = { ...cam };
 let shake = 0;
 const homeTarget = new THREE.Vector3(0, 0.6, 1.2), target = homeTarget.clone(), followPt = new THREE.Vector3();
 function updateCamera() {
+  if (mini && mini.cam) { camera.position.copy(mini.cam.pos); camera.lookAt(mini.cam.tgt); return; }
   if (goblin && goblin.cam) { camera.position.copy(goblin.cam.pos); camera.lookAt(goblin.cam.tgt); if (shake > 0.001) { camera.position.x += (Math.random() - .5) * shake; camera.position.y += (Math.random() - .5) * shake; shake *= 0.9; } return; }
   const follow = goblin && goblin.G;
   const followR = (goblin && (goblin.followCoin ? 11 : goblin.camR)) || 7.5;
@@ -907,7 +929,7 @@ function renderUI() {
   $('#turn').innerHTML = ok ? `Turn: <b style="color:${lighten(cur.color)}">${esc(cur.name)}</b>` : 'Add at least 2 players';
   $('#tossBtn').disabled = !ok || !!toss || !!goblin;
   document.body.classList.toggle('mini', !!mini);
-  $('#tossBtn').innerHTML = (mini ? (mini.type === 'hot' ? '🔥 Pass it!' : mini.type === 'roulette' ? '🎰 Spinning…' : mini.type === 'cups' ? '🥤 Pick a cup' : '👊 Hit!') : aim.mode === 'lock' ? '🪙 Throw!' : '🎯 Flip the coin') + ' <kbd>Space</kbd>';
+  $('#tossBtn').innerHTML = (mini ? (mini.type === 'hot' ? '🔥 Pass it!' : mini.type === 'roulette' ? '🎰 Spinning…' : mini.type === 'cups' ? '🥤 Pick a cup' : mini.type === 'hilo' ? '🃏 Higher or lower?' : mini.type === 'tos' ? '🥃 Truth or shot?' : mini.type === 'fieldgoal' ? '🏈 Kick!' : '👊 Hit!') : aim.mode === 'lock' ? '🪙 Throw!' : '🎯 Flip the coin') + ' <kbd>Space</kbd>';
   if (mini) $('#tossBtn').disabled = mini.stage !== 'play' || mini.type === 'roulette' || mini.type === 'cups';
   const rr = $('#roundRule'); if (rr) { if (state.roundRule && !mini) { rr.innerHTML = `🎰 This round, everyone: <b>${esc(state.roundRule.text)}</b> · ${state.roundRule.left} turn${state.roundRule.left === 1 ? '' : 's'} left`; rr.classList.add('on'); } else rr.classList.remove('on'); }
   hostPublish(); if (typeof renderLobby === 'function') renderLobby();
@@ -1106,6 +1128,7 @@ function evaluate(x, z) {
   } else if (rh.length) {
     const r = rh[0]; pulse(r);
     state.rounds++; showResult(`📜 ${r.text}`, `👉 ${tosser.name} has to do it!  ·  rule #${state.rules.indexOf(r) + 1}, written by ${r.byId === tosser.id ? 'you 😈' : r.by}`, r.color, 'big'); addLog(`📜 ${tosser.name} → "${r.text}"`);
+    if (/field\s*-?\s*goal/i.test(r.text)) { const kid = tosser.id; setTimeout(() => { if (mini || goblin || toss || gameOver) return; startMini('fieldgoal'); if (mini) mini.who = kid; }, 2400); }
     advance();
   } else openRuleModal(x, z, tosser);
 }
@@ -1612,15 +1635,17 @@ function bagPick(key, list) {
 const OUTFITS = ['reaper', 'arrow', 'cone', 'prisoner', 'tinfoil', 'clown', 'baby', 'angel', 'viking', 'chef', 'plunger', 'hospital', 'mummy'];
 const HEAD_OUTFITS = new Set(['reaper', 'arrow', 'cone', 'tinfoil', 'clown', 'angel', 'viking', 'chef', 'plunger', 'mummy']);
 function startGoblin(coinPos, forceAct) {
-  const plan = { entr: pickOther(['walk', 'sky', 'lid', 'burrow'], lastGob.entr), act: forceAct || bagPick('act', ['eat', 'burp', 'juggle', 'bite', 'hat', 'polish', 'casino', 'surf', 'golf', 'wedding', 'summon', 'sneeze', 'booger', 'fartcannon', 'rockstar', 'ballet', 'breakdance', 'opera', 'thief', 'insult', 'clones', 'giant', 'plane', 'neptune', 'sting']), exit: pickOther(['jump', 'rocket', 'burrow', 'run'], lastGob.exit) };
+  const plan = { entr: pickOther(['walk', 'sky', 'lid', 'burrow'], lastGob.entr), act: forceAct || bagPick('act', ['eat', 'burp', 'juggle', 'bite', 'hat', 'polish', 'casino', 'surf', 'golf', 'wedding', 'summon', 'sneeze', 'booger', 'fartcannon', 'rockstar', 'ballet', 'breakdance', 'opera', 'thief', 'insult', 'clones', 'giant', 'plane', 'neptune', 'sting', 'smite']), exit: pickOther(['jump', 'rocket', 'burrow', 'run'], lastGob.exit) };
   if (plan.entr === 'burrow' && plan.exit === 'burrow') plan.exit = 'rocket';
   if (plan.act === 'plane') plan.exit = 'run';
   if (plan.act === 'sting') { plan.entr = 'walk'; plan.exit = 'run'; }
+  if (plan.act === 'smite') plan.entr = pickOther(['walk', 'lid', 'burrow'], lastGob.entr);
   lastGob = plan;
   let outfit = Math.random() < 0.8 ? bagPick('outfit', OUTFITS) : 'none';
   if (plan.act === 'sting' && ['reaper', 'hospital', 'clown', 'angel'].includes(outfit)) outfit = 'none';
+  if (plan.act === 'smite') outfit = 'none';
   if (plan.act === 'hat' && HEAD_OUTFITS.has(outfit)) outfit = pickOther(['prisoner', 'baby', 'hospital', 'none'], '');
-  const hat = HEAD_OUTFITS.has(outfit) ? 'none' : plan.act === 'hat' ? pickOther(['none', 'bandana'], '') : pickOther(['none', 'party', 'crown', 'tophat', 'bandana'], lastGob.hat);
+  const hat = (HEAD_OUTFITS.has(outfit) || plan.act === 'smite') ? 'none' : plan.act === 'hat' ? pickOther(['none', 'bandana'], '') : pickOther(['none', 'party', 'crown', 'tophat', 'bandana'], lastGob.hat);
   const G = buildGoblin({ skin: SKINS[Math.floor(Math.random() * SKINS.length)], eye: pickOther(['#ffe14d', '#ff5a3c', '#b6ff4d', '#ffffff'], ''), hat, outfit, size: 1.15 + Math.random() * 0.35 });
   scene.add(G.root);
   const laughBase = 230 + Math.random() * 160;
@@ -2162,6 +2187,64 @@ function startGoblin(coinPos, forceAct) {
     S2(1.0, u => { G.jaw.scale.y = 0.32; G.head.rotation.y = 0.8 * Math.sin(Math.PI * u * 0.5); G.head.rotation.x = 0; }, () => speak('Oops.', 0.7, 0.9));
     coinArc(() => onFloor(stand.clone().addScaledVector(fwd(), 1.0)), 0.8, 0.6, 2);
     land();
+  } else if (plan.act === 'smite') {
+    // a strutting little dictator grabs the coin, rants, marches off… and gets smitten from above
+    const camY = () => Math.atan2(camera.position.x - G.root.position.x, camera.position.z - G.root.position.z);
+    const M = c => new THREE.MeshStandardMaterial({ color: c, roughness: 0.6 });
+    const capG = new THREE.Group(); capG.position.y = -0.02; G.headTop.add(capG);
+    const crown = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.22, 0.2, 24), M('#4a4f3a')); crown.position.y = 0.08; crown.rotation.x = -0.12; capG.add(crown);
+    const band = new THREE.Mesh(new THREE.CylinderGeometry(0.225, 0.225, 0.06, 24), M('#1a1a1a')); band.position.y = 0.0; capG.add(band);
+    const visor = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, 0.02, 20, 1, false, -Math.PI / 2, Math.PI), new THREE.MeshStandardMaterial({ color: '#111', roughness: 0.2, metalness: 0.3 })); visor.position.set(0, -0.02, 0.1); visor.scale.set(1, 1, 0.9); visor.rotation.x = 0.25; capG.add(visor);
+    const badge = new THREE.Mesh(new THREE.SphereGeometry(0.035, 10, 8), new THREE.MeshStandardMaterial({ color: '#d9b44a', metalness: 0.9, roughness: 0.3 })); badge.position.set(0, 0.07, 0.29); capG.add(badge);
+    const stache = new THREE.Mesh(new THREE.BoxGeometry(0.13, 0.065, 0.05), M('#14100c')); stache.position.copy(G.nose.position).add(new THREE.Vector3(0, -0.12, 0.02)); G.head.add(stache);
+    const arm = new THREE.Mesh(new THREE.CylinderGeometry(0.085, 0.085, 0.07, 14, 1, true), new THREE.MeshStandardMaterial({ color: '#b3121e', side: THREE.DoubleSide })); arm.position.y = -0.22; G.arms[0].add(arm);
+    G.legs.forEach(l => { const bt = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.07, 0.32, 14), new THREE.MeshStandardMaterial({ color: '#0c0c0c', roughness: 0.25, metalness: 0.2 })); bt.position.y = -0.22; l.add(bt); });
+    const env = { exp: renderer.toneMappingExposure, sun: sun.intensity, bg: scene.background && scene.background.isColor ? scene.background.clone() : null };
+    let beam = null, bolt = null, flashL = null, chars = [], a0, a1, ashY = 0;
+    const marchTo = (A, B, dur) => S2(dur, u => { G.root.position.lerpVectors(A(), B(), u); G.root.rotation.y = yawTo(A(), B()); const ph = u * dur * 6; G.legs[0].rotation.x = -1.2 * Math.max(0, Math.sin(ph)); G.legs[1].rotation.x = -1.2 * Math.max(0, -Math.sin(ph)); G.body.position.y = 0.45 + 0.05 * Math.abs(Math.sin(ph)); G.arms[0].rotation.x = 0.4 * Math.sin(ph); G.arms[1].rotation.x = -2.9; G.body.rotation.x = -0.08; if (Math.floor(ph / Math.PI) !== Math.floor((ph - 0.2) / Math.PI)) thudSfx(0.25); });
+    cleanups.push(() => { renderer.toneMappingExposure = env.exp; sun.intensity = env.sun; if (env.bg) scene.background.copy(env.bg); [beam, bolt, flashL].forEach(o => o && o.parent && o.parent.remove(o)); });
+    standUp(0.3);
+    // triumphant: coin held high, ranting at the camera
+    S2(0.4, u => { G.root.rotation.y = lerpAng(G.root.rotation.y, camY(), u); G.arms[1].rotation.x = -1.6 - 1.3 * ease(u); }, () => {});
+    S2(2.2, u => { G.root.rotation.y = camY(); G.arms[1].rotation.x = -2.9; G.arms[0].rotation.x = -0.4 - 0.9 * Math.abs(Math.sin(u * 14)); G.arms[0].rotation.z = -0.4; G.jaw.scale.y = 0.32 + 0.7 * Math.abs(Math.sin(u * 30)); G.head.rotation.x = -0.15 + 0.15 * Math.sin(u * 15); G.body.rotation.z = 0.06 * Math.sin(u * 15); const st = Math.sin(u * 18); G.legs[0].rotation.x = st > 0.7 ? -0.6 : 0; },
+      () => { speak('MINE! The coin is MINE! All of it belongs to ME!', 0.45, 1.3); [0, 0.25, 0.5, 0.75, 1.0, 1.25].forEach(d => tone('square', 130 + Math.random() * 60, 90, 0.18, 0.05, d)); });
+    // marches toward the edge with his prize
+    S2(0.01, () => {}, () => { neutral(); a0 = G.root.position.clone(); a1 = new THREE.Vector3(clamp(a0.x + side * 1.6, -HALF + 0.5, HALF - 0.5), TOP, a0.z); });
+    marchTo(() => a0, () => a1, 1.5);
+    // the sky goes dark… a beam of light finds him
+    S2(1.1, u => { renderer.toneMappingExposure = env.exp * (1 - 0.65 * u); sun.intensity = env.sun * (1 - 0.8 * u); G.head.rotation.x = -0.7 * ease(u); G.arms[1].rotation.x = -2.9; G.legs.forEach(l => l.rotation.x = 0); if (beam) { beam.material.opacity = 0.42 * u; beam.scale.x = beam.scale.z = 0.4 + 0.6 * u; } }, () => {
+      rumbleSfx && rumbleSfx(1.6);
+      beam = new THREE.Mesh(new THREE.CylinderGeometry(0.75, 0.75, 24, 32, 1, true), new THREE.MeshBasicMaterial({ color: '#fff2b0', transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
+      beam.position.copy(G.root.position).setY(TOP + 12); scene.add(beam);
+      [440, 554, 659, 880].forEach((f, i) => tone('sine', f, f, 2.8, 0.05, i * 0.08));
+    });
+    S2(0.9, u => { G.jaw.scale.y = 0.32 + 0.6 * ease(u); G.body.position.y = 0.45 + 0.03 * Math.sin(u * 60); G.arms[1].rotation.x = -2.9; }, () => speak('No.', 0.1, 0.6));
+    // SMITE
+    S2(0.6, u => { if (bolt) bolt.visible = (u * 14 | 0) % 2 === 0 || u < 0.15; if (flashL) flashL.intensity = 30 * (1 - u); shake = Math.max(shake, 0.6 * (1 - u)); }, () => {
+      const P = wpos(G.headTop); bolt = new THREE.Group(); const bm = new THREE.MeshBasicMaterial({ color: '#eaf6ff' }), gm = new THREE.MeshBasicMaterial({ color: '#9fd0ff', transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending, depthWrite: false });
+      let prev = P.clone().add(new THREE.Vector3((Math.random() - 0.5) * 2, 16, (Math.random() - 0.5) * 2));
+      for (let i = 1; i <= 12; i++) { const nx = i === 12 ? P.clone() : prev.clone().lerp(P, 1 / (13 - i)).add(new THREE.Vector3((Math.random() - 0.5) * 0.9, 0, (Math.random() - 0.5) * 0.9)); const len = prev.distanceTo(nx), mid = prev.clone().add(nx).multiplyScalar(0.5);
+        [[0.05, bm], [0.16, gm]].forEach(([r, m]) => { const seg = new THREE.Mesh(new THREE.CylinderGeometry(r, r, len, 6), m); seg.position.copy(mid); seg.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), nx.clone().sub(prev).normalize()); bolt.add(seg); }); prev = nx; }
+      scene.add(bolt); flashL = new THREE.PointLight('#cfe8ff', 30, 14); flashL.position.copy(P).add(new THREE.Vector3(0, 1, 0)); scene.add(flashL);
+      screenFlash(); boomSfx(); noiseSfx('highpass', 6000, 800, 0.5, 0.9, 1); goblin.hold = true;
+      G.root.traverse(o => { if (o.isMesh && o.material) { o.material = o.material.clone(); chars.push({ m: o.material, c: o.material.color ? o.material.color.clone() : null }); } });
+    });
+    // fried: blackened, smoking, flickering embers
+    S2(2.0, u => { const k = Math.min(1, u * 3); chars.forEach(c => { if (c.c) c.m.color.copy(c.c).lerp(new THREE.Color('#15110e'), k); if (c.m.emissive) { c.m.emissive.setRGB(1, 0.35, 0.05); c.m.emissiveIntensity = 0.6 * (1 - u) * (0.5 + 0.5 * Math.sin(u * 70 + Math.random())); } });
+      G.arms[1].rotation.x = -2.9; G.arms[0].rotation.x = -2.7; G.head.rotation.x = -0.3; G.jaw.scale.y = 0.9; G.body.position.y = 0.45 + 0.02 * Math.sin(u * 90) * (1 - u);
+      if (Math.random() < 0.35) spawnParts(wpos(G.body).add(new THREE.Vector3((Math.random() - .5) * 0.5, 0.3, (Math.random() - .5) * 0.5)), 2, { colors: ['#ff7a1a', '#ffb347', '#ff3d00'], size: 0.04, shape: 'box', speed: 0.6, up: 2.2, life: 0.8, gravity: -1 }); },
+      () => { if (bolt) { scene.remove(bolt); bolt = null; } if (flashL) { scene.remove(flashL); flashL = null; } for (let i = 0; i < 6; i++) setTimeout(() => goblin && spawnGas(wpos(G.body).add(new THREE.Vector3(0, 0.4, 0)), false, i % 2 ? '#333333' : '#555555'), i * 260); tone('sawtooth', 120, 60, 1.6, 0.06); setTimeout(() => speak('ow.', 0.5, 0.8), 600); });
+    // crumbles into a pile of ash; the coin drops back to its spot
+    S2(1.1, u => { const e = ease(u); G.root.scale.set(G.root.scale.x, Math.max(0.02, 1 - e) * G.root.scale.x, G.root.scale.x); if (beam) beam.material.opacity = 0.42 * (1 - u); renderer.toneMappingExposure = env.exp * (0.35 + 0.65 * u); sun.intensity = env.sun * (0.2 + 0.8 * u); }, () => {
+      goblin.hold = false; noiseSfx('lowpass', 900, 200, 1.0, 0.5, 1);
+      spawnParts(G.root.position.clone().setY(TOP + 0.5), 60, { colors: ['#2a2622', '#4a4540', '#6b655e', '#1a1714'], size: 0.06, shape: 'box', speed: 1.6, up: 1.4, life: 2.2, gravity: 8 });
+      from = coin.position.clone();
+    });
+    S2(0.7, u => { coin.position.lerpVectors(from, coinRest, u); coin.position.y += 4 * 0.9 * u * (1 - u); coin.rotation.x = u * Math.PI * 4; }, () => {});
+    S2(0.05, () => {}, () => { coin.position.copy(coinRest); coin.rotation.set(0, Math.random() * 6, 0); clink(0.6, false); });
+    S2(0.01, () => {}, () => { const pile = new THREE.Mesh(new THREE.ConeGeometry(0.32, 0.16, 18), M('#3a3632')); pile.position.copy(G.root.position).setY(TOP + 0.08); scene.add(pile); cleanups.push(() => scene.remove(pile)); const cap2 = capG; scene.attach(cap2); cap2.position.copy(pile.position).add(new THREE.Vector3(0.05, 0.1, 0)); cap2.rotation.set(0.3, 0, 0.5); cleanups.push(() => scene.remove(cap2)); G.root.children.forEach(c => c.visible = false); });
+    S2(1.4, () => {}, () => { if (beam) { scene.remove(beam); beam = null; } renderer.toneMappingExposure = env.exp; sun.intensity = env.sun; });
+    plan.exit = 'none';
   } else if (plan.act === 'thief') {
     // tiptoes off with the coin... then sprints back: just kidding!
     const camY = () => Math.atan2(camera.position.x - G.root.position.x, camera.position.z - G.root.position.z);
@@ -2714,6 +2797,162 @@ function miniBanner(html, sub) { $('#miniTitle').innerHTML = html; $('#miniSub')
 function screenFlash() { const f = $('#flash'); f.classList.remove('on'); void f.offsetWidth; f.classList.add('on'); }
 function hostPublishSoon() { if (miniPubT) return; miniPubT = setTimeout(() => { miniPubT = null; hostPublish(); }, 150); }
 function miniPlayers() { return state.players.slice(); }
+// ---------- new mini-games: Higher or Lower · Truth or Shot · Field Goal (rule only) ----------
+const TRUTHS = ["What's the most embarrassing thing you've done while drunk?", "Who here would you call to help you move a couch at 3am?", "What's your worst habit?", "What's the last lie you told?", "What's the weirdest thing you've ever eaten?", "Who was your first crush?",
+  "What song do you secretly love but would never admit to?", "What's the worst gift you've ever received?", "What's something you've never told your parents?", "Have you ever ghosted someone?", "What's the pettiest thing you've ever done?", "What's your biggest red flag?",
+  "Who in this room would survive a zombie apocalypse the longest?", "What's the most money you've wasted on something dumb?", "What's your worst date ever?", "What's the strangest dream you remember?", "What's a secret talent nobody here knows about?", "Who in this room is the funniest?",
+  "What's the most trouble you got into at school?", "What's your guilty-pleasure TV show?", "Have you ever pretended to like a gift? What was it?", "What's the most childish thing you still do?", "What's your most-used emoji?", "What was the last thing you searched on your phone?",
+  "What would you do with a million euros?", "If you could swap lives with someone here for a day, who would it be?", "What's the worst haircut you've ever had?", "What's the dumbest way you've ever hurt yourself?", "Who do you text the most?", "What's your biggest fear?",
+  "What's the most embarrassing thing in your camera roll?", "Have you ever cheated at a game? Which one?", "What's something you're secretly proud of?", "What's the worst thing you've ever cooked?", "What's an unpopular opinion you have?", "Which goblin animation is your favourite?",
+  "What's the most awkward thing that's happened to you this year?", "Who here would you trust with your phone unlocked?", "What's your go-to karaoke song?", "What's the weirdest rumour you've heard about yourself?", "Have you ever fallen asleep somewhere weird? Where?", "What's your most irrational fear?",
+  "Who was the last person you looked up on social media?", "What's the cringiest thing you've ever posted online?", "What's the best compliment you've ever received?", "What's something you'd never do again?", "What's the craziest thing on your bucket list?", "What's your worst travel story?",
+  "Describe your perfect pizza.", "What's the most rebellious thing you've ever done?", "If you had to delete one app forever, which would it be?", "Who here gives the best advice?", "What's the weirdest thing you do when you're alone?", "What's your most embarrassing nickname?",
+  "What's the biggest lie you told as a kid?", "Who here would make the worst roommate?"];
+const CARD_R = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'], CARD_S = ['♠', '♥', '♦', '♣'];
+const drawCard = () => ({ r: 2 + Math.floor(Math.random() * 13), s: Math.floor(Math.random() * 4) });
+const cardTxt = c => c ? CARD_R[c.r - 2] + CARD_S[c.s] : '';
+const cardHTML = (c, cls = '') => c ? `<div class="pcard ${c.s === 1 || c.s === 2 ? 'red' : ''} ${cls}"><b>${CARD_R[c.r - 2]}</b><i>${CARD_S[c.s]}</i><b class="b2">${CARD_R[c.r - 2]}</b></div>` : `<div class="pcard back ${cls}"></div>`;
+const pById = id => state.players.find(p => String(p.id) === String(id));
+const pName = p => `<span style="color:${lighten(p.color)}">${esc(p.name)}</span>`;
+function gp(title, body, btns) { $('#gamePanel').classList.add('on'); $('#gpTitle').innerHTML = title; $('#gpBody').innerHTML = body; $('#gpBtns').innerHTML = btns || ''; }
+function gpOff() { $('#gamePanel').classList.remove('on'); }
+const hasPhone = p => claimed.has(String(p.id));
+// --- Higher or Lower ---
+function hlBegin() { mini.order = miniPlayers().slice().sort(() => Math.random() - 0.5); mini.idx = 0; mini.card = drawCard(); mini.drinkers = []; mini.n = 0; hlTurn(); }
+function hlTurn() {
+  const p = mini.order[mini.idx]; mini.who = p.id; mini.sub = 'guess'; mini.st = 0; mini.wait = 12; mini.next = null; mini.verdict = null; mini.n++;
+  miniBanner('🃏 HIGHER OR LOWER? 🃏', `${pName(p)}'s guess · ${mini.idx + 1}/${mini.order.length}`);
+  gp(`Is the next card higher or lower?`, `<div class="cards">${cardHTML(mini.card)}${cardHTML(null)}</div>`,
+    (hasPhone(p) ? `<small>📱 ${esc(p.name)} — guess on your phone (or tap here)</small><br>` : '') + `<button data-gp="hl" data-v="h">⬆️ Higher</button><button data-gp="hl" data-v="l">⬇️ Lower</button>`);
+  renderUI(); hostPublish();
+}
+function hlGuess(pid, g) {
+  if (!mini || mini.type !== 'hilo' || mini.sub !== 'guess' || (pid != null && String(pid) !== String(mini.who))) return;
+  const p = pById(mini.who), nx = drawCard(), same = nx.r === mini.card.r, ok = !same && ((g === 'h' && nx.r > mini.card.r) || (g === 'l' && nx.r < mini.card.r));
+  mini.sub = 'reveal'; mini.st = 0; mini.next = nx;
+  mini.verdict = same ? 'Same card — drink! 🍺' : ok ? '✅ Safe!' : g ? '❌ Wrong — drink! 🍺' : '⏰ Too slow — drink! 🍺';
+  gp(g ? `${pName(p)} said <b>${g === 'h' ? 'HIGHER ⬆️' : 'LOWER ⬇️'}</b>` : `${pName(p)} ran out of time`, `<div class="cards">${cardHTML(mini.card)}${cardHTML(nx, 'flip')}</div><div class="verdict ${ok ? 'ok' : 'bad'}">${mini.verdict}</div>`, '');
+  tone('triangle', 600, 900, 0.15, 0.08);
+  setTimeout(() => { if (!mini || mini.type !== 'hilo') return; if (ok) dingSfx(); else { tone('sawtooth', 300, 140, 0.45, 0.12); drink(p); mini.drinkers.push(p.name); renderUI(); } }, 550);
+  mini.card = nx; hostPublish();
+}
+function stepHL(dt) {
+  mini.st += dt;
+  if (mini.sub === 'guess') { const l = Math.ceil(mini.wait - mini.st); if (l !== mini.left) { mini.left = l; hostPublishSoon(); } if (mini.st > mini.wait) hlGuess(null, null); }
+  else if (mini.sub === 'reveal' && mini.st > 2.6) {
+    mini.idx++;
+    if (mini.idx < mini.order.length) hlTurn();
+    else { mini.stage = 'done'; mini.t = 0; mini.sub = 'end'; const d = mini.drinkers; gp('🃏 Higher or Lower — done!', `<div class="verdict">${d.length ? 'Drinks: <b>' + d.map(esc).join(', ') + '</b>' : 'Nobody got it wrong! 🎉'}</div>`, '');
+      showResult('🃏 Higher or Lower', d.length ? `Drinks: ${d.join(', ')}` : 'Everyone guessed right — nobody drinks!', '#ffd84a'); addLog(`🃏 Higher or Lower${d.length ? ' — ' + d.join(', ') + ' drank' : ''}`); renderUI(); hostPublish(); }
+  }
+}
+// --- Truth or Shot ---
+function tosBegin() { const ps = miniPlayers().slice().sort(() => Math.random() - 0.5); mini.order = ps.slice(0, ps.length >= 3 ? 2 : 1); mini.idx = 0; mini.n = 0; tosTurn(); }
+function tosTurn() {
+  const p = mini.order[mini.idx]; mini.who = p.id; mini.sub = 'choose'; mini.st = 0; mini.wait = 15; mini.q = null; mini.n++;
+  miniBanner('🥃 TRUTH OR SHOT? 🥃', `${pName(p)}, choose…`);
+  gp(`${pName(p)} — truth or shot?`, `<div class="tos-big">🤔 <small>or</small> 🥃</div>`, (hasPhone(p) ? `<small>📱 choose on your phone (or tap here)</small><br>` : '') + `<button data-gp="tos" data-v="truth">🤔 Truth</button><button data-gp="tos" data-v="shot">🥃 Shot</button>`);
+  tone('sine', 500, 700, 0.3, 0.08); renderUI(); hostPublish();
+}
+function tosChoose(pid, c) {
+  if (!mini || mini.type !== 'tos' || (pid != null && String(pid) !== String(mini.who))) return;
+  const p = pById(mini.who);
+  if (c === 'truth' && mini.sub === 'choose') {
+    mini.sub = 'truth'; mini.st = 0; mini.wait = 45; mini.q = bagPick('truth', TRUTHS);
+    miniBanner('🤔 TRUTH!', `${pName(p)} has to answer — out loud, honestly!`);
+    gp(`${pName(p)} picked TRUTH`, `<div class="tos-q">“${esc(mini.q)}”</div>`, `<button data-gp="tos" data-v="done">✅ Answered</button><button data-gp="tos" data-v="shot">🐔 Chicken out → shot</button>`);
+    dingSfx(); speak(mini.q, 0.95, 1.0);
+  } else if (c === 'shot' && (mini.sub === 'choose' || mini.sub === 'truth')) {
+    const chicken = mini.sub === 'truth'; mini.sub = 'shot'; mini.st = 0; mini.wait = 3.8; drink(p, 2);
+    miniBanner('🥃 SHOT!', chicken ? `${pName(p)} chickened out 🐔` : `${pName(p)} takes the shot`);
+    gp(chicken ? `🐔 ${pName(p)} chickened out!` : `${pName(p)} picked SHOT`, `<div class="tos-big">🥃</div><div class="verdict bad">Take the shot!</div>`, '');
+    tone('sawtooth', 200, 400, 0.3, 0.1); addLog(`🥃 ${p.name} took a shot${chicken ? ' (chickened out of the truth)' : ''}`); renderUI();
+  } else if (c === 'done' && mini.sub === 'truth') { mini.sub = 'answered'; mini.st = 0; mini.wait = 1.6; gp(`${pName(p)} told the truth!`, `<div class="verdict ok">✅ Respect.</div>`, ''); dingSfx(); addLog(`🤔 ${p.name} answered a truth`); }
+  else return;
+  hostPublish();
+}
+function stepTOS(dt) {
+  mini.st += dt;
+  const l = Math.ceil(mini.wait - mini.st); if (l !== mini.left) { mini.left = l; hostPublishSoon(); }
+  if (mini.sub === 'choose' && mini.st > mini.wait) tosChoose(null, 'shot');
+  else if (mini.sub === 'truth' && mini.st > mini.wait) tosChoose(null, 'done');
+  else if ((mini.sub === 'shot' || mini.sub === 'answered') && mini.st > mini.wait) {
+    mini.idx++;
+    if (mini.idx < mini.order.length) tosTurn();
+    else { mini.stage = 'done'; mini.t = 0; mini.sub = 'end'; gpOff(); showResult('🥃 Truth or Shot', 'Back to the box!', '#ffd84a'); renderUI(); hostPublish(); }
+  }
+}
+// --- Field goal (only from a "field goal" rule) ---
+function fgBegin() {
+  const p = pById(mini.who) || miniPlayers()[0]; mini.who = p.id; mini.n = 1;
+  const g = new THREE.Group(); scene.add(g); mini.fg = { g };
+  const yel = new THREE.MeshStandardMaterial({ color: '#ffd400', roughness: 0.35, metalness: 0.2 });
+  const pz = -HALF + 0.55, cb = TOP + 1.05, hw = 0.9;
+  const cylY = (r, h, x, y, z) => { const m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, h, 12), yel); m.position.set(x, y, z); m.castShadow = true; g.add(m); return m; };
+  cylY(0.05, cb - TOP, 0, TOP + (cb - TOP) / 2, pz - 0.35); const arm = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, 0.35, 10), yel); arm.rotation.x = Math.PI / 2; arm.position.set(0, cb, pz - 0.18); g.add(arm);
+  const bar = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, hw * 2, 12), yel); bar.rotation.z = Math.PI / 2; bar.position.set(0, cb, pz); bar.castShadow = true; g.add(bar);
+  [-hw, hw].forEach(x => { cylY(0.04, 1.9, x, cb + 0.95, pz); const fl = new THREE.Mesh(new THREE.PlaneGeometry(0.12, 0.3), new THREE.MeshStandardMaterial({ color: '#ff3b30', side: THREE.DoubleSide })); fl.position.set(x + 0.07, cb + 1.85, pz); g.add(fl); });
+  // turf stripe + yard lines on the cardboard
+  const turf = new THREE.Mesh(new THREE.PlaneGeometry(2.6, HALF * 2 - 0.4), new THREE.MeshStandardMaterial({ color: '#3f8f3a', roughness: 0.9 })); turf.rotation.x = -Math.PI / 2; turf.position.set(0, TOP + 0.004, 0); turf.receiveShadow = true; g.add(turf);
+  for (let k = -3; k <= 3; k++) { const ln = new THREE.Mesh(new THREE.PlaneGeometry(2.6, 0.04), new THREE.MeshBasicMaterial({ color: '#ffffff' })); ln.rotation.x = -Math.PI / 2; ln.position.set(0, TOP + 0.007, k * 1.2); g.add(ln); }
+  // ball
+  const ball = new THREE.Group(); const bm = new THREE.Mesh(new THREE.SphereGeometry(0.15, 24, 16), new THREE.MeshStandardMaterial({ color: '#7a3b16', roughness: 0.55 })); bm.scale.set(1, 0.68, 0.68); bm.rotation.y = Math.PI / 2; bm.castShadow = true; ball.add(bm);
+  const lace = new THREE.Mesh(new THREE.BoxGeometry(0.012, 0.012, 0.11), new THREE.MeshStandardMaterial({ color: '#ffffff' })); lace.position.set(0, 0.1, 0); ball.add(lace);
+  for (let i = -2; i <= 2; i++) { const l = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.012, 0.012), lace.material); l.position.set(0, 0.1, i * 0.02); ball.add(l); }
+  ball.position.set(0, TOP + 0.1, 2.9); ball.rotation.x = -0.3; g.add(ball); mini.fg.ball = ball;
+  const tee = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.08, 0.05, 12), new THREE.MeshStandardMaterial({ color: '#ff7a00' })); tee.position.set(0, TOP + 0.025, 2.9); g.add(tee);
+  // aim arrow
+  const ag = new THREE.Shape(); ag.moveTo(-0.07, 0); ag.lineTo(0.07, 0); ag.lineTo(0.07, 1.0); ag.lineTo(0.2, 1.0); ag.lineTo(0, 1.35); ag.lineTo(-0.2, 1.0); ag.lineTo(-0.07, 1.0); ag.lineTo(-0.07, 0);
+  const arrow = new THREE.Mesh(new THREE.ShapeGeometry(ag), new THREE.MeshBasicMaterial({ color: '#ffd84a', transparent: true, opacity: 0.9, side: THREE.DoubleSide })); arrow.rotation.x = -Math.PI / 2; const ap = new THREE.Group(); ap.position.set(0, TOP + 0.02, 2.75); ap.add(arrow); g.add(ap); mini.fg.ap = ap;
+  // the kicker
+  const K = buildGoblin({ skin: '#5fae3a', eye: '#ffe14d', hat: 'none', outfit: 'none', size: 0.5 }); K.root.position.set(-0.32, TOP, 3.55); K.root.rotation.y = Math.PI - 0.35; g.add(K.root); mini.fg.K = K;
+  const helm = new THREE.Mesh(new THREE.SphereGeometry(0.3, 20, 14, 0, Math.PI * 2, 0, Math.PI * 0.55), new THREE.MeshStandardMaterial({ color: '#c8102e', roughness: 0.3, metalness: 0.2 })); helm.position.set(0, 0.2, 0.02); K.head.add(helm);
+  mini.fg.pz = pz; mini.fg.cb = cb; mini.fg.hw = hw;
+  mini.cam = { pos: new THREE.Vector3(1.6, TOP + 2.6, 7.4), tgt: new THREE.Vector3(0, TOP + 0.8, -1.2) };
+  mini.sub = 'aim'; mini.st = 0; mini.ang = 0; mini.pow = 0; mini.wait = 10;
+  miniBanner('🏈 FIELD GOAL! 🏈', `${pName(p)} — miss and you drink!`);
+  fgUI(); renderUI(); hostPublish();
+}
+function fgUI() {
+  const p = pById(mini.who); const btn = `<button data-gp="kick">🏈 ${mini.sub === 'aim' ? 'Lock aim' : 'KICK!'}</button>`;
+  $('#fgMeter').classList.toggle('on', mini.sub === 'power');
+  gp(mini.sub === 'aim' ? `Step 1: lock the aim 🎯` : mini.sub === 'power' ? `Step 2: pick the power 💪` : '', '', (mini.sub === 'aim' || mini.sub === 'power') ? (hasPhone(p) ? `<small>📱 ${esc(p.name)}: tap on your phone · or Space / tap here</small><br>` : '<small>Space or tap</small><br>') + btn : '');
+  $('#gamePanel').classList.add('fg');
+}
+function fgPress(pid) {
+  if (!mini || mini.type !== 'fieldgoal' || (pid != null && String(pid) !== String(mini.who))) return;
+  if (mini.sub === 'aim') { mini.sub = 'power'; mini.st = 0; tone('square', 700, 700, 0.08, 0.1); fgUI(); hostPublish(); }
+  else if (mini.sub === 'power') {
+    mini.sub = 'kick'; mini.st = 0; $('#fgMeter').classList.remove('on'); gpOff();
+    const v = 6.2 + mini.pow * 5.6, el = 0.82;
+    mini.fg.v = new THREE.Vector3(Math.sin(mini.ang) * v * Math.cos(el), v * Math.sin(el), -Math.cos(mini.ang) * v * Math.cos(el)); hostPublish();
+  }
+}
+function stepFG(dt) {
+  const F = mini.fg; mini.st += dt;
+  if (mini.sub === 'aim') { mini.ang = 0.5 * Math.sin(mini.st * 2.7); F.ap.rotation.y = -mini.ang; if (mini.st > mini.wait) fgPress(null); }
+  else if (mini.sub === 'power') { const k = (mini.st * 2.1) % 2; mini.pow = k < 1 ? k : 2 - k; $('#fgFill').style.height = (mini.pow * 100) + '%'; if (mini.st > mini.wait) fgPress(null); }
+  else if (mini.sub === 'kick') {
+    const K = F.K, u = Math.min(1, mini.st / 0.45);
+    K.root.position.lerpVectors(new THREE.Vector3(-0.32, TOP, 3.55), new THREE.Vector3(-0.12, TOP, 3.05), u); K.legs[1].rotation.x = u < 0.8 ? 0.9 * (u / 0.8) : 0.9 - 2.6 * ((u - 0.8) / 0.2); K.arms[0].rotation.x = -1.2 * u;
+    if (u >= 1) { mini.sub = 'flight'; mini.st = 0; thudSfx(0.9); tone('square', 160, 90, 0.12, 0.2); F.ap.visible = false; F.crossed = false; }
+  } else if (mini.sub === 'flight') {
+    const B = F.ball, prevZ = B.position.z; for (let i = 0; i < 4; i++) { F.v.y -= 9.8 * dt / 4; B.position.addScaledVector(F.v, dt / 4); } B.rotation.x -= dt * 14;
+    mini.cam.tgt.lerp(B.position, 0.06); mini.cam.pos.lerp(B.position.clone().add(new THREE.Vector3(1.4, 1.6, 5.0)), 0.025);
+    if (!F.crossed && prevZ > F.pz && B.position.z <= F.pz) { F.crossed = true; F.good = Math.abs(B.position.x) < F.hw - 0.05 && B.position.y > F.cb + 0.05; fgResult(F.good, B.position.y <= F.cb + 0.05 ? (Math.abs(B.position.x) < F.hw ? 'short' : 'wide') : 'wide'); }
+    if (B.position.y < TOP + 0.1) { B.position.y = TOP + 0.1; F.v.y = Math.abs(F.v.y) * 0.4; F.v.x *= 0.6; F.v.z *= 0.6; if (!F.crossed) { F.crossed = true; fgResult(false, 'short'); } }
+    if (B.position.z < -HALF + 0.15) { B.position.z = -HALF + 0.15; F.v.z = Math.abs(F.v.z) * 0.3; }
+    if (mini.st > 3.2 && mini.stage !== 'done') { mini.stage = 'done'; mini.t = 0; }
+  }
+}
+function fgResult(good, why) {
+  const p = pById(mini.who); if (!p) return;
+  if (good) { miniBanner("🏈 IT'S GOOD! 🏈", `${pName(p)} nailed it — no drink!`); dingSfx(); noiseSfx('bandpass', 800, 2400, 1.4, 0.35, 1); for (let i = 0; i < 3; i++) setTimeout(() => spawnParts(new THREE.Vector3((Math.random() - 0.5) * 2, TOP + 2, mini.fg.pz), 30, { colors: ['#ffd400', '#ffffff', '#3a86ff', '#ff3b30'], size: 0.05, shape: 'box', speed: 4, up: 4, life: 2, gravity: 6 }), i * 250); showResult("🏈 It's good!", `${p.name} nailed the field goal — no drink!`, '#7dff6a'); addLog(`🏈 ${p.name} kicked the field goal`); }
+  else { miniBanner('🏈 NO GOOD! 🏈', `${pName(p)} ${why === 'short' ? 'came up short' : 'went wide'} — drink! 🍺`); tone('sawtooth', 260, 110, 0.7, 0.14); drink(p); showResult('🏈 No good!', `${p.name} missed the field goal — drink! 🍺`, '#ff6b6b'); addLog(`🏈 ${p.name} missed the field goal and drank`); }
+  renderUI(); hostPublish();
+}
+function fgCleanup() { if (mini.fg) scene.remove(mini.fg.g); $('#fgMeter').classList.remove('on'); $('#gamePanel').classList.remove('fg'); mini.cam = null; }
+
 function maybeStartMini() {
   if (CTRL || mini || !state.started || gameOver || toss || goblin || placing || aim.mode !== 'wander') return;
   if (state.players.length < 2 || $('#modal').classList.contains('on') || Date.now() - lastResultAt < 2600) return;
@@ -2722,16 +2961,19 @@ function maybeStartMini() {
 }
 function startMini(type) {
   if (mini || goblin || toss) return;
-  type = type || pickOther(['hot', 'boss', 'roulette', 'cups'], state.lastMini); state.lastMini = type;
+  type = type || pickOther(['hot', 'boss', 'roulette', 'cups', 'hilo', 'tos'], state.lastMini); state.lastMini = type;
   hideResult(); clearPoop(); clearBurgers(); coin.visible = false; ensureAudio();
   mini = { type, stage: 'intro', t: 0, holder: null, hp: 0, max: 0, left: 10, G: null, hits: {}, flinch: 0, hitSnd: 0 };
   jazzDuck(true);
   if (type === 'hot') miniBanner('🔥 HOT GOBLIN! 🔥', 'Pass him before he blows! &nbsp;📱 tap <b>PASS</b> · 💻 <b>Space</b>');
   else if (type === 'roulette') miniBanner('🎰 RULE ROULETTE! 🎰', 'One rule for EVERYONE — for a whole round');
   else if (type === 'cups') miniBanner('🥤 COIN UNDER THE CUP! 🥤', 'Follow the coin… then pick the right cup');
+  else if (type === 'hilo') miniBanner('🃏 HIGHER OR LOWER! 🃏', 'Guess if the next card is higher or lower — wrong (or a tie) and you drink');
+  else if (type === 'tos') miniBanner('🥃 TRUTH OR SHOT! 🥃', 'Answer honestly… or take the shot');
+  else if (type === 'fieldgoal') miniBanner('🏈 FIELD GOAL! 🏈', 'Kick it through the posts — miss and you drink');
   else miniBanner('👹 GOBLIN BOSS FIGHT! 👹', 'Mash <b>HIT</b> on your phones (or <b>Space</b>) — beat him in 10 seconds!');
   [0, 0.18, 0.36, 0.7].forEach((d, i) => tone('square', i === 3 ? 880 : 660, i === 3 ? 880 : 660, 0.14, 0.12, d));
-  addLog(type === 'cups' ? '🥤 Mini-game: Coin Under the Cup!' : type === 'hot' ? '🔥 Mini-game: Hot Goblin!' : type === 'roulette' ? '🎰 Mini-game: Rule Roulette!' : '👹 Mini-game: Goblin Boss Fight!');
+  addLog(type === 'hilo' ? '🃏 Mini-game: Higher or Lower!' : type === 'tos' ? '🥃 Mini-game: Truth or Shot!' : type === 'fieldgoal' ? '🏈 Field goal time!' : type === 'cups' ? '🥤 Mini-game: Coin Under the Cup!' : type === 'hot' ? '🔥 Mini-game: Hot Goblin!' : type === 'roulette' ? '🎰 Mini-game: Rule Roulette!' : '👹 Mini-game: Goblin Boss Fight!');
   renderUI(); hostPublish();
 }
 function circleSpot(p) { return new THREE.Vector3(p.x, TOP, p.z); }
@@ -2740,6 +2982,9 @@ function beginMiniPlay() {
   $('#miniCount').textContent = ''; mini.stage = 'play'; mini.t = 0;
   if (mini.type === 'roulette') { spinRoulette(); renderUI(); hostPublish(); return; }
   if (mini.type === 'cups') { cupsBegin(); renderUI(); hostPublish(); return; }
+  if (mini.type === 'hilo') { hlBegin(); return; }
+  if (mini.type === 'tos') { tosBegin(); return; }
+  if (mini.type === 'fieldgoal') { fgBegin(); return; }
   if (mini.type === 'hot') {
     const G = buildGoblin({ skin: '#d9542a', eye: '#fff36b', hat: 'none', size: 1.25 }); scene.add(G.root); mini.G = G;
     mini.mats = []; G.root.traverse(o => { if (o.isMesh && o.material.emissive) mini.mats.push(o.material); });
@@ -2804,6 +3049,8 @@ function endMini() {
   if (!mini) return;
   $('#slot').classList.remove('on');
   if (mini.type === 'cups') cupsCleanup();
+  if (mini.type === 'fieldgoal') fgCleanup();
+  gpOff();
   if (mini.type === 'boss') restoreWorld();
   if (mini.G) scene.remove(mini.G.root);
   $('#mini').classList.remove('on'); $('#bossBar').classList.remove('on'); $('#miniCount').textContent = '';
@@ -2837,7 +3084,7 @@ function spinRoulette() {
   };
   tick();
 }
-function miniKey() { if (!mini || mini.stage !== 'play') return; if (mini.type === 'hot') passHot(); else if (mini.type === 'boss') bossHit(1, null); }
+function miniKey() { if (!mini || mini.stage !== 'play') return; if (mini.type === 'hot') passHot(); else if (mini.type === 'boss') bossHit(1, null); else if (mini.type === 'fieldgoal') fgPress(null); }
 function stepMini(dt) {
   if (!mini) { maybeStartMini(); return; }
   mini.t += dt;
@@ -2850,6 +3097,9 @@ function stepMini(dt) {
   const G = mini.G;
   if (mini.type === 'roulette') { if (mini.stage === 'done' && mini.t > 3.8) endMini(); return; }
   if (mini.type === 'cups') { stepCups(dt); if (mini.stage === 'done' && mini.t > 4.2) endMini(); return; }
+  if (mini.type === 'hilo') { if (mini.stage === 'done') { if (mini.t > 4) endMini(); } else stepHL(dt); return; }
+  if (mini.type === 'tos') { if (mini.stage === 'done') { if (mini.t > 2.5) endMini(); } else stepTOS(dt); return; }
+  if (mini.type === 'fieldgoal') { stepFG(dt); if (mini && mini.stage === 'done' && mini.t > 2.6) endMini(); return; }
   if (mini.type === 'hot') {
     if (mini.stage === 'play') {
       const frac = Math.min(1, mini.t / mini.fuse);
@@ -3043,7 +3293,7 @@ const previewIntro = () => { ensureAudio(); if (toss || goblin || placing) retur
 $('#tryHot').onclick = () => { if (!canAim() && !mini) return toast('Start a game with 2+ players first (and wait for the turn to finish)'); startMini('hot'); };
 $('#cupRows').onclick = e => { const b = e.target.closest('[data-cp]'); if (b) cupPick(b.dataset.cp, b.dataset.n); };
 $('#tryHolo').onclick = () => sayYugo(true);
-const JACK_ACTS = [['sting', '📺 Dateline GBC: To Catch a Coin Thief'], ['neptune', '🔱 Steals Neptune\'s trident in Bologna'], ['plane', '✈️ Steals it in a plane… and crashes'], ['eat', '💩 Eats the coin, poops it out'], ['burp', '🤢 Swallows it, burps it up'], ['juggle', '🤹 Juggles the coin'], ['bite', '🦷 Bites it and chucks it'],
+const JACK_ACTS = [['smite', '⚡ Dictator goblin steals it… and gets smitten'], ['sting', '📺 Dateline GBC: To Catch a Coin Thief'], ['neptune', '🔱 Steals Neptune\'s trident in Bologna'], ['plane', '✈️ Steals it in a plane… and crashes'], ['eat', '💩 Eats the coin, poops it out'], ['burp', '🤢 Swallows it, burps it up'], ['juggle', '🤹 Juggles the coin'], ['bite', '🦷 Bites it and chucks it'],
   ['hat', '🎩 Wears the coin as a hat'], ['polish', '✨ Polishes the coin'], ['casino', '🎰 Loses a coin flip, tantrum'], ['surf', '🏄 Surfs the coin around'], ['golf', '⛳ Golfs the coin'], ['wedding', '💍 Proposes to the coin'],
   ['summon', '🔮 Summons a demon'], ['sneeze', '🤧 Giant sneeze'], ['booger', '👃 Booger flick'], ['fartcannon', '💨 Fart cannon'], ['rockstar', '🎸 Rock star guitar solo'], ['ballet', '🩰 Ballet'], ['breakdance', '🕺 Breakdance'],
   ['opera', '🎭 Opera'], ['thief', '🦹 Steals it and hides'], ['insult', '🗯️ Roasts the players'], ['clones', '👯 Clones himself'], ['giant', '🗿 Turns giant']];
@@ -3059,6 +3309,8 @@ $('#jackList').onclick = () => {
   if (open && !el.children.length) el.innerHTML = JACK_ACTS.map(([k, l]) => `<button class="jack-act" data-act="${k}">${l}</button>`).join('');
 };
 $('#jackActs').onclick = e => { const b = e.target.closest('[data-act]'); if (b) watchJack(b.dataset.act); };
+['Hilo:hilo', 'Tos:tos', 'Fg:fieldgoal'].forEach(x => { const [id, t] = x.split(':'); $('#try' + id).onclick = () => { if (!canAim() && !mini) return toast('Start a game with 2+ players first (and wait for the turn to finish)'); startMini(t); if (mini && t === 'fieldgoal') mini.who = current().id; }; });
+document.addEventListener('click', e => { const b = e.target.closest('[data-gp]'); if (!b || !mini) return; const k = b.dataset.gp; if (k === 'hl') hlGuess(null, b.dataset.v); else if (k === 'tos') tosChoose(null, b.dataset.v); else if (k === 'kick') fgPress(null); });
 $('#tryCups').onclick = () => { if (!canAim() && !mini) return toast('Start a game with 2+ players first (and wait for the turn to finish)'); startMini('cups'); };
 $('#tryRoul').onclick = () => { if (!canAim() && !mini) return toast('Start a game with 2+ players first (and wait for the turn to finish)'); startMini('roulette'); };
 $('#tryBoss').onclick = () => { if (!canAim() && !mini) return toast('Start a game with 2+ players first (and wait for the turn to finish)'); startMini('boss'); };
@@ -3329,7 +3581,7 @@ function hostPublish() {
   const g = {
     role: 'host', since: hostSince, phase: gamePhase(), turn: cur ? cur.id : null,
     ruleFor: pendingRule ? pendingRule.tosser.id : null, started: !!state.started, owners, roundRule: state.roundRule ? [String(state.roundRule.text).slice(0, 80), state.roundRule.left] : null,
-    mini: mini ? { type: mini.type, stage: mini.stage, holder: mini.holder ? mini.holder.id : null, hp: mini.hp, max: mini.max, left: Math.ceil(mini.type === 'cups' ? (mini.pickLeft || 0) : mini.left), sub: mini.sub || null } : null,
+    mini: mini ? { type: mini.type, stage: mini.stage, holder: mini.holder ? mini.holder.id : null, hp: mini.hp, max: mini.max, left: Math.ceil(mini.type === 'cups' ? (mini.pickLeft || 0) : mini.left), sub: mini.sub || null, who: mini.who != null ? mini.who : null, n: mini.n || 0, card: mini.card ? cardTxt(mini.card) : null, cardS: mini.card ? mini.card.s : null, next: mini.next ? cardTxt(mini.next) : null, q: mini.q || null, verdict: mini.verdict || null } : null,
     lobby: state.lobby.map(p => ({ id: p.id, name: p.name, color: p.color })),
     players: state.players.map(p => ({ id: p.id, name: p.name, color: p.color, x: +p.x.toFixed(2), z: +p.z.toFixed(2), r: +p.r.toFixed(2) })),
     spots: state.rules.map(r => [+r.x.toFixed(2), +r.z.toFixed(2), +r.r.toFixed(2)]).slice(-30), half: HALF, out: OUT,
@@ -3342,6 +3594,9 @@ function handleCmd(c, cmd) {
   const pid = String(c.pid);
   if (cmd.type !== 'join' && owners[pid] !== String(c.cid)) return; // not this phone's player
   if (cmd.type === 'cup') { cupPick(pid, cmd.i); return; }
+  if (cmd.type === 'hl') { hlGuess(pid, cmd.v === 'h' ? 'h' : 'l'); return; }
+  if (cmd.type === 'tos') { tosChoose(pid, ['truth', 'shot', 'done'].includes(cmd.v) ? cmd.v : null); return; }
+  if (cmd.type === 'kick') { fgPress(pid); return; }
   if (cmd.type === 'pass') { if (mini && mini.type === 'hot' && mini.holder && String(mini.holder.id) === pid) passHot(); return; }
   if (cmd.type === 'flip') { const cur = current(); if (cur && String(cur.id) === pid && !$('#modal').classList.contains('on')) flipPressed(); }
   else if (cmd.type === 'rule' || cmd.type === 'norule') {
@@ -3457,12 +3712,34 @@ function setRoomCode(code) {
 
 // ----- phone: mini-game controls -----
 function renderMiniCtrl(body, mine, players) {
-  const M = H.mini, key = [M.type, M.stage, M.sub, M.holder, mine.id].join('|');
+  const M = H.mini, key = [M.type, M.stage, M.sub, M.holder, mine.id, M.who, M.n].join('|');
   if (body.dataset.mk === key && $('#cMini')) { updateMiniCtrl(M); return; }
   body.dataset.mk = key;
   const holder = players.find(p => String(p.id) === String(M.holder));
   let html = '';
-  if (M.type === 'cups') {
+  const myTurn = M.who != null && String(M.who) === String(mine.id), whoP = players.find(p => String(p.id) === String(M.who)), whoN = whoP ? esc(whoP.name) : 'Someone';
+  const resCard = () => `<div class="c-card c-result" id="cMini" style="border-color:#ffd84a"><div class="t" style="color:#ffd84a">${H.result ? esc(H.result.t) : ''}</div><p>${H.result ? esc(H.result.s) : ''}</p></div>`;
+  if (M.type === 'hilo') {
+    if (M.stage === 'intro') html = `<div class="c-card" id="cMini" style="text-align:center"><h3>🃏 HIGHER OR LOWER</h3><p>When it's your turn, guess if the next card is higher or lower. Wrong or a tie = drink!</p></div>`;
+    else if (M.stage === 'done') html = resCard();
+    else if (M.sub === 'guess' && myTurn) { html = `<div class="c-card" id="cMini" style="text-align:center"><h3>Your guess! <b id="cHlT">${M.left}s</b></h3><p style="font-size:44px;font-weight:900;margin:6px 0;color:${M.cardS === 1 || M.cardS === 2 ? '#ff6b7d' : '#fff'}">${esc(M.card || '')}</p><p>Is the next card higher or lower?</p></div><button class="c-big" data-hl="h">⬆️ HIGHER</button><button class="c-big" data-hl="l" style="margin-top:10px">⬇️ LOWER</button>`; try { navigator.vibrate && navigator.vibrate(120); } catch (e) {} }
+    else if (M.sub === 'reveal') html = `<div class="c-card" id="cMini" style="text-align:center"><h3>${whoN}: ${esc(M.next || '')}</h3><p style="font-size:22px;font-weight:900">${esc(M.verdict || '')}</p></div>`;
+    else html = `<div class="c-card" id="cMini" style="text-align:center"><h3>🃏 ${whoN} is guessing…</h3><p style="font-size:34px;font-weight:900">${esc(M.card || '')}</p><p>Watch the big screen 👀</p></div>`;
+  } else if (M.type === 'tos') {
+    if (M.stage === 'intro') html = `<div class="c-card" id="cMini" style="text-align:center"><h3>🥃 TRUTH OR SHOT</h3><p>Someone's about to get put on the spot…</p></div>`;
+    else if (M.stage === 'done') html = resCard();
+    else if (M.sub === 'choose' && myTurn) { html = `<div class="c-card" id="cMini" style="text-align:center"><h3>It's you! Truth or shot? <b id="cHlT">${M.left}s</b></h3></div><button class="c-big" data-tos="truth">🤔 TRUTH</button><button class="c-big hot" data-tos="shot" style="margin-top:10px">🥃 SHOT</button>`; try { navigator.vibrate && navigator.vibrate([150, 60, 150]); } catch (e) {} }
+    else if (M.sub === 'truth' && myTurn) html = `<div class="c-card" id="cMini" style="text-align:center"><h3>Answer out loud:</h3><p style="font-size:20px;font-weight:800;color:#fff">“${esc(M.q || '')}”</p></div><button class="c-big" data-tos="done">✅ I answered</button><button class="c-big hot" data-tos="shot" style="margin-top:10px">🐔 Chicken out → shot</button>`;
+    else if (M.sub === 'truth') html = `<div class="c-card" id="cMini" style="text-align:center"><h3>🤔 ${whoN} has to answer:</h3><p style="font-size:18px;font-weight:800;color:#fff">“${esc(M.q || '')}”</p></div>`;
+    else if (M.sub === 'shot') html = `<div class="c-card c-result" id="cMini"><div class="t">🥃 ${whoN} takes the shot!</div></div>`;
+    else if (M.sub === 'answered') html = `<div class="c-card c-result" id="cMini" style="border-color:#7dff6a"><div class="t" style="color:#7dff6a">✅ ${whoN} told the truth</div></div>`;
+    else html = `<div class="c-card" id="cMini" style="text-align:center"><h3>🥃 ${whoN}: truth or shot?</h3><p>Watch the big screen 👀</p></div>`;
+  } else if (M.type === 'fieldgoal') {
+    if (M.stage === 'done') html = resCard();
+    else if (myTurn && (M.sub === 'aim' || M.sub === 'power')) { html = `<div class="c-card" id="cMini" style="text-align:center"><h3>🏈 ${M.sub === 'aim' ? 'Tap when the arrow points at the posts' : 'Tap to KICK — higher power goes further'}</h3><p>Watch the big screen 👀</p></div><button class="c-big hot" data-kick="1">${M.sub === 'aim' ? '🎯 LOCK AIM' : '🏈 KICK!'}</button>`; try { navigator.vibrate && navigator.vibrate(100); } catch (e) {} }
+    else if (M.stage === 'intro') html = `<div class="c-card" id="cMini" style="text-align:center"><h3>🏈 FIELD GOAL!</h3><p>${myTurn ? "It's your kick — miss and you drink!" : whoN + ' is kicking — miss and they drink!'}</p></div>`;
+    else html = `<div class="c-card" id="cMini" style="text-align:center"><h3>🏈 ${whoN} is kicking…</h3><p>Watch the big screen 👀</p></div>`;
+  } else if (M.type === 'cups') {
     if (M.stage === 'done') html = `<div class="c-card c-result" id="cMini" style="border-color:#ffd84a"><div class="t" style="color:#ffd84a">${H.result ? esc(H.result.t) : ''}</div><p>${H.result ? esc(H.result.s) : ''}</p></div>`;
     else if (M.sub === 'pick') html = `<div class="c-card" id="cMini" style="text-align:center"><h3>🥤 Where's the coin?</h3><p>Tap a cup · <b id="cCupT">${M.left}s</b></p></div><div class="c-cups">${[1, 2, 3].map(n => `<button data-cup="${n}" class="${me.cupPick === n ? 'sel' : ''}">🥤<br>${n}</button>`).join('')}</div>`;
     else { me.cupPick = 0; html = `<div class="c-card" id="cMini" style="text-align:center"><h3>🥤 COIN UNDER THE CUP</h3><p>Watch the big screen — follow the coin! 👀</p></div>`; }
@@ -3480,6 +3757,9 @@ function renderMiniCtrl(body, mine, players) {
   }
   body.innerHTML = html;
   body.querySelectorAll('[data-cup]').forEach(b => b.addEventListener('pointerdown', e => { e.preventDefault(); me.cupPick = +b.dataset.cup; cSend('cup', { i: me.cupPick }); body.querySelectorAll('[data-cup]').forEach(x => x.classList.toggle('sel', x === b)); }));
+  body.querySelectorAll('[data-hl]').forEach(b => b.addEventListener('pointerdown', e => { e.preventDefault(); cSend('hl', { v: b.dataset.hl }); body.querySelectorAll('[data-hl]').forEach(x => x.disabled = true); }));
+  body.querySelectorAll('[data-tos]').forEach(b => b.addEventListener('pointerdown', e => { e.preventDefault(); cSend('tos', { v: b.dataset.tos }); body.querySelectorAll('[data-tos]').forEach(x => x.disabled = true); }));
+  body.querySelectorAll('[data-kick]').forEach(b => b.addEventListener('pointerdown', e => { e.preventDefault(); cSend('kick'); b.disabled = true; }));
   const ps = $('#cPass'); if (ps) ps.addEventListener('pointerdown', e => { e.preventDefault(); cSend('pass'); ps.disabled = true; ps.textContent = 'Passed! 😮‍💨'; });
   const ht = $('#cHit'); if (ht) ht.addEventListener('pointerdown', e => { e.preventDefault(); me.taps++; me.myHits++; sendCtrl(); const n = $('#cMyHits'); if (n) n.textContent = me.myHits; ht.style.transform = 'scale(.94)'; setTimeout(() => ht.style.transform = '', 60); });
 }
@@ -3487,6 +3767,7 @@ function updateMiniCtrl(M) {
   const f = $('#cHpFill'); if (f) f.style.width = (100 * M.hp / Math.max(1, M.max)) + '%';
   const t = $('#cBossT'); if (t) t.textContent = M.left + 's';
   const ct = $('#cCupT'); if (ct) ct.textContent = M.left + 's';
+  const hl = $('#cHlT'); if (hl) hl.textContent = M.left + 's';
 }
 
 // ----- the phone side -----
@@ -3738,7 +4019,7 @@ $('#startBtn').onclick = () => {
 };
 
 // ---------- installable app + automatic updates (website version only) ----------
-const BUILD = '1795013622';
+const BUILD = '1795016045';
 if (STANDALONE) {
   try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
   let deferredInstall = null;
