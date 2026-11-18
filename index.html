@@ -482,7 +482,7 @@ const TOP = 0.05;          // inside floor height
 const WALL_H = 0.95;       // wall height
 const COIN_R = 0.38, COIN_T = 0.07;
 const COLORS = ['#c81e1e','#1d4ed8','#15803d','#7c3aed','#d9480f','#0f766e','#be185d','#1f2937','#a16207','#0369a1'];
-const SUGGESTIONS = ["Kick a field goal — miss and you drink", "Drink with your other hand", "Waterfall — everyone drinks", "Speak in an accent till your next turn", "Pick a drinking buddy", "Finish your drink", "Give out 3 sips", "No first names allowed", "Compliment everyone, then drink", "Thumb master", "Rhyme your next sentence", "Take a sip standing up", "Swap seats with someone", "Question master — answer a question from you, drink", "Talk like a pirate till your next turn", "Do your best celebrity impression or drink 2", "Make a toast to the person on your left", "Everyone with the same drink as you sips", "Tell an embarrassing story or drink 3", "Drink for every vowel in your name", "Pick someone to drink with you every time you drink", "Say 'cheers' in another language", "Waterfall, but you go last", "Sing the chorus of any song", "Never have I ever — one round", "Truth or drink", "Point at the person most likely to get lost — they drink", "Last person to touch their nose drinks", "Last person to raise a hand drinks", "Hum a song, first to guess gives out 2", "Do 5 squats or drink 2", "Speak only in questions until your next turn", "Rock-paper-scissors the next player — loser drinks", "Name a pizza topping in 3 seconds or drink", "Categories: pick one, first to blank drinks", "Everyone with a phone out drinks", "Guys drink", "Girls drink", "Oldest player drinks", "Youngest player drinks", "Tallest player picks someone to drink", "Swap drinks with the next player for a sip", "Make up a new handshake with someone", "No pointing — drink if you do", "No swearing till your next turn", "Say the alphabet backwards from F or drink", "Do your best goblin laugh", "Drink and tell us your worst date", "Two truths and a lie — guessers who miss drink", "Staring contest with the next player — loser drinks", "Speak in slow motion for one round", "Narrate your next throw like a sports commentator", "Everyone wearing black drinks", "Everyone wearing glasses drinks", "Drink if you've been to Italy", "Drink if you've ever lost your phone this week", "Give a 10-second speech about pizza", "Invent a rule for the next player", "Everyone toasts to you — you drink", "Rename someone for the rest of the game", "Bow to the coin before every throw", "Clap twice before you drink", "Throw your next coin with your eyes closed", "Throw your next coin with your other hand", "Do the robot until your next turn starts", "Say something nice about the goblin", "Call everyone 'sir' or 'madam' for a round", "Drink if you laughed in the last minute", "Mime your favourite movie — first to guess picks who drinks", "Snake eyes — anyone who looks you in the eye drinks", "Freeze! Last to stop moving drinks", "Sip for every person in your circle's colour", "Say a tongue twister 3 times fast or drink", "Share your phone's last photo or drink 2", "Pick a word — anyone who says it drinks", "Speak in third person until your next turn", "Phone a friend and say 'pizza' — or drink 3", "Make everyone laugh or drink", "Hold your drink above your head until your next turn", "Take a sip and do a spin", "Pick two players to arm-wrestle — loser drinks", "Everyone born in summer drinks", "Everyone who's single drinks", "Everyone in a couple drinks together", "Do your best evil laugh — the table votes, loser drinks", "Shout 'MAMMA MIA!' — last to shout drinks", "Tell a joke — if nobody laughs, drink", "Switch accents with the next player", "Point to the person with the best laugh — they give out 2", "Make a sound effect every time you drink", "Count to 10 round the table — mess up, drink", "Drink with your pinky out", "Whisper everything until your next turn", "Give the coin a name — say it before every throw", "Bonus round: double drinks till your next turn", "Social — everyone drinks", "Pick a song — everyone sings it, worst singer drinks", "High-five everyone or drink", "Everyone with a pet drinks", "Say your full name backwards or drink", "The thrower picks who drinks"];
+const SUGGESTIONS = ["Kick a field goal — miss and you drink", "Waterfall — you start, nobody stops before the person on their right", "Drinking buddy: they drink whenever you drink — rest of the game", "Thumb master: put your thumb on the table anytime, last to copy drinks", "Question master: anyone who answers your question drinks", "Snake eyes: anyone who looks you in the eye drinks, till your turn", "Make a new word that everyone must use instead of \"drink\"", "No pointing until your next turn — whoever points drinks", "No saying anyone's name until your next turn", "Speak only in questions until your next turn", "Talk in an accent until your next turn — slip and you drink", "Everyone must drink with their wrong hand for the rest of the game", "Social! Everyone drinks", "Give out 4 sips however you like", "Finish your drink", "Swap drinks with the player on your left", "Take a sip for every player in the game", "Arm-wrestle anyone you choose — loser drinks 3", "Rock-paper-scissors the last person who landed here — loser drinks 2", "Staring contest with the person across — first to blink drinks", "Categories: you pick, first to blank or repeat drinks", "Rhyme time: say a word, go around rhyming, first to fail drinks", "Never have I ever — 3 fingers, first to drop all drinks", "Most likely to: count to 3, everyone points — most fingers drinks", "Heads up: last to put a finger on their forehead drinks", "Last person to touch the floor drinks", "Last person to stand up drinks", "Name 5 pizza toppings in 10 seconds or drink 2", "Say the alphabet backwards from M — fail and drink", "Tongue twister: \"goblin gobbled a gold coin\" ×3 fast or drink", "Hum a song: first to guess it gives out 3 sips", "Do your best goblin laugh — group votes, fail and drink", "Impersonate someone in the room — whoever's guessed first drinks", "Tell a joke: anyone who laughs drinks, nobody laughs → you drink 2", "10 push-ups or drink 3", "Hold a plank until your next turn ends — drop early, drink", "Chug for 3 seconds", "Shotgun-race whoever's on your right (or sip race)", "Two truths and a lie — whoever guesses wrong drinks", "Waterfall, but it starts with the person who flipped last", "Everyone with a phone in their hand drinks", "Everyone wearing black drinks", "Everyone who has been to Italy drinks", "The person with the fullest drink finishes half of it", "The person with the emptiest drink refills and drinks", "Whoever's circle is closest to this one drinks 2", "Whoever's circle is furthest from this one drinks 2", "Everyone whose name has an \"a\" drinks", "Drink once for every letter in your name", "Your drinks are doubled until your next turn", "Your next drink, someone of your choice drinks it instead", "Make a rule that lasts the rest of the game", "Cancel any rule on the box (you can't cancel this one)", "King for a round: everyone must call you \"Your Majesty\" or drink", "Tap your head before every drink, forget = drink again", "Toast someone — they choose to drink with you or give you 2", "Compliment battle with the next player — first to stall drinks", "Swap seats with anyone — they drink for being kicked out", "Sit on the floor until your next turn", "Wear something silly (a napkin hat?) until your next turn", "Read the last text you sent out loud or drink 3", "Show your most recent photo or drink 3", "Let the group post a story from your phone or drink 4", "Call or voice-text someone the group picks — or drink 4", "Say \"pizza box\" in 5 languages — every miss is a drink", "Do the coin flip with your eyes closed next turn", "Flip from the opposite side of the table next turn", "The next person to land on cardboard drinks 3 before writing", "Next person to land on a name gives that person 2 extra", "Everyone drinks, but you finish yours", "Celebrity chain: start with the last letter of the last name", "Smash, marry, kill — the group picks three names for you", "Would you rather — the group picks, the minority drinks", "Speech! 20 seconds on why pizza is the best food, or drink 3", "Narrate everything you do until your next turn", "Every time someone swears, you drink — until your next turn", "Can't use your hands to drink until your next turn", "Drink every time someone says \"goblin\" — rest of the game", "Mime your answer: the group asks one question, no talking", "Accent roulette: player on your left picks your accent", "Make a toast in a language you don't speak", "Pass a secret drink: give 3 sips without saying who", "Choose a Mate: two of you drink together for 2 rounds", "Everyone who's laughing right now drinks", "Everyone's last flip landed on cardboard? They drink 2", "Biggest drinker so far gets a break — give your next drink away", "Least drinks so far? You drink 3, catch up", "Pick a song — everyone drinks at the chorus", "Sing 10 seconds of any song or drink 2", "Dance until your next turn starts — stop and drink", "Say something nice about every player, then sip", "Everyone holds their drink in the air — last one drinks", "Silence! First person to talk drinks 2", "Play \"Buzz\": count up, say BUZZ instead of 7s, first to fail drinks", "Spin something: whoever it points at drinks 2", "Phone stack: everyone puts phones down, first to grab one drinks 3", "Everyone born in summer drinks", "Bottoms up: whoever has the most left in their glass drinks it", "Group photo — whoever blinks or isn't ready drinks", "Coin call: guess heads or tails on the next flip, wrong = drink"];
 // pick n suggestions from a shuffled deck of all 100, skipping rules already on the box
 function pickSugs(n, onBox) {
   const used = new Set((onBox || []).map(t => String(t).toLowerCase())), out = [];
@@ -867,7 +867,7 @@ el.addEventListener('pointerdown', e => {
   el.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
   if (ptrs.size === 1) {
     down = { x: e.clientX, y: e.clientY, moved: false };
-    if (placing) { const h = pickTop(e); if (h) { placeDrag = { x: h.x, z: h.z, r: 1, dragged: false }; showPreview(); } }
+    if (placing) { const h = pickTop(e); if (h) { placeDrag = { x: h.x, z: h.z, r: fairR(), dragged: false }; showPreview(); } }
   } else if (ptrs.size === 2) { const [a, b] = [...ptrs.values()]; pinch = Math.hypot(a.x - b.x, a.y - b.y); placeDrag = null; preview.visible = false; }
 });
 el.addEventListener('pointermove', e => {
@@ -877,7 +877,7 @@ el.addEventListener('pointermove', e => {
   if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) > 6) down.moved = true;
   if (placeDrag) {
     const h = pickTop(e);
-    if (h && down.moved) { placeDrag.r = clamp(Math.hypot(h.x - placeDrag.x, h.z - placeDrag.z), 0.55, 2.1); placeDrag.dragged = true; showPreview(); }
+    if (h && down.moved) { placeDrag.r = clamp(Math.hypot(h.x - placeDrag.x, h.z - placeDrag.z), 0.45, maxDrawR()); placeDrag.dragged = true; showPreview(); }
     return;
   }
   goal.theta -= dx * 0.006; goal.phi = clamp(goal.phi - dy * 0.005, 0.03, 1.42);
@@ -914,11 +914,21 @@ function drawLobbyPlayer(id, random) {
   $('#hint span').innerHTML = `Draw <b style="color:${placing.color}">${esc(q.name)}</b>'s circle — tap the box, or drag to size it`;
   $('#hint').classList.add('on');
 }
+// circles get smaller as the room fills up (from ~7 players), so a big group still fits in the box
+const roomSize = () => state.players.length + state.lobby.length;
+function fairR(n = roomSize()) { return clamp(Math.sqrt(30 / Math.max(n, 1)) * 0.42, 0.5, 1.0); }
+const maxDrawR = (n = roomSize()) => Math.min(2.1, Math.max(0.6, fairR(n) * (n > 6 ? 1.35 : 2.1)));
+function squeezeCircles() {
+  const cap = maxDrawR(); let changed = false;
+  state.players.forEach(p => { if (p.r > cap) { p.r = cap; changed = true; } p.x = clamp(p.x, -HALF + p.r, HALF - p.r); p.z = clamp(p.z, -HALF + p.r, HALF - p.r); });
+  if (changed) { fixRules(); addLog('📏 The box got crowded — big circles shrank to fit everyone'); }
+  return changed;
+}
 function endPlacing() { placing = null; preview.visible = false; document.body.classList.remove('placing'); $('#hint').classList.remove('on'); }
 $('#cancelBtn').onclick = endPlacing;
 $('#autoBtn').onclick = () => autoPlace();
 function autoPlace() {
-  if (!placing) return; const r = 1; let best = null, bestD = -1;
+  if (!placing) return; const r = fairR(); let best = null, bestD = -1;
   for (let i = 0; i < 400; i++) {
     const x = (Math.random() * 2 - 1) * (HALF - r), z = (Math.random() * 2 - 1) * (HALF - r);
     const d = Math.min(9, ...state.players.map(p => Math.hypot(p.x - x, p.z - z) - p.r), ...state.rules.map(q => Math.hypot(q.x - x, q.z - z) - q.r));
@@ -930,7 +940,7 @@ function commitPlayer(x, z, r) {
   if (!placing) return;
   if (placing.id) state.lobby = state.lobby.filter(q => q.id !== placing.id);
   const p = { id: placing.id || newId(), name: placing.name, color: placing.color, r, x: clamp(x, -HALF + r, HALF - r), z: clamp(z, -HALF + r, HALF - r) };
-  state.players.push(p); fixRules(); endPlacing(); drawTop();
+  state.players.push(p); squeezeCircles(); fixRules(); endPlacing(); drawTop();
   if (!state.lobby.length && lastResult && /^Game on/.test(lastResult.t)) hideResult(); addLog(`✍️ ${p.name} joined`); save(); renderUI();
 }
 function removePlayer(id) {
@@ -3902,7 +3912,7 @@ function hostPublish() {
   const cur = state.players.length ? current() : null;
   const g = {
     role: 'host', since: hostSince, phase: gamePhase(), turn: cur ? cur.id : null,
-    ruleFor: pendingRule ? pendingRule.tosser.id : null, started: !!state.started, owners, roundRule: state.roundRule ? [String(state.roundRule.text).slice(0, 80), state.roundRule.left] : null,
+    ruleFor: pendingRule ? pendingRule.tosser.id : null, started: !!state.started, fr: +fairR().toFixed(2), fm: +maxDrawR().toFixed(2), owners, roundRule: state.roundRule ? [String(state.roundRule.text).slice(0, 80), state.roundRule.left] : null,
     mini: mini ? { type: mini.type, stage: mini.stage, holder: mini.holder ? mini.holder.id : null, hp: mini.hp, max: mini.max, left: Math.ceil(mini.type === 'cups' ? (mini.pickLeft || 0) : mini.left), sub: mini.sub || null, who: mini.who != null ? mini.who : null, n: mini.n || 0, card: mini.card ? cardTxt(mini.card) : null, cardS: mini.card ? mini.card.s : null, next: mini.next ? cardTxt(mini.next) : null, q: mini.q || null, asker: mini.asker != null ? mini.asker : null, verdict: mini.verdict || null, vb: mini.vb || 0, vl: mini.vl || 0, voted: mini.votes ? Object.keys(mini.votes) : [] } : null,
     lobby: state.lobby.map(p => ({ id: p.id, name: p.name, color: p.color })),
     players: state.players.map(p => ({ id: p.id, name: p.name, color: p.color, x: +p.x.toFixed(2), z: +p.z.toFixed(2), r: +p.r.toFixed(2) })),
@@ -3930,7 +3940,7 @@ function handleCmd(c, cmd) {
     const q = state.lobby.find(p => String(p.id) === pid); if (!q || !state.started || placing) return;
     placing = { id: q.id, name: q.name, color: q.color };
     const x = +cmd.x, z = +cmd.z, r = +cmd.r;
-    if (isFinite(x) && isFinite(z) && isFinite(r)) { const rr = clamp(r, 0.55, 2.1); commitPlayer(clamp(x, -HALF + rr, HALF - rr), clamp(z, -HALF + rr, HALF - rr), rr); } else autoPlace();
+    if (isFinite(x) && isFinite(z) && isFinite(r)) { const rr = clamp(r, 0.45, maxDrawR()); commitPlayer(clamp(x, -HALF + rr, HALF - rr), clamp(z, -HALF + rr, HALF - rr), rr); } else autoPlace();
   } else if (cmd.type === 'join') {
     const name = String(cmd.name || '').trim().slice(0, 16);
     if (!name || nameTaken(name)) return;
@@ -3938,7 +3948,7 @@ function handleCmd(c, cmd) {
     if (placing) return;
     placing = { name, color: nextColor() };
     const x = +cmd.x, z = +cmd.z, r = +cmd.r;
-    if (isFinite(x) && isFinite(z) && isFinite(r)) { const rr = clamp(r, 0.55, 2.1); commitPlayer(clamp(x, -HALF + rr, HALF - rr), clamp(z, -HALF + rr, HALF - rr), rr); } else autoPlace();
+    if (isFinite(x) && isFinite(z) && isFinite(r)) { const rr = clamp(r, 0.45, maxDrawR()); commitPlayer(clamp(x, -HALF + rr, HALF - rr), clamp(z, -HALF + rr, HALF - rr), rr); } else autoPlace();
     toast(`📱 ${name} drew their circle from their phone`);
   }
 }
@@ -4196,7 +4206,7 @@ function drawPlacer(body, players) {
   const fit = () => { const r = cPlace.r; cPlace.x = clamp(cPlace.x, -half + r, half - r); cPlace.z = clamp(cPlace.z, -half + r, half - r); };
   let down = null;
   cv.onpointerdown = e => { e.preventDefault(); cv.setPointerCapture(e.pointerId); const q = pos(e); down = { x: q.x, z: q.z, moved: false }; cPlace.x = q.x; cPlace.z = q.z; fit(); draw(); };
-  cv.onpointermove = e => { if (!down) return; const q = pos(e), d = Math.hypot(q.x - down.x, q.z - down.z); if (d > 0.25) down.moved = true; if (down.moved) { cPlace.r = clamp(d, 0.55, 2.1); cPlace.x = down.x; cPlace.z = down.z; fit(); draw(); } };
+  cv.onpointermove = e => { if (!down) return; const q = pos(e), d = Math.hypot(q.x - down.x, q.z - down.z); if (d > 0.25) down.moved = true; if (down.moved) { cPlace.r = clamp(d, 0.45, (H && H.fm) || 2.1); cPlace.x = down.x; cPlace.z = down.z; fit(); draw(); } };
   cv.onpointerup = cv.onpointercancel = () => { down = null; };
   $('#cBack').style.display = cPlace.lobbyId ? 'none' : ''; $('#cBack').onclick = () => { cPlace = null; renderCtrl(); };
   $('#cRand').onclick = () => { if (cPlace.lobbyId) { cSend('place', {}); cPlace = null; return; } me.joining = cName; cSend('join', { name: cName }); cPlace = null; renderCtrl(); };
@@ -4263,7 +4273,7 @@ function renderCtrl() {
     }
     // game started: draw your circle
     $('#cLive').classList.remove('on');
-    if (!cPlace || cName !== inLobby.name) { cName = inLobby.name; cPlace = { x: null, z: null, r: 1, lobbyId: inLobby.id }; }
+    if (!cPlace || cName !== inLobby.name) { cName = inLobby.name; cPlace = { x: null, z: null, r: (H && H.fr) || 1, lobbyId: inLobby.id }; }
     drawPlacer(body, players);
     return;
   }
@@ -4354,7 +4364,7 @@ $('#startBtn').onclick = () => {
 };
 
 // ---------- installable app + automatic updates (website version only) ----------
-const BUILD = '1795023768';
+const BUILD = '1795024011';
 if (STANDALONE) {
   try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
   let deferredInstall = null;
