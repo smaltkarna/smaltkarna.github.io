@@ -3297,7 +3297,7 @@ function maybeStartMini() {
 }
 function startMini(type) {
   if (mini || goblin || toss) return;
-  type = type || pickOther(['hot', 'boss', 'roulette', 'cups', 'hilo', 'tos'], state.lastMini);
+  type = type || bagPick('mini', ['hot', 'boss', 'roulette', 'cups', 'hilo', 'tos']);
   musicStyle({ fieldgoal: 'metal', boss: 'boss', roulette: 'tension' }[type] || 'gameshow'); state.lastMini = type;
   hideResult(); clearPoop(); clearBurgers(); coin.visible = false; ensureAudio();
   mini = { type, stage: 'intro', t: 0, holder: null, hp: 0, max: 0, left: 10, G: null, hits: {}, flinch: 0, hitSnd: 0 };
@@ -4370,7 +4370,7 @@ $('#startBtn').onclick = () => {
 };
 
 // ---------- installable app + automatic updates (website version only) ----------
-const BUILD = '1795025742';
+const BUILD = '1795031909';
 if (STANDALONE) {
   try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
   let deferredInstall = null;
