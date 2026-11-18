@@ -4244,7 +4244,7 @@ function renderCtrl() {
   if (roomState === 'failed' || roomState === 'connecting' || !H) $('#cLive').classList.remove('on');
   $('#cTurn').innerHTML = '';
   if (roomState === 'failed') { meEl.textContent = ''; body.innerHTML = `<div class="c-card"><h3>Can't connect 😕</h3><p>${STANDALONE ? 'This phone can\'t reach the game. Check your internet connection and reload.' : 'This phone can\'t reach the live game. Make sure you\'re signed in to Claude and the page has been shared with you, then reload. (Phones can\'t join through a public link.)'}</p></div>`; return; }
-  $('#cHost').style.display = (H || STANDALONE) ? 'none' : '';
+  { const app = matchMedia('(display-mode: standalone)').matches || matchMedia('(display-mode: window-controls-overlay)').matches || matchMedia('(display-mode: minimal-ui)').matches || navigator.standalone === true; $('#cHost').style.display = (app || !(H || STANDALONE)) ? '' : 'none'; }
   if (STANDALONE && CTRL && roomState === 'ok' && !ROOM_CODE) {
     meEl.textContent = '';
     body.innerHTML = `<div class="c-card"><h3>Enter the room code</h3><p>It's on the main screen (top right).</p></div>
@@ -4364,7 +4364,7 @@ $('#startBtn').onclick = () => {
 };
 
 // ---------- installable app + automatic updates (website version only) ----------
-const BUILD = '1795024011';
+const BUILD = '1795024271';
 if (STANDALONE) {
   try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
   let deferredInstall = null;
