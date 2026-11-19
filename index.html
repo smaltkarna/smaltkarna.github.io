@@ -240,6 +240,7 @@
   body.ctrl #fade,body.ctrl #cutCap{display:none!important}
   #cupPanel{position:fixed;left:50%;bottom:86px;transform:translateX(calc(-50% + var(--off)));z-index:13;display:none;background:rgba(20,10,4,.92);border:2px solid #ffd84a;border-radius:16px;padding:10px 14px;max-height:40vh;overflow:auto}
   #cupPanel.on{display:block}
+  .cp-st{font-weight:700;font-size:14px;opacity:.9;margin-left:6px}.cp-redo{opacity:.6}
   #gamePanel{position:fixed;left:50%;top:54%;transform:translate(calc(-50% + var(--off)),-50%);z-index:13;display:none;background:rgba(20,10,4,.93);border:3px solid #ffd84a;border-radius:22px;padding:18px 26px;text-align:center;color:#fff;min-width:min(560px,90vw);max-width:92vw;box-shadow:0 14px 40px rgba(0,0,0,.6)}
   #gamePanel.on{display:block}
   #gamePanel.fg{top:auto;bottom:26px;transform:translateX(calc(-50% + var(--off)));min-width:0;padding:10px 20px}
@@ -392,7 +393,7 @@
     <p class="empty" id="phoneHelp">This computer is the main screen. Everyone else opens this same page on their phone (share it from its page on claude.ai) — phones are controllers: draw your circle, take your turn, write your rules.</p>
     <button id="asCtrl" class="c-link" style="margin-top:6px">Use this device as a controller instead</button>
     <button id="extrasBtn" title="Extras">⋯</button>
-    <div id="extras"><div><button id="introBtn2" class="c-link">▶ Watch the rules intro</button> <button id="newsBtn" class="c-link">🆕 Watch what's new</button></div>
+    <div id="extras"><div><button id="introBtn2" class="c-link">▶ Watch the rules intro</button></div>
     <div><button id="tryHot" class="c-link">🔥 Play Hot Goblin now</button> <button id="tryBoss" class="c-link">👹 Play Boss Fight now</button> <button id="tryRoul" class="c-link">🎰 Play Rule Roulette now</button> <button id="tryCups" class="c-link">🥤 Play Coin Under the Cup now</button> <button id="tryHilo" class="c-link">🃏 Play Higher or Lower now</button> <button id="tryTos" class="c-link">🥃 Play Truth or Shot now</button> <button id="tryFg" class="c-link">🏈 Kick a field goal now</button> <button id="tryHolo" class="c-link">💠 Show Yugo's hologram</button> <a class="c-link" href="https://smaltkarna.github.io/classic/#host" target="_blank" rel="noopener">🕰️ Play the classic version (original goblins)</a> <button id="jackList" class="c-link">👺 All Jack animations</button><div id="jackActs"></div></div></div>
   </section>
   <footer>
@@ -1025,6 +1026,7 @@ function renderUI() {
   document.body.classList.toggle('mini', !!mini);
   $('#tossBtn').innerHTML = (mini ? (mini.type === 'hot' ? '🔥 Pass it!' : mini.type === 'roulette' ? '🎰 Spinning…' : mini.type === 'cups' ? '🥤 Pick a cup' : mini.type === 'hilo' ? '🃏 Higher or lower?' : mini.type === 'tos' ? '🥃 Truth or shot?' : mini.type === 'fieldgoal' ? '🏈 Kick!' : '👊 Hit!') : aim.mode === 'lock' ? '🪙 Throw!' : '🎯 Flip the coin') + ' <kbd>Space</kbd>';
   if (mini) $('#tossBtn').disabled = mini.stage !== 'play' || mini.type === 'roulette' || mini.type === 'cups';
+  if (obey && !mini) { $('#tossBtn').disabled = false; $('#tossBtn').innerHTML = `✅ Rule done — next turn <kbd>Space</kbd>`; }
   const rr = $('#roundRule'); if (rr) { if (state.roundRule && !mini) { rr.innerHTML = `🎰 This round, everyone: <b>${esc(state.roundRule.text)}</b> · ${state.roundRule.left} turn${state.roundRule.left === 1 ? '' : 's'} left`; rr.classList.add('on'); } else rr.classList.remove('on'); }
   hostPublish(); if (typeof renderLobby === 'function') renderLobby();
 }
@@ -3044,11 +3046,12 @@ function renderCupPanel() {
   const el = $('#cupPanel'); if (!mini || mini.type !== 'cups' || mini.sub !== 'pick') { el.classList.remove('on'); return; }
   el.classList.add('on');
   $('#cupRows').innerHTML = state.players.map(p => {
-    const pk = mini.picks[String(p.id)];
-    return `<div class="cup-row"><span class="nm" style="color:${lighten(p.color)}">${esc(p.name)}${claimed.has(String(p.id)) ? ' 📱' : ''}</span>${[1, 2, 3].map(n => `<button data-cp="${p.id}" data-n="${n}" class="${pk === n ? 'sel' : ''}">${n}</button>`).join('')}</div>`;
+    const pk = mini.picks[String(p.id)] != null, ph = claimed.has(String(p.id));
+    // never show WHICH cup anyone picked — only whether they're locked in
+    return `<div class="cup-row"><span class="nm" style="color:${lighten(p.color)}">${esc(p.name)}${ph ? ' 📱' : ''}</span>${ph ? `<span class="cp-st">${pk ? '✅ locked in' : '🤔 picking on phone…'}</span>` : pk ? `<span class="cp-st">✅ locked in</span><button data-cp="${p.id}" data-n="0" class="cp-redo" title="Pick again">↺</button>` : [1, 2, 3].map(n => `<button data-cp="${p.id}" data-n="${n}">${n}</button>`).join('')}</div>`;
   }).join('');
 }
-function cupPick(pid, n) { if (!mini || mini.type !== 'cups' || mini.sub !== 'pick') return; n = clamp(Math.round(+n) || 0, 1, 3); mini.picks[String(pid)] = n; tone('sine', 700 + n * 100, 700 + n * 100, 0.06, 0.08); renderCupPanel(); hostPublishSoon(); }
+function cupPick(pid, n) { if (!mini || mini.type !== 'cups' || mini.sub !== 'pick') return; n = clamp(Math.round(+n) || 0, 1, 3); mini.picks[String(pid)] = n; tone('sine', 800, 800, 0.06, 0.08); renderCupPanel(); hostPublishSoon(); }
 function cupsReveal() {
   mini.sub = 'reveal'; mini.st = 0; $('#cupPanel').classList.remove('on');
   const win = mini.slotOf[mini.coinCup] + 1;
@@ -3557,11 +3560,17 @@ function stepMini(dt) {
 const INTRO_LINES = [
   ['Welcome, mortals… to <b>THE PIZZA BOX!</b>', 'Welcome, mortals. To the pizza box!', 'wave'],
   ['Everyone writes their name inside the box… and draws a <b>circle</b> around it.', 'Everyone writes their name inside the box, and draws a circle around it.', 'point'],
+  ['Take turns drawing your circles — <b>no overlapping!</b>', 'Take turns drawing your circles. No overlapping!', 'wag'],
+  ['The box also starts with <b>7 house rules.</b> Obey them!', 'The box also starts with seven house rules. Obey them!', 'point'],
   ['On your turn, <b>freeze the crosshair</b>… then <b>throw</b> when the yellow circle is small!', 'On your turn, freeze the crosshair. Then throw, when the yellow circle is small!', 'throw'],
-  ['Land in someone\'s circle — <b>they drink!</b>', 'Land in someone\'s circle, and they drink!', 'cheer'],
+  ['You get <b>25 seconds.</b> Too slow — <b>you drink!</b>', 'You get twenty-five seconds. Too slow, and you drink!', 'shrug'],
+  ["Land in someone's circle — <b>they drink!</b>", "Land in someone's circle, and they drink!", 'cheer'],
   ['Land on empty cardboard — you <b>write a new rule</b> on the box.', 'Land on empty cardboard, and you write a new rule on the box.', 'point'],
   ['Land on a rule — <b>you must obey it!</b> Even your own.', 'Land on a rule, and you must obey it! Even your own.', 'shrug'],
   ['Miss the box completely… and <b>YOU drink.</b>', 'Miss the box completely, and YOU drink.', 'wag'],
+  ['Every few rounds, a <b>CHALLENGE</b> appears! 🔥 Hot Goblin · 👹 Boss fights · 🎰 Roulette · 🥤 Cups · 🃏 Higher or Lower · 🥃 Truth or Shot', 'Every few rounds, a challenge appears! Hot Goblin, boss fights, roulette, cups, higher or lower, and truth or shot!', 'cheer'],
+  ['Play along on your <b>phone</b> 📱 — or the <b>space bar</b> — when the screen tells you.', 'Play along on your phone, or with the space bar, when the screen tells you.', 'point'],
+  ['Write a rule that says <b>"kick a field goal"</b> 🏈 … and the unlucky one has to kick it. <b>Miss, and you drink!</b>', 'Write a rule that says kick a field goal, and the unlucky one has to kick it. Miss, and you drink!', 'throw'],
   ['And if you see me again… <b>hide your coin.</b> Hehehe!', 'And if you see me again, hide your coin. Hehehe!', 'cackle'],
 ];
 let introVoice = null;
@@ -3584,7 +3593,7 @@ function endIntro() {
   $('#subs').classList.remove('on'); document.body.classList.remove('intro');
 }
 // ---------- prerecorded goblin videos (rendered in Blender); the live 3D intro is the fallback for the rules ----------
-const INTRO_VID = { src: 'intro.mp4', live: true, linger: "Wait… he's not done 👀", cues: {"drop": 0.6, "land": 1.5, "laugh": 1.85, "cackle": 44.15, "squat": 45.05, "fart": 46.15, "linger": 48.95, "end": 50.15, "lines": [2.95, 6.35, 12.55, 19.15, 22.95, 29.15, 35.35, 39.15]} };
+const INTRO_VID = { src: 'intro2.mp4', live: true, cues: {"drop": 0.6, "land": 1.5, "laugh": 1.85, "cackle": 82.542, "squat": 83.442, "fart": 84.542, "linger": 87.342, "end": 88.542, "lines": [2.958, 6.333, 12.542, 16.333, 21.333, 27.958, 32.542, 36.333, 42.542, 48.708, 52.542, 61.125, 68.125, 77.542]} };
 const NEWS_VID = { src: 'news.mp4', live: false, cues: {"drop": 0.6, "land": 1.5, "laugh": 1.85, "cackle": 53.375, "squat": 54.275, "fart": 55.375, "linger": 58.175, "end": 59.375, "lines": [2.958, 7.167, 12.167, 16.75, 22.167, 30.75, 37.75, 47.167]} };
 const NEWS_LINES = [
   ["I'm back, mortals… and I brought <b>NEW rules!</b>", "I'm back, mortals. And I brought NEW rules!"],
@@ -3606,12 +3615,9 @@ function prepVid(cfg) {
   el.addEventListener('error', () => { cfg.ok = false; });
   el.src = el.canPlayType('video/mp4; codecs="avc1.640028"') ? cfg.src : cfg.src.replace('.mp4', '.webm'); document.body.appendChild(el);
 }
-function prepIntroVideo() { prepVid(INTRO_VID); prepVid(NEWS_VID); }
+function prepIntroVideo() { prepVid(INTRO_VID); }
 // the rules video, then straight into the "what's new" clip (Skip skips both)
-function startIntro(after) {
-  introSkipAll = false;
-  playIntroVideo(INTRO_VID, () => { if (introSkipAll) { introSkipAll = false; after && after(); return; } setTimeout(() => playIntroVideo(NEWS_VID, after), 150); });
-}
+function startIntro(after) { introSkipAll = false; playIntroVideo(INTRO_VID, after); }
 function playIntroVideo(cfg, after) {
   if (goblin) { after && after(); return; }
   prepVid(cfg);
@@ -3714,7 +3720,7 @@ function startIntroLive(after) {
 }
 const previewIntro = () => { ensureAudio(); if (toss || goblin || placing) return toast('Wait for the current turn to finish'); $('#invite').classList.remove('on'); startIntro(() => { renderLobby(); }); };
 $('#tryHot').onclick = () => { if (!canAim() && !mini) return toast('Start a game with 2+ players first (and wait for the turn to finish)'); startMini('hot'); };
-$('#cupRows').onclick = e => { const b = e.target.closest('[data-cp]'); if (b) cupPick(b.dataset.cp, b.dataset.n); };
+$('#cupRows').onclick = e => { const b = e.target.closest('[data-cp]'); if (!b) return; if (b.dataset.n === '0') { if (mini && mini.picks) { delete mini.picks[String(b.dataset.cp)]; renderCupPanel(); } return; } cupPick(b.dataset.cp, b.dataset.n); };
 $('#tryHolo').onclick = () => sayYugo(true);
 const JACK_ACTS = [['swipe', '💚 Dating app: swipes left on every goblin… until the coin'], ['duel', '⚔️ Pizza-cutter sword duel over the coin'], ['smite', '⚡ Dictator goblin steals it… and gets smitten'], ['sting', '📺 Dateline GBC: To Catch a Coin Thief'], ['neptune', '🔱 Steals Neptune\'s trident in Bologna'], ['plane', '✈️ Steals it in a plane… and crashes'], ['eat', '💩 Eats the coin, poops it out'], ['burp', '🤢 Swallows it, burps it up'], ['juggle', '🤹 Juggles the coin'], ['bite', '🦷 Bites it and chucks it'],
   ['hat', '🎩 Wears the coin as a hat'], ['polish', '✨ Polishes the coin'], ['casino', '🎰 Loses a coin flip, tantrum'], ['surf', '🏄 Surfs the coin around'], ['golf', '⛳ Golfs the coin'], ['wedding', '💍 Proposes to the coin'],
@@ -3737,7 +3743,6 @@ document.addEventListener('click', e => { const b = e.target.closest('[data-gp]'
 $('#tryCups').onclick = () => { if (!canAim() && !mini) return toast('Start a game with 2+ players first (and wait for the turn to finish)'); startMini('cups'); };
 $('#tryRoul').onclick = () => { if (!canAim() && !mini) return toast('Start a game with 2+ players first (and wait for the turn to finish)'); startMini('roulette'); };
 $('#tryBoss').onclick = () => { if (!canAim() && !mini) return toast('Start a game with 2+ players first (and wait for the turn to finish)'); startMini('boss'); };
-$('#newsBtn').onclick = () => { ensureAudio(); if (toss || goblin || placing || mini) return toast('Wait for the current turn to finish'); playIntroVideo(NEWS_VID, () => renderUI()); };
 $('#obeyBtn').onclick = e => { e.stopPropagation(); finishObey(); };
 $('#extrasBtn').onclick = () => $('#extras').classList.toggle('on');
 $('#introBtn').onclick = previewIntro; $('#introBtn2').onclick = previewIntro;
@@ -4471,7 +4476,7 @@ $('#startBtn').onclick = () => {
 };
 
 // ---------- installable app + automatic updates (website version only) ----------
-const BUILD = '1795091842';
+const BUILD = '1795092868';
 if (STANDALONE) {
   try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
   let deferredInstall = null;
