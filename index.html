@@ -3568,9 +3568,7 @@ const INTRO_LINES = [
   ['Land on empty cardboard — you <b>write a new rule</b> on the box.', 'Land on empty cardboard, and you write a new rule on the box.', 'point'],
   ['Land on a rule — <b>you must obey it!</b> Even your own.', 'Land on a rule, and you must obey it! Even your own.', 'shrug'],
   ['Miss the box completely… and <b>YOU drink.</b>', 'Miss the box completely, and YOU drink.', 'wag'],
-  ['Every few rounds, a <b>CHALLENGE</b> appears! 🔥 Hot Goblin · 👹 Boss fights · 🎰 Roulette · 🥤 Cups · 🃏 Higher or Lower · 🥃 Truth or Shot', 'Every few rounds, a challenge appears! Hot Goblin, boss fights, roulette, cups, higher or lower, and truth or shot!', 'cheer'],
-  ['Play along on your <b>phone</b> 📱 — or the <b>space bar</b> — when the screen tells you.', 'Play along on your phone, or with the space bar, when the screen tells you.', 'point'],
-  ['Write a rule that says <b>"kick a field goal"</b> 🏈 … and the unlucky one has to kick it. <b>Miss, and you drink!</b>', 'Write a rule that says kick a field goal, and the unlucky one has to kick it. Miss, and you drink!', 'throw'],
+  ['And watch out… <b>challenges</b> will pop up in the middle of the game!', 'And watch out. Challenges will pop up in the middle of the game!', 'cheer'],
   ['And if you see me again… <b>hide your coin.</b> Hehehe!', 'And if you see me again, hide your coin. Hehehe!', 'cackle'],
 ];
 let introVoice = null;
@@ -3593,7 +3591,7 @@ function endIntro() {
   $('#subs').classList.remove('on'); document.body.classList.remove('intro');
 }
 // ---------- prerecorded goblin videos (rendered in Blender); the live 3D intro is the fallback for the rules ----------
-const INTRO_VID = { src: 'intro2.mp4', live: true, cues: {"drop": 0.6, "land": 1.5, "laugh": 1.85, "cackle": 82.542, "squat": 83.442, "fart": 84.542, "linger": 87.342, "end": 88.542, "lines": [2.958, 6.333, 12.542, 16.333, 21.333, 27.958, 32.542, 36.333, 42.542, 48.708, 52.542, 61.125, 68.125, 77.542]} };
+const INTRO_VID = { src: 'intro3.mp4', live: true, cues: {"drop": 0.6, "land": 1.5, "laugh": 1.85, "cackle": 63.75, "squat": 64.65, "fart": 65.75, "linger": 68.55, "end": 69.75, "lines": [2.958, 6.333, 12.542, 16.333, 21.333, 27.958, 32.542, 36.333, 42.542, 48.708, 52.542, 58.75]} };
 const NEWS_VID = { src: 'news.mp4', live: false, cues: {"drop": 0.6, "land": 1.5, "laugh": 1.85, "cackle": 53.375, "squat": 54.275, "fart": 55.375, "linger": 58.175, "end": 59.375, "lines": [2.958, 7.167, 12.167, 16.75, 22.167, 30.75, 37.75, 47.167]} };
 const NEWS_LINES = [
   ["I'm back, mortals… and I brought <b>NEW rules!</b>", "I'm back, mortals. And I brought NEW rules!"],
@@ -4476,7 +4474,7 @@ $('#startBtn').onclick = () => {
 };
 
 // ---------- installable app + automatic updates (website version only) ----------
-const BUILD = '1795092868';
+const BUILD = '1795103900';
 if (STANDALONE) {
   try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
   let deferredInstall = null;
