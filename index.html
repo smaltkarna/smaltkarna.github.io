@@ -76,6 +76,8 @@
   #hint button{background:rgba(255,255,255,.08);color:var(--ink);padding:7px 10px;font-size:13px;border:1px solid var(--line);white-space:nowrap}
   #result{text-align:center;padding:16px 24px;border-width:2px}
   #result.on{display:block;animation:pop .35s cubic-bezier(.2,1.6,.4,1)}
+  #result.hold{display:block!important;opacity:1!important;pointer-events:auto}
+  #obeyBtn{margin-top:16px;font:800 clamp(16px,1.5vw,20px) system-ui;padding:12px 24px;border-radius:14px;border:0;background:#7dff6a;color:#0d3306;cursor:pointer;box-shadow:0 5px 0 #3c9a2f}#obeyBtn kbd{font-size:12px;opacity:.7}
   #result .title{font-family:"Permanent Marker",cursive;font-size:34px;line-height:1.1}
   #result .sub{color:#e6d8c3;font-size:14.5px;margin-top:6px;line-height:1.4}
   #result.big{max-width:min(900px,calc(100vw - 360px));padding:20px 32px}
@@ -400,7 +402,7 @@
 </aside>
 
 <div id="hint"><span></span><button id="autoBtn">Random spot</button><button id="cancelBtn">Cancel</button></div>
-<div id="result"><div class="title"></div><div class="sub"></div></div>
+<div id="result"><div class="title"></div><div class="sub"></div><button id="obeyBtn" style="display:none"></button></div>
 
 <div id="hud">
   <div id="turn">Add at least 2 players</div>
@@ -536,8 +538,8 @@ try { const s = JSON.parse(localStorage.getItem('pizzabox-v1')); if (s && Array.
 function ruleCap(x, z, skip) {
   const minName = Math.min(...state.players.map(p => p.r), 1.2);
   const others = [...state.players, ...state.rules.filter(q => q !== skip)];
-  const gap = Math.min(9, ...others.map(c => Math.hypot(c.x - x, c.z - z) - c.r * 1.04));
-  return Math.max(0.22, Math.min(minName * 1.5, gap / 1.02 - 0.02, HALF - Math.max(Math.abs(x), Math.abs(z)) - 0.04));
+  const gap = Math.min(9, ...others.map(c => Math.hypot(c.x - x, c.z - z) - c.r * 1.1));
+  return Math.max(0.22, Math.min(minName * 1.15, gap / 1.04 - 0.03, HALF - Math.max(Math.abs(x), Math.abs(z)) - 0.05));
 }
 function seedRules() {
   if (state.seeded || !state.started || state.lobby.length || state.players.length < 2 || placing) return;
@@ -547,13 +549,13 @@ function seedRules() {
     let best = null, bd = -1;
     for (let k = 0; k < 500; k++) { const x = (Math.random() * 2 - 1) * (HALF - 0.4), z = (Math.random() * 2 - 1) * (HALF - 0.4), c = ruleCap(x, z, null); if (c > bd) { bd = c; best = { x, z }; } }
     if (!best || bd < 0.32) return;
-    const r = bd * 0.98;
+    const r = bd * (0.92 + Math.random() * 0.08);
     state.rules.push({ id: newId(), text, by: '🍕 the house', byId: null, color: cols[i % cols.length], r, x: clamp(best.x, -HALF + r, HALF - r), z: clamp(best.z, -HALF + r, HALF - r) }); n++;
   });
   if (n) { addLog(`🍕 ${n} house rules are already on the box`); drawTop(); state.rules.slice(-n).forEach(r => pulse(r)); toast(`🍕 ${n} random house rules are on the box — good luck`); }
   save(); renderUI();
 }
-function fixRules() { for (let pass = 0; pass < 3; pass++) state.rules.forEach(r => { const cap = ruleCap(r.x, r.z, r); r.r = Math.min(Math.max(r.r || 0.5, cap * 0.97), cap); }); }
+function fixRules() { state.rules.forEach(r => { const cap = ruleCap(r.x, r.z, r); r.r = Math.min(r.r || 0.5, cap); }); }
 fixRules();
 state.playTime = state.playTime || 0; state.rounds = state.rounds || 0; state.drinks = state.drinks || {};
 if (!state.clockV2) { if (state.players.length >= 2) state.playTime = Math.max(state.playTime, 30 * 60); state.clockV2 = true; }
@@ -755,7 +757,7 @@ function drawRule(g, r, k, n) {
   sketchCircle(g, cx, cy, R, r.color, r.id, false);
   g.save(); g.translate(cx, cy); g.rotate((rnd() - .5) * 0.4);
   g.globalCompositeOperation = 'multiply'; g.fillStyle = r.color; g.textAlign = 'center'; g.textBaseline = 'middle';
-  g.font = `${R * (n > 9 ? 1.1 : 1.35)}px "Permanent Marker"`; g.fillText(String(n), 0, R * 0.06);
+  g.font = `${R * (n > 9 ? 0.95 : 1.15)}px "Permanent Marker"`; g.fillText(String(n), 0, R * 0.06);
   g.restore();
 }
 
@@ -1220,9 +1222,22 @@ function evaluate(x, z) {
   } else if (rh.length) {
     const r = rh[0]; pulse(r);
     state.rounds++; showResult(`📜 ${r.text}`, `👉 ${tosser.name} has to do it!  ·  rule #${state.rules.indexOf(r) + 1}, written by ${r.byId === tosser.id ? 'you 😈' : r.by}`, r.color, 'big'); addLog(`📜 ${tosser.name} → "${r.text}"`);
-    if (/field\s*-?\s*goal/i.test(r.text)) { const kid = tosser.id; setTimeout(() => { if (mini || goblin || toss || gameOver) return; startMini('fieldgoal'); if (mini) mini.who = kid; }, 2400); }
-    advance();
+    if (/field\s*-?\s*goal/i.test(r.text)) { const kid = tosser.id; setTimeout(() => { if (mini || goblin || toss || gameOver) return; startMini('fieldgoal'); if (mini) mini.who = kid; }, 2400); advance(); }
+    else startObey(tosser, r);
   } else openRuleModal(x, z, tosser);
+}
+// landing on a rule: the game waits until the rule has actually been done
+var obey = null;
+function startObey(p, r) {
+  obey = { pid: p.id, name: p.name, text: r.text, color: r.color, t0: Date.now() };
+  $('#result').classList.add('hold'); $('#obeyBtn').innerHTML = `✅ ${esc(p.name)} did it — next turn <kbd>Space</kbd>`; $('#obeyBtn').style.display = '';
+  clearTimeout(obey.timer); obey.timer = setTimeout(() => finishObey(), 180000);
+  renderUI(); hostPublish();
+}
+function finishObey() {
+  if (!obey) return; clearTimeout(obey.timer); obey = null;
+  $('#result').classList.remove('hold'); $('#obeyBtn').style.display = 'none'; hideResult(); dingSfx();
+  advance(); hostPublish();
 }
 function advance() {
   if (state.players.length) state.turn = (state.turn + 1) % state.players.length;
@@ -1248,7 +1263,7 @@ $('#saveRule').onclick = () => {
   const gap = Math.min(...state.players.map(p => Math.hypot(p.x - x, p.z - z) - p.r), ...state.rules.map(r => Math.hypot(r.x - x, r.z - z) - r.r), 9);
   // never bigger than the name circles, never overlapping another circle, never through the wall
   const maxR = ruleCap(x, z, null);
-  const r = maxR * 0.98;
+  const r = maxR * (0.92 + Math.random() * 0.08);
   const rule = { id: newId(), text, by: tosser.name, byId: tosser.id, color: tosser.color, r, x: clamp(x, -HALF + r, HALF - r), z: clamp(z, -HALF + r, HALF - r) };
   state.rules.push(rule); drawTop(); pulse(rule);
   showResult(`✍️ ${text}`, `New rule by ${tosser.name} — whoever lands here has to do it!`, tosser.color, 'big');
@@ -1277,7 +1292,7 @@ const aimRing = new THREE.Group(); scene.add(aimRing);
   flat.add(overlay(new THREE.Mesh(new THREE.RingGeometry(0.965, 1, 96), new THREE.MeshBasicMaterial({ color: '#ffd84a', opacity: 0.95 }))));
   flat.add(overlay(new THREE.Mesh(new THREE.CircleGeometry(1, 64), new THREE.MeshBasicMaterial({ color: '#ffd84a', opacity: 0.13 }))));
 }
-const canAim = () => !gameOver && !mini && state.started && state.players.length >= 2 && !toss && !goblin && !placing && !$('#modal').classList.contains('on');
+const canAim = () => !gameOver && !mini && !obey && state.started && state.players.length >= 2 && !toss && !goblin && !placing && !$('#modal').classList.contains('on');
 function stepAim(dt) {
   const ok = canAim();
   if (!ok && aim.mode === 'lock' && !toss) { aim.mode = 'wander'; }
@@ -1299,6 +1314,7 @@ function stepAim(dt) {
 function flipPressed() {
   ensureAudio();
   if (mini) return miniKey();
+  if (obey) return finishObey();
   if (state.players.length < 2) return toast('Add at least 2 players first');
   if (!canAim()) return;
   if (aim.mode === 'wander') { aim.mode = 'lock'; aim.lockT = 0; aim.r = COIN_R; hideResult(); clearPoop(); clearBurgers(); renderUI(); return; }
@@ -3455,7 +3471,7 @@ function spinRoulette() {
 }
 function miniKey() { if (!mini || mini.stage !== 'play') return; if (mini.type === 'hot') passHot(); else if (mini.type === 'boss') bossHit(1, null); else if (mini.type === 'fieldgoal') fgPress(null); }
 // 15-second turn clock: too slow and you drink, and the turn moves on
-var TURN_SECS = 15, turnClock = { pid: null, left: TURN_SECS, on: false, shown: null };
+var TURN_SECS = 25, turnClock = { pid: null, left: TURN_SECS, on: false, shown: null };
 function stepTurnClock(dt) {
   const el = $('#turnClock'), cur = current();
   const live = canAim() && cur && !state.lobby.length && !document.body.classList.contains('intro');
@@ -3467,7 +3483,7 @@ function stepTurnClock(dt) {
   if (turnClock.left <= 0) {
     turnClock.on = false; el.classList.remove('on'); aim.mode = 'wander';
     drink(cur); state.rounds++; tone('sawtooth', 300, 120, 0.5, 0.12);
-    showResult(`⏰ Too slow, ${cur.name}!`, '15 seconds are up — drink! 🍺', cur.color); addLog(`⏰ ${cur.name} ran out of time and drank`);
+    showResult(`⏰ Too slow, ${cur.name}!`, `${TURN_SECS} seconds are up — drink! 🍺`, cur.color); addLog(`⏰ ${cur.name} ran out of time and drank`);
     advance();
   }
 }
@@ -3722,6 +3738,7 @@ $('#tryCups').onclick = () => { if (!canAim() && !mini) return toast('Start a ga
 $('#tryRoul').onclick = () => { if (!canAim() && !mini) return toast('Start a game with 2+ players first (and wait for the turn to finish)'); startMini('roulette'); };
 $('#tryBoss').onclick = () => { if (!canAim() && !mini) return toast('Start a game with 2+ players first (and wait for the turn to finish)'); startMini('boss'); };
 $('#newsBtn').onclick = () => { ensureAudio(); if (toss || goblin || placing || mini) return toast('Wait for the current turn to finish'); playIntroVideo(NEWS_VID, () => renderUI()); };
+$('#obeyBtn').onclick = e => { e.stopPropagation(); finishObey(); };
 $('#extrasBtn').onclick = () => $('#extras').classList.toggle('on');
 $('#introBtn').onclick = previewIntro; $('#introBtn2').onclick = previewIntro;
 $('#skipIntro').onclick = () => {
@@ -3988,7 +4005,7 @@ function hostPublish() {
   if (CTRL || !room) return;
   const cur = state.players.length ? current() : null;
   const g = {
-    role: 'host', since: hostSince, phase: gamePhase(), turn: cur ? cur.id : null,
+    role: 'host', since: hostSince, phase: gamePhase(), turn: cur ? cur.id : null, obey: obey ? { pid: obey.pid, name: obey.name, text: obey.text } : null,
     ruleFor: pendingRule ? pendingRule.tosser.id : null, started: !!state.started, tl: turnClock && turnClock.on ? turnClock.shown : null, fr: +fairR().toFixed(2), fm: +maxDrawR().toFixed(2), owners, roundRule: state.roundRule ? [String(state.roundRule.text).slice(0, 80), state.roundRule.left] : null,
     mini: mini ? { type: mini.type, stage: mini.stage, holder: mini.holder ? mini.holder.id : null, hp: mini.hp, max: mini.max, left: Math.ceil(mini.type === 'cups' ? (mini.pickLeft || 0) : mini.left), sub: mini.sub || null, who: mini.who != null ? mini.who : null, n: mini.n || 0, card: mini.card ? cardTxt(mini.card) : null, cardS: mini.card ? mini.card.s : null, next: mini.next ? cardTxt(mini.next) : null, q: mini.q || null, asker: mini.asker != null ? mini.asker : null, verdict: mini.verdict || null, vb: mini.vb || 0, vl: mini.vl || 0, voted: mini.votes ? Object.keys(mini.votes) : [] } : null,
     lobby: state.lobby.map(p => ({ id: p.id, name: p.name, color: p.color })), drawer: drawerId(),
@@ -4002,6 +4019,7 @@ function hostPublish() {
 function handleCmd(c, cmd) {
   const pid = String(c.pid);
   if (cmd.type !== 'join' && owners[pid] !== String(c.cid)) return; // not this phone's player
+  if (cmd.type === 'obeyDone') { finishObey(); return; }
   if (cmd.type === 'cup') { cupPick(pid, cmd.i); return; }
   if (cmd.type === 'hl') { hlGuess(pid, cmd.v === 'h' ? 'h' : 'l'); return; }
   if (cmd.type === 'tos') { tosChoose(pid, ['truth', 'shot', 'done'].includes(cmd.v) ? cmd.v : null); return; }
@@ -4374,13 +4392,14 @@ function renderCtrl() {
   meEl.innerHTML = `<span class="dot" style="background:${mine.color}"></span>${esc(mine.name)}`;
   if (H.phase === 'mini' && H.mini) { $('#cLive').classList.remove('on'); $('#cTurn').innerHTML = ''; renderMiniCtrl(body, mine, players); return; }
   body.dataset.mk = '';
-  $('#cLive').classList.toggle('on', String(H.turn) === String(mine.id) && !(H.phase === 'rule' && String(H.ruleFor) === String(mine.id)) && H.phase !== 'over');
+  $('#cLive').classList.toggle('on', !H.obey && String(H.turn) === String(mine.id) && !(H.phase === 'rule' && String(H.ruleFor) === String(mine.id)) && H.phase !== 'over');
   const myTurn = String(H.turn) === String(mine.id), turnP = players.find(p => String(p.id) === String(H.turn));
   if (myTurn && !cWasMine) { try { navigator.vibrate && navigator.vibrate([120, 60, 120]); } catch (e) {} }
   cWasMine = myTurn;
   let html = H.roundRule ? `<div class="c-card" style="border-color:#ffd84a;background:rgba(60,40,8,.9)"><p style="margin:0;color:#fff3c4">🎰 <b style="color:#ffd84a">This round, everyone:</b> ${esc(H.roundRule[0])} <span style="color:var(--muted)">(${H.roundRule[1]} turn${H.roundRule[1] === 1 ? '' : 's'} left)</span></p></div>` : '';
   const tEl = $('#cTurn');
   if (H.phase === 'over' || (H.phase === 'rule' && String(H.ruleFor) === String(mine.id))) tEl.innerHTML = '';
+  else if (H.obey) tEl.innerHTML = `<span style="color:#ffd84a">📜 ${String(H.obey.pid) === String(mine.id) ? 'Do the rule!' : esc(H.obey.name) + ' is doing a rule…'}</span>`;
   else if (myTurn) tEl.innerHTML = `<span style="color:${lighten(mine.color)}">🍕 Your turn!${H.tl != null ? ` <b style="color:${H.tl <= 5 ? '#ff6b6b' : '#ffd84a'}">⏱ ${H.tl}s</b>` : ''}</span>`;
   else if (H.phase === 'rule') { const w = players.find(p => String(p.id) === String(H.ruleFor)); tEl.innerHTML = `<span style="color:${w ? lighten(w.color) : 'var(--ink)'}">✍️ ${w ? esc(w.name) : 'Someone'} is writing a rule…</span>`; }
   else tEl.innerHTML = turnP ? `<span style="color:${lighten(turnP.color)}">🍕 ${esc(turnP.name)}'s turn</span><small>Watch the big screen — your phone buzzes when you're up.</small>` : 'Waiting for players…';
@@ -4391,6 +4410,9 @@ function renderCtrl() {
       <textarea id="cRule" maxlength="70" placeholder="e.g. Drink with your left hand"></textarea>
       <div class="sugs">${SUGS_C.map(t => `<button type="button" data-sug="${esc(t)}">${esc(t)}</button>`).join('')}</div>
       <div class="c-row"><button class="c-btn c-ghost" id="cNoRule">No rule</button><button class="c-btn" id="cWrite" style="flex:1">Write it on the box</button></div>`;
+  } else if (H.obey) {
+    html += `<div class="c-card c-result" style="border-color:#ffd84a"><div class="t" style="color:#ffd84a">📜 ${esc(H.obey.text)}</div><p>${String(H.obey.pid) === String(mine.id) ? 'Your turn is paused until you do it.' : esc(H.obey.name) + ' has to do it — the game waits.'}</p></div>`
+      + (String(H.obey.pid) === String(mine.id) ? `<button class="c-big" id="cObey">✅ I did it — next turn</button>` : '');
   } else if (myTurn) {
     const lock = H.phase === 'lock', busy = !['aim', 'lock'].includes(H.phase);
     html += `<button class="c-big mine ${lock ? 'lock' : ''}" id="cFlip" ${busy ? 'disabled' : ''}>${busy ? (H.phase === 'busy' ? '🪙 In the air…' : 'Hold on…') : lock ? '🪙 TAP TO<br>THROW!' : '🎯 TAP TO<br>FREEZE'}</button>
@@ -4400,6 +4422,7 @@ function renderCtrl() {
   if (H.result && !focusTurn) html += `<div class="c-card c-result" style="border-color:${H.result.c || 'var(--line)'}"><div class="t" style="color:${H.result.c ? lighten(H.result.c) : 'var(--ink)'}">${esc(H.result.t)}</div><p>${esc(H.result.s || '')}</p></div>`;
   if (H.rules && H.rules.length && !focusTurn) html += `<div class="c-card"><h3>Rules on the box</h3><ol class="c-rules">${H.rules.map(r => `<li value="${r[0]}">${esc(r[1])} <span style="color:var(--muted)">— ${esc(r[2] || '')}</span></li>`).join('')}</ol></div>`;
   body.innerHTML = html;
+  const ob = $('#cObey'); if (ob) ob.addEventListener('click', () => { cSend('obeyDone'); ob.disabled = true; });
   const fl = $('#cFlip'); if (fl) fl.addEventListener('pointerdown', e => { e.preventDefault(); if (!fl.disabled) { cSend('flip'); fl.style.transform = 'scale(.96)'; setTimeout(() => fl.style.transform = '', 120); } });
   const rt = $('#cRule');
   if (rt) {
@@ -4448,7 +4471,7 @@ $('#startBtn').onclick = () => {
 };
 
 // ---------- installable app + automatic updates (website version only) ----------
-const BUILD = '1795038978';
+const BUILD = '1795091842';
 if (STANDALONE) {
   try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
   let deferredInstall = null;
