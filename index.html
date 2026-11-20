@@ -313,7 +313,11 @@
   .qte-who{font:900 clamp(22px,2.6vw,34px) "Permanent Marker",cursive;color:#fff;text-shadow:0 3px 10px #000;margin-bottom:6px}
   .qte-k{display:inline-block;font:400 clamp(34px,5vw,64px) "Permanent Marker",cursive;color:#fff;background:#d7263d;border:4px solid #fff;border-radius:22px;padding:8px 28px;box-shadow:0 0 44px rgba(255,60,60,.75);animation:throb .3s ease-in-out infinite}
   .qte-how{margin-top:8px;color:#fff;font-weight:800;font-size:clamp(15px,1.6vw,19px);text-shadow:0 2px 8px #000}
-  .qte-bar{margin:10px auto 0;width:min(440px,70vw);height:14px;background:rgba(0,0,0,.6);border:2px solid #fff;border-radius:10px;overflow:hidden}
+  .qte-track{position:relative;margin:12px auto 0;width:min(520px,80vw);height:34px;background:rgba(20,8,4,.85);border:3px solid #fff;border-radius:12px;overflow:hidden;box-shadow:0 6px 20px rgba(0,0,0,.5)}
+  .qte-zone{position:absolute;top:0;bottom:0;background:linear-gradient(180deg,#9be15d,#3f9a2a);box-shadow:0 0 14px #7dff6a}
+  .qte-mark{position:absolute;top:-2px;bottom:-2px;width:6px;margin-left:-3px;background:#fff;box-shadow:0 0 10px #fff,0 0 3px #000}
+  #qte.miss .qte-k{background:#555;animation:none;box-shadow:none}
+  .qte-bar{margin:8px auto 0;width:min(520px,80vw);height:8px;background:rgba(0,0,0,.6);border:2px solid #fff;border-radius:10px;overflow:hidden}
   .qte-fill{height:100%;width:100%;background:linear-gradient(90deg,#ffd84a,#ff5a3c)}
   #qte.hit .qte-k{background:#2fa84f;animation:none;box-shadow:0 0 44px rgba(80,220,100,.8)}
   body.ctrl #qte{display:none!important}
@@ -1743,15 +1747,28 @@ function speakV(text, pitch, rate, kind) {
   try { const ut = new SpeechSynthesisUtterance(text); ut.lang = 'en-US'; ut.pitch = pitch; ut.rate = rate; const v = pickVoice(kind); if (v) { ut.voice = v; ut.lang = v.lang; } speechSynthesis.speak(ut); } catch (e) {}
 }
 // ---------- quick-time event (the campus-debate sniper shot): press Space / tap / phone button in time ----------
-let QTE = null;
+let QTE = null, QTE_LAST = { pressed: false, hit: false };
+const qtePos = (t0, sp) => { const x = ((performance.now() - t0) / 1000 * sp) % 2; return x < 1 ? x : 2 - x; };   // marker sweeps 0→1→0…
 function qteStart(pid, name) {
-  QTE = { pid: pid == null ? null : pid, hit: false };
-  $('#qte').innerHTML = `${name ? `<div class="qte-who">${esc(name)}!</div>` : ''}<div class="qte-k">🛡️ DEFLECT IT!</div><div class="qte-how">Press <b>Space</b> or tap the screen${pid != null ? ' / your phone' : ''}</div><div class="qte-bar"><div class="qte-fill"></div></div>`;
-  $('#qte').classList.remove('hit'); $('#qte').classList.add('on'); hostPublish();
+  const w = 0.13, z = 0.12 + Math.random() * (0.76 - w);
+  QTE = { pid: pid == null ? null : pid, done: false, hit: false, pressed: false, z, w, sp: 2.3, t0: performance.now(), pos: 0 };
+  $('#qte').innerHTML = `${name ? `<div class="qte-who">${esc(name)}!</div>` : ''}<div class="qte-k">🛡️ DEFLECT IT!</div><div class="qte-how">Press <b>Space</b> or tap${pid != null ? ' (or your phone)' : ''} when the marker is in the <b style="color:#7dff6a">green</b></div>
+    <div class="qte-track"><div class="qte-zone" style="left:${z * 100}%;width:${w * 100}%"></div><div class="qte-mark"></div></div><div class="qte-bar"><div class="qte-fill"></div></div>`;
+  $('#qte').classList.remove('hit', 'miss'); $('#qte').classList.add('on'); hostPublish();
 }
-function qteTick(u) { const f = document.querySelector('#qte .qte-fill'); if (f) f.style.width = (100 * (1 - u)) + '%'; }
-function qtePress() { if (!QTE || QTE.hit) return; QTE.hit = true; $('#qte').classList.add('hit'); tone('sine', 1200, 2400, 0.15, 0.15); }
-function qteEnd() { const ok = !!(QTE && QTE.hit); QTE = null; $('#qte').classList.remove('on', 'hit'); hostPublish(); return ok; }
+function qteTick(u) {
+  if (!QTE) return; const f = document.querySelector('#qte .qte-fill'); if (f) f.style.width = (100 * (1 - u)) + '%';
+  if (QTE.done) return; QTE.pos = qtePos(QTE.t0, QTE.sp); const m = document.querySelector('#qte .qte-mark'); if (m) m.style.left = (QTE.pos * 100) + '%';
+}
+function qtePress(phoneHit) {
+  if (!QTE || QTE.done) return; QTE.done = true; QTE.pressed = true;
+  QTE.pos = qtePos(QTE.t0, QTE.sp); const m = document.querySelector('#qte .qte-mark'); if (m) m.style.left = (QTE.pos * 100) + '%';
+  QTE.hit = typeof phoneHit === 'boolean' ? phoneHit : (QTE.pos >= QTE.z && QTE.pos <= QTE.z + QTE.w);
+  $('#qte').classList.add(QTE.hit ? 'hit' : 'miss'); const k = document.querySelector('#qte .qte-k'); if (k) k.textContent = QTE.hit ? '🛡️ PERFECT!' : '❌ MISSED!';
+  if (QTE.hit) tone('sine', 1200, 2400, 0.15, 0.15); else tone('sawtooth', 300, 120, 0.35, 0.12);
+  hostPublish();
+}
+function qteEnd() { QTE_LAST = { pressed: !!(QTE && QTE.pressed), hit: !!(QTE && QTE.hit) }; QTE = null; $('#qte').classList.remove('on', 'hit', 'miss'); hostPublish(); return QTE_LAST.hit; }
 addEventListener('keydown', e => { if (QTE && (e.code === 'Space' || e.code === 'Enter')) { e.preventDefault(); e.stopImmediatePropagation(); if (!e.repeat) qtePress(); } }, true);
 addEventListener('pointerdown', e => { if (QTE && !e.target.closest('#panel')) { e.stopImmediatePropagation(); qtePress(); } }, true);
 // ---------- campus debate set (Jack act: 'debate') ----------
@@ -2016,10 +2033,11 @@ function startGoblin(coinPos, forceAct) {
         bullet = new THREE.Mesh(new THREE.SphereGeometry(0.05, 10, 8), new THREE.MeshBasicMaterial({ color: '#fff0a8' })); bullet.scale.z = 3; scene.add(bullet); bullet.position.copy(muzzle);
         noiseSfx('lowpass', 2600, 180, 0.6, 0.7, 1); tone('square', 170, 55, 0.3, 0.22);
         const cur = state.players.length ? current() : null; qName = cur ? cur.name : ''; qColor = cur ? cur.color : qColor;
-        qteStart(cur ? cur.id : null, qName); tone('sawtooth', 110, 90, 1.6, 0.06); });
+        qteStart(cur ? cur.id : null, qName); tone('sawtooth', 110, 90, 3.2, 0.05); });
     // slow motion: the bullet creeps toward the coin while the player has ~1.6 seconds to hit it
-    const QT = 1.6;
-    steps.push({ d: QT, wait: () => !QTE || QTE.hit || goblin.t >= QT, f: t => { const u = Math.min(1, t / QT); sideCam(); bullet.position.lerpVectors(P1, P2, u); bullet.lookAt(HIT); qteTick(u); C().brows.forEach((b, i) => b.rotation.z = (i ? 1 : -1) * 0.12); } });
+    const QT = 3.2;
+    steps.push({ d: QT, wait: () => !QTE || QTE.done || goblin.t >= QT, f: t => { const u = Math.min(1, t / QT); sideCam(); bullet.position.lerpVectors(P1, P2, u); bullet.lookAt(HIT); qteTick(u); C().brows.forEach((b, i) => b.rotation.z = (i ? 1 : -1) * 0.12); } });
+    S2(0.45, () => { sideCam(); qteTick(1); });
     S2(0.01, () => {}, () => { saved = qteEnd(); });
     // ✅ SAVED — PING. it bounces right off his head
     S2if(() => saved, 0.06, u => { sideCam(); bullet.position.lerpVectors(P2, HIT, u); }, () => { $('#cutCap').innerHTML = '🛡️ DEFLECTED!'; $('#cutCap').classList.add('on'); });
@@ -2044,7 +2062,7 @@ function startGoblin(coinPos, forceAct) {
     S2if(() => !saved, 1.0, u => { sideCam(); const e = ease(Math.min(1, u * 1.6)); C().root.rotation.x = -1.45 * e; C().head.rotation.y = u * 34; SET.st.duck = Math.min(1, u * 4); },
       () => { scene.remove(bullet); bullet = null; tone('square', 2100, 1300, 0.14, 0.12); tone('triangle', 3200, 2600, 0.4, 0.08); noiseSfx('highpass', 7000, 3000, 0.18, 0.45, 2); shake = Math.max(shake, 0.35);
         spawnParts(HIT, 30, { colors: ['#fff6c2', '#ffd84a', '#ffffff'], size: 0.035, shape: 'box', speed: 4, up: 3, life: 0.7, gravity: 9 }); setTimeout(() => thudSfx(0.7), 450); noiseSfx('bandpass', 900, 500, 1.0, 0.22, 2);
-        $('#cutCap').innerHTML = '⏰ Too slow!'; $('#cutCap').classList.add('on'); });
+        $('#cutCap').innerHTML = QTE_LAST.pressed ? '❌ Missed!' : '⏰ Too slow!'; $('#cutCap').classList.add('on'); });
     S2if(() => !saved, 1.4, u => { sideCam(); C().head.rotation.y = 0; }, () => noiseSfx('bandpass', 700, 400, 1.2, 0.18, 2));
     S2(0.5, u => { fade(u); shutC(); });
     S2(0.01, () => {}, () => {
@@ -2058,7 +2076,7 @@ function startGoblin(coinPos, forceAct) {
     S2(0.01, () => neutral()); squash();
     S2if(() => saved, 1.8, u => { G.root.rotation.z = 0.22 * Math.sin(u * 14); G.head.rotation.z = -0.3 * Math.sin(u * 11); G.jaw.scale.y = 0.6; if (stars) stars.rotation.y += 0.09; }, () => { [0, 0.3, 0.6, 0.9].forEach(d => tone('sine', 2200, 2600, 0.12, 0.05, d)); });
     S2if(() => saved, 0.01, () => {}, () => { if (stars && stars.parent) stars.parent.remove(stars); stars = null; G.root.rotation.z = 0; neutral(); speak('Rigged.', 0.6, 0.9); });
-    S2if(() => !saved, 0.01, () => {}, () => { showResult(`⏰ Too slow${qName ? ', ' + qName : ''}!`, 'The goblin got the coin — drink! 🍺', qColor); });
+    S2if(() => !saved, 0.01, () => {}, () => { showResult(`${QTE_LAST.pressed ? '❌ Missed' : '⏰ Too slow'}${qName ? ', ' + qName : ''}!`, 'The goblin got the coin — drink! 🍺', qColor); });
   } else if (plan.act === 'swipe') {
     S2(0.01, () => { G.root.position.copy(stand); G.root.visible = false; });
   } else if (plan.entr === 'walk') {
@@ -4234,7 +4252,7 @@ function hostPublish() {
   const cur = state.players.length ? current() : null;
   const g = {
     role: 'host', since: hostSince, phase: gamePhase(), turn: cur ? cur.id : null, obey: obey ? { pid: obey.pid, name: obey.name, text: obey.text } : null,
-    ruleFor: pendingRule ? pendingRule.tosser.id : null, qte: QTE ? { pid: QTE.pid } : null, started: !!state.started, tl: turnClock && turnClock.on ? turnClock.shown : null, fr: +fairR().toFixed(2), fm: +maxDrawR().toFixed(2), owners, roundRule: state.roundRule ? [String(state.roundRule.text).slice(0, 80), state.roundRule.left] : null,
+    ruleFor: pendingRule ? pendingRule.tosser.id : null, qte: QTE ? { pid: QTE.pid, z: +QTE.z.toFixed(3), w: QTE.w, sp: QTE.sp, done: QTE.done, hit: QTE.hit } : null, started: !!state.started, tl: turnClock && turnClock.on ? turnClock.shown : null, fr: +fairR().toFixed(2), fm: +maxDrawR().toFixed(2), owners, roundRule: state.roundRule ? [String(state.roundRule.text).slice(0, 80), state.roundRule.left] : null,
     mini: mini ? { type: mini.type, stage: mini.stage, holder: mini.holder ? mini.holder.id : null, hp: mini.hp, max: mini.max, left: Math.ceil(mini.type === 'cups' ? (mini.pickLeft || 0) : mini.left), sub: mini.sub || null, who: mini.who != null ? mini.who : null, n: mini.n || 0, card: mini.card ? cardTxt(mini.card) : null, cardS: mini.card ? mini.card.s : null, next: mini.next ? cardTxt(mini.next) : null, q: mini.q || null, asker: mini.asker != null ? mini.asker : null, verdict: mini.verdict || null, vb: mini.vb || 0, vl: mini.vl || 0, voted: mini.votes ? Object.keys(mini.votes) : [] } : null,
     lobby: state.lobby.map(p => ({ id: p.id, name: p.name, color: p.color })), drawer: drawerId(),
     players: state.players.map(p => ({ id: p.id, name: p.name, color: p.color, x: +p.x.toFixed(2), z: +p.z.toFixed(2), r: +p.r.toFixed(2) })),
@@ -4252,7 +4270,7 @@ function handleCmd(c, cmd) {
   if (cmd.type === 'hl') { hlGuess(pid, cmd.v === 'h' ? 'h' : 'l'); return; }
   if (cmd.type === 'tos') { tosChoose(pid, ['truth', 'shot', 'done'].includes(cmd.v) ? cmd.v : null); return; }
   if (cmd.type === 'kick') { fgPress(pid); return; }
-  if (cmd.type === 'deflect') { if (QTE && (QTE.pid == null || String(QTE.pid) === pid)) qtePress(); return; }
+  if (cmd.type === 'deflect') { if (QTE && (QTE.pid == null || String(QTE.pid) === pid)) qtePress(typeof cmd.hit === 'boolean' ? cmd.hit : undefined); return; }
   if (cmd.type === 'vote') { tosVote(pid, cmd.v); return; }
   if (cmd.type === 'tosq') { tosAsk(pid, typeof cmd.text === 'string' ? cmd.text : cmd.v === 'idea' ? 'idea' : 'say'); return; }
   if (cmd.type === 'pass') { if (mini && mini.type === 'hot' && mini.holder && String(mini.holder.id) === pid) passHot(); return; }
@@ -4620,12 +4638,17 @@ function renderCtrl() {
   }
   meEl.innerHTML = `<span class="dot" style="background:${mine.color}"></span>${esc(mine.name)}`;
   if (H.qte) {
-    $('#cTurn').innerHTML = ''; const mineQ = H.qte.pid == null || String(H.qte.pid) === String(mine.id), key = 'qte' + mineQ;
+    $('#cTurn').innerHTML = ''; const mineQ = H.qte.pid == null || String(H.qte.pid) === String(mine.id), key = 'qte' + mineQ + H.qte.z;
     if (body.dataset.mk !== key) {
       body.dataset.mk = key;
       const who = (players.find(p => String(p.id) === String(H.qte.pid)) || {}).name || 'the shooter';
-      body.innerHTML = mineQ ? `<button class="c-big hot" id="cDeflect">🛡️ DEFLECT!</button>` : `<div class="c-card" style="text-align:center"><h3>🎯 Sniper!</h3><p>Only ${esc(who)} can save the coin…</p></div>`;
-      const b = $('#cDeflect'); if (b) { try { navigator.vibrate && navigator.vibrate([150, 60, 150]); } catch (e) {} b.addEventListener('pointerdown', e => { e.preventDefault(); cSend('deflect'); b.disabled = true; b.textContent = '🛡️ Deflected!'; }); }
+      if (mineQ) {
+        body.innerHTML = `<div class="c-card" style="text-align:center"><h3>🛡️ DEFLECT IT!</h3><p>Tap when the marker is in the green</p><div class="qte-track" style="width:100%"><div class="qte-zone" style="left:${H.qte.z * 100}%;width:${H.qte.w * 100}%"></div><div class="qte-mark" id="cQm"></div></div></div><button class="c-big hot" id="cDeflect">🛡️ DEFLECT!</button>`;
+        const t0 = performance.now(), m = $('#cQm'), b = $('#cDeflect'), qz = H.qte.z, qw = H.qte.w, qs = H.qte.sp; let done = false, pos = 0;
+        const loop = () => { if (done || !document.body.contains(m)) return; pos = qtePos(t0, qs); m.style.left = (pos * 100) + '%'; requestAnimationFrame(loop); }; loop();
+        try { navigator.vibrate && navigator.vibrate([150, 60, 150]); } catch (e) {}
+        b.addEventListener('pointerdown', e => { e.preventDefault(); if (done) return; done = true; pos = qtePos(t0, qs); m.style.left = (pos * 100) + '%'; const hit = pos >= qz && pos <= qz + qw; cSend('deflect', { hit }); b.disabled = true; b.textContent = hit ? '🛡️ PERFECT!' : '❌ Missed!'; });
+      } else body.innerHTML = `<div class="c-card" style="text-align:center"><h3>🎯 Sniper!</h3><p>Only ${esc(who)} can save the coin…</p></div>`;
     }
     return;
   }
@@ -4710,7 +4733,7 @@ $('#startBtn').onclick = () => {
 };
 
 // ---------- installable app + automatic updates (website version only) ----------
-const BUILD = '1795175800';
+const BUILD = '1795176300';
 if (STANDALONE) {
   try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
   let deferredInstall = null;
