@@ -1720,6 +1720,94 @@ function buildBologna() {
   };
   return { g, statue, head, tri, tick };
 }
+// ---------- campus debate set (Jack act: 'debate') ----------
+const CAMP = new THREE.Vector3(-300, 0, 0);
+function textTex(w, h, draw) { const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h); const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding; t.anisotropy = 4; return t; }
+function buildCampus() {
+  const g = new THREE.Group(); g.position.copy(CAMP);
+  const M = (c, o = {}) => new THREE.MeshStandardMaterial(Object.assign({ color: c, roughness: 0.8 }, o));
+  const box = (w, h, d, mat, x, y, z, par = g) => { const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat); m.position.set(x, y, z); m.castShadow = m.receiveShadow = true; par.add(m); return m; };
+  const cyl = (r1, r2, h, mat, x, y, z, par = g, seg = 18) => { const m = new THREE.Mesh(new THREE.CylinderGeometry(r1, r2, h, seg), mat); m.position.set(x, y, z); m.castShadow = m.receiveShadow = true; par.add(m); return m; };
+  const sph = (r, mat, x, y, z, par = g) => { const m = new THREE.Mesh(new THREE.SphereGeometry(r, 20, 14), mat); m.position.set(x, y, z); m.castShadow = true; par.add(m); return m; };
+  const plane = (w, h, mat, x, y, z, par = g) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), mat); m.position.set(x, y, z); par.add(m); return m; };
+  const label = (txt, w, h, bg, fg, font) => new THREE.MeshStandardMaterial({ roughness: 0.85, map: textTex(w, h, (x, W, H) => { x.fillStyle = bg; x.fillRect(0, 0, W, H); x.fillStyle = fg; x.font = font; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(txt, W / 2, H / 2 + 4); }) });
+  // ground: lawn + plaza
+  const grass = new THREE.Mesh(new THREE.PlaneGeometry(200, 200), M('#5f9447', { roughness: 1 })); grass.rotation.x = -Math.PI / 2; grass.receiveShadow = true; g.add(grass);
+  const plaza = new THREE.Mesh(new THREE.PlaneGeometry(26, 22), M('#cdc5b5', { roughness: 0.95 })); plaza.rotation.x = -Math.PI / 2; plaza.position.set(0, 0.012, 3); plaza.receiveShadow = true; g.add(plaza);
+  // the big brick hall with columns + clock tower
+  const brick = brickify(M('#a0523a')), white = M('#f1ece2', { roughness: 0.6 }), slate = M('#3d4f5c', { roughness: 0.7 });
+  box(38, 10, 6, brick, 0, 5, -17);
+  for (let i = 0; i < 6; i++) cyl(0.45, 0.52, 8, white, -7.5 + i * 3, 4, -13.3);
+  box(18, 1.2, 1.9, white, 0, 8.6, -13.5);
+  plane(16, 0.95, label('GOBLIN  STATE  UNIVERSITY', 2048, 120, '#f1ece2', '#5a4632', '700 84px Georgia, serif'), 0, 8.6, -12.53);
+  const ped = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, 1.9, 3), white); ped.rotation.x = -Math.PI / 2; ped.scale.set(10.4, 1, 2.2); ped.position.set(0, 10.3, -13.5); ped.castShadow = true; g.add(ped);
+  box(20, 0.3, 3.2, white, 0, 0.15, -12.2); box(20, 0.3, 1.6, white, 0, 0.45, -13.0);
+  for (let i = 0; i < 10; i++) { if (Math.abs(i - 4.5) < 3) continue; box(1.4, 2.0, 0.1, M('#2a3440', { roughness: 0.2, metalness: 0.3 }), -16.5 + i * 3.67, 5.6, -13.98); }
+  box(5, 9, 5, brick, 0, 14.5, -17);
+  const clock = cyl(1.5, 1.5, 0.12, white, 0, 15.5, -14.45, g, 32); clock.rotation.x = Math.PI / 2;
+  box(0.1, 1.0, 0.05, M('#111'), 0, 15.9, -14.36); const mh = box(0.1, 0.7, 0.05, M('#111'), 0.25, 15.6, -14.36); mh.rotation.z = -1.2;
+  const roof = new THREE.Mesh(new THREE.ConeGeometry(3.8, 4.5, 4), slate); roof.rotation.y = Math.PI / 4; roof.position.set(0, 21.2, -17); roof.castShadow = true; g.add(roof);
+  // the side building (the sniper's rooftop)
+  const brick2 = brickify(M('#8e4a33'));
+  box(8, 7, 8, brick2, 13, 3.5, 17);
+  box(8.4, 0.5, 0.3, white, 13, 7.25, 12.9); box(8.4, 0.5, 0.3, white, 13, 7.25, 21.1); box(0.3, 0.5, 8.4, white, 8.9, 7.25, 17); box(0.3, 0.5, 8.4, white, 17.1, 7.25, 17);
+  box(1.2, 1.4, 1.2, M('#9aa0a6', { metalness: 0.5, roughness: 0.4 }), 15, 7.7, 19); // AC unit
+  const glass = M('#2a3440', { roughness: 0.15, metalness: 0.4 });
+  for (let r = 0; r < 2; r++) for (let k = 0; k < 3; k++) { box(1.3, 1.5, 0.08, glass, 10.4 + k * 2.6, 2 + r * 3, 12.97); box(0.08, 1.5, 1.3, glass, 8.97, 2 + r * 3, 14.4 + k * 2.6); }
+  // trees
+  const bark = M('#5b3d24'), leaf = M('#3f7a35', { roughness: 0.9 });
+  [[-12, 6], [-15, -3], [12, 3], [-9, 14], [21, 6], [-21, 11], [-6, -10], [8, -9]].forEach(([x, z]) => { cyl(0.25, 0.32, 2.6, bark, x, 1.3, z); sph(1.9, leaf, x, 3.9, z); sph(1.3, leaf, x + 0.8, 4.8, z - 0.3); });
+  // the booth: tent + table + mic
+  const pole = M('#d0d0d0', { metalness: 0.6, roughness: 0.3 });
+  [[-1.9, -1.9], [1.9, -1.9], [-1.9, 1.3], [1.9, 1.3]].forEach(([x, z]) => cyl(0.04, 0.04, 3.5, pole, x, 1.75, z, g, 8));
+  const stripes = new THREE.MeshStandardMaterial({ roughness: 0.85, map: textTex(256, 256, (x, W, H) => { for (let i = 0; i < 8; i++) { x.fillStyle = i % 2 ? '#ffffff' : '#c8102e'; x.fillRect(i * W / 8, 0, W / 8, H); } }) });
+  box(4.1, 0.12, 3.5, stripes, 0, 3.56, -0.3);
+  const val = plane(4.1, 0.5, label('ASK THE COIN ANYTHING', 1024, 125, '#c8102e', '#ffffff', '900 74px Inter, sans-serif'), 0, 3.26, 1.46);
+  const blue = M('#14306b', { roughness: 0.9 });
+  box(2.6, 0.08, 0.9, M('#ece7dd'), 0, 0.86, 0); box(2.58, 0.8, 0.86, blue, 0, 0.44, 0);
+  plane(2.6, 0.8, label('TOSS', 1024, 315, '#14306b', '#ffffff', '900 200px Inter, sans-serif'), 0, 0.44, 0.44);
+  const micM = M('#1a1a1a', { roughness: 0.4 });
+  cyl(0.12, 0.14, 0.03, micM, 0.32, 0.915, -0.1, g, 16); const stem = cyl(0.012, 0.012, 1.0, micM, 0.32, 1.42, -0.1, g, 8);
+  sph(0.06, M('#555', { metalness: 0.6, roughness: 0.5 }), 0.24, 1.95, -0.27); const mcyl = cyl(0.03, 0.03, 0.2, micM, 0.28, 1.88, -0.18, g, 8); mcyl.rotation.x = 0.9;
+  // the coin: coin head, white TOSS tee, jeans
+  const CO = new THREE.Group(); CO.position.set(0, 0, -0.75); g.add(CO);
+  const jeans = M('#3b5b8c', { roughness: 0.9 }), shoe = M('#222'), teeW = M('#fbfbf8', { roughness: 0.95 });
+  const teeF = new THREE.MeshStandardMaterial({ roughness: 0.95, map: textTex(512, 512, (x, W, H) => { x.fillStyle = '#fbfbf8'; x.fillRect(0, 0, W, H); x.fillStyle = '#151515'; x.font = '900 168px Inter, sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText('TOSS', W / 2, H * 0.4); }) });
+  [-0.17, 0.17].forEach(x => { cyl(0.11, 0.1, 0.85, jeans, x, 0.5, 0, CO); box(0.2, 0.1, 0.32, shoe, x, 0.05, 0.06, CO); });
+  const torso = new THREE.Mesh(new THREE.BoxGeometry(0.78, 0.8, 0.42), [teeW, teeW, teeW, teeW, teeF, teeW]); torso.position.set(0, 1.32, 0); torso.castShadow = true; CO.add(torso);
+  cyl(0.08, 0.08, 0.14, coinEdge, 0, 1.78, 0, CO);
+  const mkArm = s => { const sh = new THREE.Group(); sh.position.set(s * 0.47, 1.62, 0); CO.add(sh); cyl(0.12, 0.12, 0.26, teeW, 0, -0.1, 0, sh); cyl(0.075, 0.07, 0.55, coinEdge, 0, -0.42, 0, sh); sph(0.09, coinEdge, 0, -0.72, 0, sh); sh.rotation.z = s * 0.12; return sh; };
+  const armL = mkArm(-1), armR = mkArm(1);
+  const head = new THREE.Group(); head.position.set(0, 2.32, 0); CO.add(head);
+  const disk = new THREE.Mesh(new THREE.CylinderGeometry(0.56, 0.56, 0.12, 48), [coinEdge, coinFace, coinFace]); disk.rotation.x = Math.PI / 2; disk.castShadow = true; head.add(disk);
+  const eyeW = M('#ffffff', { roughness: 0.3 }), blk = M('#111111', { roughness: 0.3 });
+  [-0.18, 0.18].forEach(x => { const e = sph(0.1, eyeW, x, 0.1, 0.07, head); e.scale.z = 0.5; sph(0.05, blk, x, 0.1, 0.11, head); });
+  const brows = [-0.18, 0.18].map(x => { const b = box(0.17, 0.035, 0.02, blk, x, 0.25, 0.075, head); b.castShadow = false; return b; });
+  const mouth = box(0.24, 0.05, 0.02, M('#2a0a06'), 0, -0.2, 0.072, head); mouth.castShadow = false;
+  // the crowd (all facing the booth)
+  const crowd = [];
+  [[-2.6, 3.6], [-1.3, 4.0], [0.2, 4.2], [1.6, 3.9], [2.9, 3.5], [-4.4, 4.6], [-3.4, 5.7], [-1.9, 6.0], [-0.4, 6.4], [1.2, 6.1], [2.8, 5.7], [4.1, 4.8]].forEach(([x, z], i) => {
+    const c = buildGoblin({ skin: SKINS[i % SKINS.length], eye: ['#ffe14d', '#ffffff', '#b6ff4d'][i % 3], hat: ['none', 'party', 'tophat', 'bandana', 'none', 'crown'][i % 6], outfit: 'none', size: 1.05 + (i * 0.37 % 1) * 0.3 });
+    c.root.position.set(x, 0, z); c.root.rotation.y = Math.atan2(0 - x, -0.75 - z); g.add(c.root); crowd.push(c);
+  });
+  // daylight
+  const hl = new THREE.HemisphereLight('#e4f0ff', '#6f8a55', 0.35); g.add(hl);
+  const sun = new THREE.DirectionalLight('#fff1d6', 0.9); sun.position.set(-18, 30, 22); sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048);
+  Object.assign(sun.shadow.camera, { left: -30, right: 30, top: 30, bottom: -30, near: 1, far: 100 }); sun.shadow.bias = -0.0006; g.add(sun); sun.target.position.set(2, 0, 4); g.add(sun.target);
+  const st = { duck: 0, cheer: 0 }; let T = 0;
+  const tick = dt => {
+    T += dt;
+    crowd.forEach((c, i) => {
+      c.head.rotation.y = 0.12 * Math.sin(T * 0.7 + i * 1.7); c.head.rotation.x = 0.05 * Math.sin(T * 1.1 + i);
+      c.body.position.y = 0.45 + 0.012 * Math.sin(T * 2 + i);
+      c.body.rotation.x = 0.65 * st.duck;
+      c.root.position.y = st.cheer * 0.22 * Math.abs(Math.sin(T * 7 + i * 1.3));
+      c.arms.forEach((a, k) => { a.rotation.x = -2.5 * Math.max(st.duck, st.cheer) + (st.cheer ? 0.3 * Math.sin(T * 9 + i + k) : 0); a.rotation.z = (k ? 1 : -1) * (0.25 + 0.4 * st.cheer); });
+      c.jaw.scale.y = 0.32 + 0.5 * Math.max(st.duck, st.cheer * Math.abs(Math.sin(T * 6 + i)));
+    });
+  };
+  return { g, CO: { root: CO, head, mouth, brows, armL, armR }, crowd, st, tick };
+}
 let tarTimer = null;
 function tarantella(on) {
   clearInterval(tarTimer); tarTimer = null; if (!on) return;
@@ -1746,7 +1834,7 @@ const OUTFITS = ['reaper', 'arrow', 'cone', 'prisoner', 'tinfoil', 'clown', 'bab
 const HEAD_OUTFITS = new Set(['reaper', 'arrow', 'cone', 'tinfoil', 'clown', 'angel', 'viking', 'chef', 'plunger', 'mummy']);
 function startGoblin(coinPos, forceAct) {
   musicStyle('sneaky');
-  const plan = { entr: pickOther(['walk', 'sky', 'lid', 'burrow'], lastGob.entr), act: forceAct || bagPick('act', ['eat', 'burp', 'juggle', 'bite', 'hat', 'polish', 'casino', 'surf', 'golf', 'wedding', 'summon', 'sneeze', 'booger', 'fartcannon', 'rockstar', 'ballet', 'breakdance', 'opera', 'thief', 'insult', 'clones', 'giant', 'plane', 'neptune', 'sting', 'smite', 'duel', 'swipe']), exit: pickOther(['jump', 'rocket', 'burrow', 'run'], lastGob.exit) };
+  const plan = { entr: pickOther(['walk', 'sky', 'lid', 'burrow'], lastGob.entr), act: forceAct || bagPick('act', ['eat', 'burp', 'juggle', 'bite', 'hat', 'polish', 'casino', 'surf', 'golf', 'wedding', 'summon', 'sneeze', 'booger', 'fartcannon', 'rockstar', 'ballet', 'breakdance', 'opera', 'thief', 'insult', 'clones', 'giant', 'plane', 'neptune', 'sting', 'smite', 'duel', 'swipe', 'debate']), exit: pickOther(['jump', 'rocket', 'burrow', 'run'], lastGob.exit) };
   if (plan.entr === 'burrow' && plan.exit === 'burrow') plan.exit = 'rocket';
   if (plan.act === 'plane') plan.exit = 'run';
   if (plan.act === 'sting') { plan.entr = 'walk'; plan.exit = 'run'; }
@@ -1834,6 +1922,89 @@ function startGoblin(coinPos, forceAct) {
     // drops back into the pizza box, trident in hand
     S2(1.15, u => { G.root.position.set(stand.x, THREE.MathUtils.lerp(16, TOP, u * u), stand.z); G.root.rotation.y = faceYaw + (1 - u) * 14; G.arms[0].rotation.x = -2.8; G.legs.forEach((l, i) => l.rotation.x = Math.sin(u * 30 + i * 3) * 0.6); }, wheeSfx);
     S2(0.01, () => neutral()); squash(); cackle();
+  } else if (plan.act === 'debate') {
+    // ---- cut-scene: the coin's campus debate booth… and a goblin sniper on the roof ----
+    let SET = null, env = null, rifle = null, bullet = null, stars = null; const Q = (x, y, z) => CAMP.clone().add(new THREE.Vector3(x, y, z));
+    const camAt = (p, t) => { goblin.cam = goblin.cam || { pos: new THREE.Vector3(), tgt: new THREE.Vector3() }; goblin.cam.pos.copy(p); goblin.cam.tgt.copy(t); };
+    const fade = v => { $('#fade').style.opacity = v; };
+    const say = (who, text, pitch, rate) => { document.body.classList.add('goblinsub'); $('#subs').classList.add('on'); $('#subsText').innerHTML = `<b>${who}:</b> ${text}`; speak(text.replace(/<[^>]+>/g, ''), pitch, rate); };
+    const subsOff = () => $('#subs').classList.remove('on');
+    const ROOF = Q(9.7, 7, 13.7), HEAD = Q(0, 2.32, -0.75), HIT = Q(0.12, 2.38, -0.66);
+    let dir = new THREE.Vector3(), perp = new THREE.Vector3(), muzzle = new THREE.Vector3(), chest = new THREE.Vector3();
+    const C = () => SET.CO, talkC = t => { C().mouth.scale.y = 1 + 3.2 * Math.abs(Math.sin(t * 13)); }, shutC = () => { C().mouth.scale.y = 1; };
+    const aimPose = () => { G.body.rotation.x = 0.28; G.head.rotation.x = 0.12; G.arms[0].rotation.set(-1.45, 0, 0.35); G.arms[1].rotation.set(-1.45, 0, -0.35); G.legs[0].rotation.x = -0.35; G.legs[1].rotation.x = 0.25; };
+    const mkRifle = () => {
+      const r = new THREE.Group(), gm = new THREE.MeshStandardMaterial({ color: '#2b2b2e', metalness: 0.6, roughness: 0.4 }), wd = new THREE.MeshStandardMaterial({ color: '#5a3a1e', roughness: 0.7 });
+      const bx = (w, h, d, m, x, y, z) => { const k = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m); k.position.set(x, y, z); k.castShadow = true; r.add(k); };
+      const cy = (rad, len, m, x, y, z) => { const k = new THREE.Mesh(new THREE.CylinderGeometry(rad, rad, len, 12), m); k.rotation.x = Math.PI / 2; k.position.set(x, y, z); k.castShadow = true; r.add(k); };
+      bx(0.09, 0.13, 0.75, gm, 0, 0, 0.1); bx(0.08, 0.17, 0.42, wd, 0, -0.03, -0.45); cy(0.022, 1.1, gm, 0, 0.02, 1.0); cy(0.05, 0.36, gm, 0, 0.13, 0.12); bx(0.03, 0.16, 0.04, gm, 0, -0.13, 0.18);
+      r.userData.tip = new THREE.Vector3(0, 0.02, 1.55); return r;
+    };
+    const mkStars = () => { const s = new THREE.Group(), m = new THREE.MeshStandardMaterial({ color: '#ffd84a', emissive: '#ffb300', emissiveIntensity: 0.6 }); for (let i = 0; i < 4; i++) { const k = new THREE.Mesh(new THREE.OctahedronGeometry(0.09), m); const a = i / 4 * Math.PI * 2; k.position.set(Math.cos(a) * 0.38, 0.12, Math.sin(a) * 0.38); s.add(k); } G.headTop.add(s); return s; };
+    const roofCam = () => camAt(ROOF.clone().addScaledVector(dir, -2.0).addScaledVector(perp, 0.9).add(new THREE.Vector3(0, 2.05, 0)), ROOF.clone().addScaledVector(dir, 4).add(new THREE.Vector3(0, 0.6, 0)));
+    const roofFront = (k = 0) => camAt(ROOF.clone().addScaledVector(dir, 3.1 - 0.6 * k).addScaledVector(perp, 1.3).add(new THREE.Vector3(0, 1.55, 0)), ROOF.clone().addScaledVector(dir, -1.0).add(new THREE.Vector3(0, 1.0, 0)));
+    const coinCam = (k = 0) => camAt(Q(1.9 - 0.3 * k, 2.45, 3.6 - 0.5 * k), Q(0, 1.85, -0.75));
+    const coinClose = (k = 0) => camAt(Q(0.75, 2.45, 2.35 - 0.3 * k), Q(0, 2.2, -0.75));
+    const sideCam = () => camAt(Q(-1.2, 2.6, 3.0), Q(0.3, 2.15, -0.6));
+    S2(0.5, u => fade(u), () => { goblin.camR = 7.5; cleanups.push(() => { fade(0); $('#cutCap').classList.remove('on'); subsOff(); document.body.classList.remove('goblinsub'); if (SET && SET.g.parent) scene.remove(SET.g); BOLSET = null; if (env) { scene.background.copy(env.bg); scene.fog.color.copy(env.fc); scene.fog.near = env.fn; scene.fog.far = env.ff; } [rifle, bullet].forEach(o => o && o.parent && o.parent.remove(o)); if (stars && stars.parent) stars.parent.remove(stars); G.root.rotation.order = 'XYZ'; }); });
+    S2(0.01, () => {}, () => {
+      SET = buildCampus(); scene.add(SET.g); BOLSET = { tick: dt => SET.tick(dt) };
+      env = { bg: scene.background.clone(), fc: scene.fog.color.clone(), fn: scene.fog.near, ff: scene.fog.far };
+      scene.background.set('#a9d2f5'); scene.fog.color.set('#bcd9ef'); scene.fog.near = 50; scene.fog.far = 190;
+      neutral(); G.root.rotation.order = 'YXZ'; G.root.position.copy(ROOF); G.root.rotation.y = yawTo(ROOF, HEAD);
+      dir.copy(HEAD).sub(ROOF).setY(0).normalize(); perp.set(-dir.z, 0, dir.x);
+      aimPose(); G.root.updateMatrixWorld(true);
+      rifle = mkRifle(); rifle.position.copy(wpos(G.arms[0].hand).add(wpos(G.arms[1].hand)).multiplyScalar(0.5)).addScaledVector(dir, -0.3); scene.add(rifle); rifle.lookAt(HEAD);
+      camAt(Q(-1, 6, 24), Q(0, 2.5, 0)); $('#cutCap').innerHTML = 'Meanwhile… at <b>Goblin State University</b> 🎓'; $('#cutCap').classList.add('on');
+      noiseSfx('bandpass', 500, 650, 3.4, 0.06, 0.8);
+    });
+    S2(0.6, u => fade(1 - u));
+    S2(2.8, u => { const e = ease(u); camAt(Q(-1 + 0.6 * e, 6 - 2.4 * e, 24 - 9.5 * e), Q(0, 2.5 - 0.3 * e, 0)); aimPose(); });
+    S2(0.01, () => {}, () => $('#cutCap').classList.remove('on'));
+    // the coin calls up the next challenger
+    S2(2.3, u => { coinCam(u); talkC(u * 2.3); C().armR.rotation.set(0, 0, 2.2 + 0.35 * Math.sin(u * 14)); C().head.rotation.z = 0.06 * Math.sin(u * 5); }, () => say('Coin', 'Alright, who’s next? Step up to the mic!', 0.95, 1.1));
+    // someone in the crowd (never shown) asks the question…
+    S2(1.7, u => { shutC(); coinClose(u); C().armR.rotation.set(0, 0, 0.12 * (1 - u) + 0.12 * u); C().armL.rotation.set(-1.9 * ease(Math.min(1, u * 2)), 0, 0.5); C().head.rotation.set(0.05, 0, 0.08 * ease(u)); C().brows.forEach((b, i) => b.rotation.z = (i ? -1 : 1) * 0.15 * ease(u)); },
+      () => say('Someone in the crowd', 'Do you know how many coins have been stolen in Pizza Box over the last 10 years?', 1.25, 1.05));
+    // …and meanwhile, on the rooftop
+    S2(2.4, u => { aimPose(); const k = ease(u); camAt(ROOF.clone().addScaledVector(dir, -3.2 + 0.8 * k).addScaledVector(perp, 1.5).add(new THREE.Vector3(0, 2.7 - 0.2 * k, 0)), ROOF.clone().addScaledVector(dir, 4).add(new THREE.Vector3(0, 0.6, 0))); }, () => tone('square', 900, 700, 0.05, 0.05, 1.6));
+    S2(1.1, u => { aimPose(); roofFront(u); G.jaw.scale.y = 0.32 + 0.25 * Math.max(0, Math.sin(u * 9)); }, () => tone('square', 1400, 1100, 0.04, 0.06, 0.5));
+    // back to the coin
+    S2(2.9, u => { coinClose(u * 0.5); talkC(u * 2.9); C().armL.rotation.set(-1.9 * (1 - ease(Math.min(1, u * 3))), 0, 0.12); C().armR.rotation.set(-1.25 - 0.15 * Math.sin(u * 10), 0, -0.1); C().head.rotation.set(0, 0, -0.06); C().brows.forEach((b, i) => b.rotation.z = (i ? 1 : -1) * 0.12); },
+      () => { subsOff(); setTimeout(() => say('Coin', 'Counting or not counting goblin violence.', 0.95, 1.0), 120); });
+    // BANG — the shot
+    S2(0.2, u => { shutC(); sideCam(); bullet.position.lerpVectors(muzzle, HIT, u); bullet.lookAt(HIT); },
+      () => { subsOff(); G.root.updateMatrixWorld(true); muzzle.copy(rifle.localToWorld(rifle.userData.tip.clone())); bullet = new THREE.Mesh(new THREE.SphereGeometry(0.05, 10, 8), new THREE.MeshBasicMaterial({ color: '#fff0a8' })); bullet.scale.z = 3; scene.add(bullet); bullet.position.copy(muzzle);
+        noiseSfx('lowpass', 2600, 180, 0.6, 0.7, 1); tone('square', 170, 55, 0.3, 0.22); });
+    // …PING. it bounces right off his head
+    S2(0.4, u => { sideCam(); const w = Math.sin(u * 40) * (1 - u); C().head.rotation.set(0.1 * w, 0.25 * w, 0.2 * w); C().head.position.x = 0.04 * w; bullet.position.lerpVectors(HIT, chest, u * 0.35); bullet.lookAt(chest); SET.st.duck = Math.min(1, u * 4); },
+      () => { chest.copy(G.root.position).add(new THREE.Vector3(0, 1.0, 0)); tone('sine', 3400, 2500, 0.6, 0.14); tone('triangle', 5200, 900, 0.55, 0.07, 0.03); shake = Math.max(shake, 0.12);
+        spawnParts(HIT, 26, { colors: ['#fff6c2', '#ffd84a', '#ffffff'], size: 0.035, shape: 'box', speed: 4, up: 2, life: 0.6, gravity: 8 }); noiseSfx('bandpass', 900, 500, 0.9, 0.2, 2); });
+    // the ricochet heads straight back up to the roof
+    S2(0.28, u => { aimPose(); roofFront(0); const p0 = HIT.clone().lerp(chest, 0.35); bullet.position.lerpVectors(p0, chest, u); bullet.lookAt(chest); }, () => tone('triangle', 2400, 1300, 0.3, 0.06));
+    // OOF — knocked flat on his back, the rifle goes flying off the roof
+    let k0, k1, r0, r1;
+    S2(1.15, u => { roofFront(0); const e = ease(u); G.root.position.lerpVectors(k0, k1, e); G.root.position.y = 7 + 0.25 * e + 4 * 1.1 * u * (1 - u); G.root.rotation.x = -2.5 * Math.PI * e; G.arms.forEach((a2, i) => a2.rotation.set(-2.6 * Math.sin(Math.PI * u), 0, (i ? 1 : -1) * 0.8)); G.legs.forEach((l, i) => l.rotation.x = 0.6 * Math.sin(u * 20 + i * 3) * (1 - u)); G.jaw.scale.y = 1.0;
+        rifle.position.lerpVectors(r0, r1, u); rifle.position.y = THREE.MathUtils.lerp(r0.y, CAMP.y + 0.1, u * u) + 4 * 1.8 * u * (1 - u); rifle.rotation.x += 0.35; rifle.rotation.z += 0.12; },
+      () => { scene.remove(bullet); bullet = null; G.body.rotation.x = 0; G.head.rotation.x = 0; k0 = ROOF.clone(); k1 = ROOF.clone().addScaledVector(dir, -2.6); r0 = rifle.position.clone(); r1 = ROOF.clone().addScaledVector(dir, 3.0).addScaledVector(perp, 1.2);
+        thudSfx(0.8); speak('Oof!', 1.6, 1.2); tone('sawtooth', 500, 120, 0.5, 0.1); shake = Math.max(shake, 0.3); });
+    S2(1.5, u => { const P = G.root.position; G.root.rotation.x = -Math.PI / 2; G.jaw.scale.y = 0.6; stars.rotation.y += 0.09; camAt(P.clone().addScaledVector(perp, 2.6).addScaledVector(dir, 1.6).add(new THREE.Vector3(0, 3.6, 0)), P.clone().addScaledVector(dir, -0.7).add(new THREE.Vector3(0, 0.3, 0))); },
+      () => { thudSfx(1); stars = mkStars(); [0, 0.25, 0.5].forEach(d => tone('sine', 2200, 2600, 0.12, 0.05, d)); setTimeout(() => thudSfx(0.4), 300); });
+    // the coin, completely unbothered
+    S2(2.2, u => { coinCam(0.5); C().head.position.x = 0; C().head.rotation.set(0, 0, 0); if (u > 0.15) talkC(u * 2.2); else shutC(); const s = Math.sin(Math.PI * Math.min(1, u * 1.6)); C().armL.rotation.set(-0.3 * s, 0, -0.9 * s); C().armR.rotation.set(-0.3 * s, 0, 0.9 * s); SET.st.duck = Math.max(0, 1 - u * 3); SET.st.cheer = clamp((u - 0.35) * 3, 0, 1); },
+      () => { say('Coin', 'Next question.', 0.95, 1.0); setTimeout(() => noiseSfx('bandpass', 1300, 900, 1.8, 0.22, 0.8), 700); });
+    S2(0.5, u => { fade(u); shutC(); });
+    S2(0.01, () => {}, () => {
+      subsOff(); document.body.classList.remove('goblinsub'); scene.remove(SET.g); BOLSET = null; scene.background.copy(env.bg); scene.fog.color.copy(env.fc); scene.fog.near = env.fn; scene.fog.far = env.ff; goblin.cam = null;
+      if (rifle && rifle.parent) rifle.parent.remove(rifle); rifle = null;
+      G.root.rotation.order = 'XYZ'; G.root.rotation.set(0, 0, 0); neutral(); G.root.position.set(stand.x, 16, stand.z);
+    });
+    S2(0.5, u => fade(1 - u));
+    // drops back into the pizza box, still seeing stars
+    S2(1.15, u => { G.root.position.set(stand.x, THREE.MathUtils.lerp(16, TOP, u * u), stand.z); G.root.rotation.y = faceYaw + (1 - u) * 14; G.arms.forEach(a2 => a2.rotation.x = -2.8); G.legs.forEach((l, i) => l.rotation.x = Math.sin(u * 30 + i * 3) * 0.6); stars.rotation.y += 0.09; }, wheeSfx);
+    S2(0.01, () => neutral()); squash();
+    S2(1.8, u => { G.root.rotation.z = 0.22 * Math.sin(u * 14); G.head.rotation.z = -0.3 * Math.sin(u * 11); G.jaw.scale.y = 0.6; stars.rotation.y += 0.09; }, () => { [0, 0.3, 0.6, 0.9].forEach(d => tone('sine', 2200, 2600, 0.12, 0.05, d)); });
+    S2(0.01, () => {}, () => { if (stars && stars.parent) stars.parent.remove(stars); stars = null; G.root.rotation.z = 0; neutral(); speak('Rigged.', 0.6, 0.9); });
   } else if (plan.act === 'swipe') {
     S2(0.01, () => { G.root.position.copy(stand); G.root.visible = false; });
   } else if (plan.entr === 'walk') {
@@ -1862,7 +2033,7 @@ function startGoblin(coinPos, forceAct) {
   const unhide = () => { coin.visible = true; coin.scale.set(1, 1, 1); };
 
   const cleanups = []; let stomps = -1;
-  const NOGRAB = new Set(['swipe', 'duel', 'plane', 'neptune', 'sting', 'surf', 'golf', 'wedding', 'summon', 'sneeze', 'booger', 'fartcannon', 'rockstar', 'ballet', 'breakdance', 'insult', 'clones', 'giant']);
+  const NOGRAB = new Set(['debate', 'swipe', 'duel', 'plane', 'neptune', 'sting', 'surf', 'golf', 'wedding', 'summon', 'sneeze', 'booger', 'fartcannon', 'rockstar', 'ballet', 'breakdance', 'insult', 'clones', 'giant']);
   if (plan.act === 'casino') plan.exit = 'run';
   if (!NOGRAB.has(plan.act)) grab();
   if (plan.act === 'sting') {
@@ -2591,7 +2762,7 @@ function startGoblin(coinPos, forceAct) {
     S2(1.3, u => { G.root.position.lerpVectors(p1, p2, u); G.root.rotation.y = yawTo(p1, p2); pose(u * 60, 1.4); G.body.rotation.x = 0.35; });
   }
   goblin = { G, steps, i: 0, t: 0, started: false, hold: false, plan, after: () => cleanups.forEach(f => { try { f(); } catch (e) {} }) }; jazzDuck(true);
-  addLog('👺 Goblin ' + ({ eat: 'ate the coin and pooped it out', burp: 'swallowed the coin and burped it back up', juggle: 'juggled the coin', bite: 'bit the coin and chucked it', hat: 'wore the coin as a hat', polish: 'polished the coin', casino: 'lost a coin flip and threw a tantrum', surf: 'surfed the coin around the box', sting: 'got caught on Dateline GBC: To Catch a Coin Thief', neptune: 'stole Neptune\'s trident in Bologna and stabbed the coin in half', plane: 'stole the coin in a plane… and crash-landed it right back', golf: 'played goblin golf', wedding: 'proposed to the coin (it said no)', summon: 'summoned his cousin', sneeze: 'sneezed on the coin', booger: 'flicked a booger at the screen', fartcannon: 'fart-cannoned the coin', rockstar: 'shredded a guitar solo', ballet: 'did ballet and faceplanted', breakdance: 'breakdanced', opera: 'sang opera and broke a cup', thief: 'pretended to steal the coin', insult: 'roasted somebody', clones: 'split into tiny clones', giant: 'turned into a giant' }[plan.act] || 'showed up')); renderUI();
+  addLog('👺 Goblin ' + ({ eat: 'ate the coin and pooped it out', burp: 'swallowed the coin and burped it back up', juggle: 'juggled the coin', bite: 'bit the coin and chucked it', hat: 'wore the coin as a hat', polish: 'polished the coin', casino: 'lost a coin flip and threw a tantrum', surf: 'surfed the coin around the box', debate: 'tried to snipe the coin at its campus debate booth… and got hit by his own ricochet', sting: 'got caught on Dateline GBC: To Catch a Coin Thief', neptune: 'stole Neptune\'s trident in Bologna and stabbed the coin in half', plane: 'stole the coin in a plane… and crash-landed it right back', golf: 'played goblin golf', wedding: 'proposed to the coin (it said no)', summon: 'summoned his cousin', sneeze: 'sneezed on the coin', booger: 'flicked a booger at the screen', fartcannon: 'fart-cannoned the coin', rockstar: 'shredded a guitar solo', ballet: 'did ballet and faceplanted', breakdance: 'breakdanced', opera: 'sang opera and broke a cup', thief: 'pretended to steal the coin', insult: 'roasted somebody', clones: 'split into tiny clones', giant: 'turned into a giant' }[plan.act] || 'showed up')); renderUI();
 }
 // missed coin: a goblin fetches it and throws it into the box (that's where it counts)
 function startRescue(coinPos) {
@@ -3720,7 +3891,7 @@ const previewIntro = () => { ensureAudio(); if (toss || goblin || placing) retur
 $('#tryHot').onclick = () => { if (!canAim() && !mini) return toast('Start a game with 2+ players first (and wait for the turn to finish)'); startMini('hot'); };
 $('#cupRows').onclick = e => { const b = e.target.closest('[data-cp]'); if (!b) return; if (b.dataset.n === '0') { if (mini && mini.picks) { delete mini.picks[String(b.dataset.cp)]; renderCupPanel(); } return; } cupPick(b.dataset.cp, b.dataset.n); };
 $('#tryHolo').onclick = () => sayYugo(true);
-const JACK_ACTS = [['swipe', '💚 Dating app: swipes left on every goblin… until the coin'], ['duel', '⚔️ Pizza-cutter sword duel over the coin'], ['smite', '⚡ Dictator goblin steals it… and gets smitten'], ['sting', '📺 Dateline GBC: To Catch a Coin Thief'], ['neptune', '🔱 Steals Neptune\'s trident in Bologna'], ['plane', '✈️ Steals it in a plane… and crashes'], ['eat', '💩 Eats the coin, poops it out'], ['burp', '🤢 Swallows it, burps it up'], ['juggle', '🤹 Juggles the coin'], ['bite', '🦷 Bites it and chucks it'],
+const JACK_ACTS = [['debate', '🎓 Campus debate: snipes the coin… ricochet!'], ['swipe', '💚 Dating app: swipes left on every goblin… until the coin'], ['duel', '⚔️ Pizza-cutter sword duel over the coin'], ['smite', '⚡ Dictator goblin steals it… and gets smitten'], ['sting', '📺 Dateline GBC: To Catch a Coin Thief'], ['neptune', '🔱 Steals Neptune\'s trident in Bologna'], ['plane', '✈️ Steals it in a plane… and crashes'], ['eat', '💩 Eats the coin, poops it out'], ['burp', '🤢 Swallows it, burps it up'], ['juggle', '🤹 Juggles the coin'], ['bite', '🦷 Bites it and chucks it'],
   ['hat', '🎩 Wears the coin as a hat'], ['polish', '✨ Polishes the coin'], ['casino', '🎰 Loses a coin flip, tantrum'], ['surf', '🏄 Surfs the coin around'], ['golf', '⛳ Golfs the coin'], ['wedding', '💍 Proposes to the coin'],
   ['summon', '🔮 Summons a demon'], ['sneeze', '🤧 Giant sneeze'], ['booger', '👃 Booger flick'], ['fartcannon', '💨 Fart cannon'], ['rockstar', '🎸 Rock star guitar solo'], ['ballet', '🩰 Ballet'], ['breakdance', '🕺 Breakdance'],
   ['opera', '🎭 Opera'], ['thief', '🦹 Steals it and hides'], ['insult', '🗯️ Roasts the players'], ['clones', '👯 Clones himself'], ['giant', '🗿 Turns giant']];
@@ -4474,7 +4645,7 @@ $('#startBtn').onclick = () => {
 };
 
 // ---------- installable app + automatic updates (website version only) ----------
-const BUILD = '1795103900';
+const BUILD = '1795174200';
 if (STANDALONE) {
   try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
   let deferredInstall = null;
