@@ -1816,7 +1816,7 @@ function buildCampus() {
   const val = plane(4.1, 0.5, label('ASK THE COIN ANYTHING', 1024, 125, '#c8102e', '#ffffff', '900 74px Inter, sans-serif'), 0, 3.26, 1.46);
   const blue = M('#14306b', { roughness: 0.9 });
   box(2.6, 0.08, 0.9, M('#ece7dd'), 0, 0.86, 0); box(2.58, 0.8, 0.86, blue, 0, 0.44, 0);
-  plane(2.6, 0.8, label('FlippingCoins', 1024, 315, '#14306b', '#ffffff', '900 200px Inter, sans-serif'), 0, 0.44, 0.44);
+  plane(2.6, 0.8, label('Flipping Coins USG', 1024, 315, '#14306b', '#ffffff', '900 200px Inter, sans-serif'), 0, 0.44, 0.44);
   const micM = M('#1a1a1a', { roughness: 0.4 });
   cyl(0.12, 0.14, 0.03, micM, 0.32, 0.915, -0.1, g, 16); const stem = cyl(0.012, 0.012, 1.0, micM, 0.32, 1.42, -0.1, g, 8);
   sph(0.06, M('#555', { metalness: 0.6, roughness: 0.5 }), 0.24, 1.95, -0.27); const mcyl = cyl(0.03, 0.03, 0.2, micM, 0.28, 1.88, -0.18, g, 8); mcyl.rotation.x = 0.9;
@@ -4733,7 +4733,7 @@ $('#startBtn').onclick = () => {
 };
 
 // ---------- installable app + automatic updates (website version only) ----------
-const BUILD = '1795233500';
+const BUILD = '1795233600';
 if (STANDALONE) {
   try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
   let deferredInstall = null;
