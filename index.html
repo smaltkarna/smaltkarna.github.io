@@ -1823,7 +1823,7 @@ function buildCampus() {
   // the coin: coin head, white TOSS tee, jeans
   const CO = new THREE.Group(); CO.position.set(0, 0, -0.75); g.add(CO);
   const jeans = M('#3b5b8c', { roughness: 0.9 }), shoe = M('#222'), teeW = M('#fbfbf8', { roughness: 0.95 });
-  const teeF = new THREE.MeshStandardMaterial({ roughness: 0.95, map: textTex(512, 512, (x, W, H) => { x.fillStyle = '#fbfbf8'; x.fillRect(0, 0, W, H); x.fillStyle = '#151515'; x.font = '900 168px Inter, sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText('TOSS', W / 2, H * 0.4); }) });
+  const teeF = new THREE.MeshStandardMaterial({ roughness: 0.95, map: textTex(512, 512, (x, W, H) => { x.fillStyle = '#fbfbf8'; x.fillRect(0, 0, W, H); x.fillStyle = '#151515'; let fs = 168; do { x.font = `900 ${fs}px Inter, sans-serif`; fs -= 4; } while (x.measureText('FREEDOM').width > W * 0.9 && fs > 40); x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText('FREEDOM', W / 2, H * 0.4); }) });
   [-0.17, 0.17].forEach(x => { cyl(0.11, 0.1, 0.85, jeans, x, 0.5, 0, CO); box(0.2, 0.1, 0.32, shoe, x, 0.05, 0.06, CO); });
   const torso = new THREE.Mesh(new THREE.BoxGeometry(0.78, 0.8, 0.42), [teeW, teeW, teeW, teeW, teeF, teeW]); torso.position.set(0, 1.32, 0); torso.castShadow = true; CO.add(torso);
   cyl(0.08, 0.08, 0.14, coinEdge, 0, 1.78, 0, CO);
@@ -4733,7 +4733,7 @@ $('#startBtn').onclick = () => {
 };
 
 // ---------- installable app + automatic updates (website version only) ----------
-const BUILD = '1795176300';
+const BUILD = '1795233400';
 if (STANDALONE) {
   try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
   let deferredInstall = null;
