@@ -321,14 +321,15 @@
   .qte-fill{height:100%;width:100%;background:linear-gradient(90deg,#ffd84a,#ff5a3c)}
   #qte.hit .qte-k{background:#2fa84f;animation:none;box-shadow:0 0 44px rgba(80,220,100,.8)}
   body.ctrl #qte{display:none!important}
-  @keyframes tripHue{from{filter:hue-rotate(0deg) saturate(2.3) contrast(1.08)}to{filter:hue-rotate(360deg) saturate(2.3) contrast(1.08)}}
-  @keyframes tripWob{0%{transform:scale(1.04) skew(0deg,0deg)}33%{transform:scale(1.07) skew(1.6deg,-1deg)}66%{transform:scale(1.03) skew(-1.4deg,1.2deg)}100%{transform:scale(1.05) skew(.6deg,-.6deg)}}
+  @keyframes tripHue{from{filter:hue-rotate(0deg) saturate(1.45)}to{filter:hue-rotate(360deg) saturate(1.45)}}
+  @keyframes tripWob{0%{transform:scale(1.02) skew(0deg,0deg)}50%{transform:scale(1.035) skew(.5deg,-.3deg)}100%{transform:scale(1.02) skew(-.5deg,.3deg)}}
   @keyframes tripSpin{to{transform:translate(-50%,-50%) rotate(360deg)}}
-  body.trippy #scene canvas{animation:tripHue 5s linear infinite,tripWob 3.3s ease-in-out infinite alternate}
-  #tripFx{position:fixed;left:50%;top:50%;width:220vmax;height:220vmax;transform:translate(-50%,-50%);pointer-events:none;z-index:2;display:none;mix-blend-mode:overlay;opacity:.35;background:repeating-conic-gradient(from 0deg,#ff3b3b 0 15deg,#ffd84a 15deg 30deg,#3bff6a 30deg 45deg,#3bb4ff 45deg 60deg,#c03bff 60deg 75deg,#ff3b3b 75deg 90deg)}
-  body.trippy #tripFx{display:block;animation:tripSpin 14s linear infinite}
-  body.ctrl.trippy #ctrl{animation:tripHue 5s linear infinite}
+  body.trippy #scene canvas{animation:tripHue 24s linear infinite,tripWob 9s ease-in-out infinite alternate}
+  #tripFx{position:fixed;left:50%;top:50%;width:220vmax;height:220vmax;transform:translate(-50%,-50%);pointer-events:none;z-index:2;display:none;mix-blend-mode:soft-light;opacity:.3;background:radial-gradient(circle at 35% 40%,rgba(255,80,200,.9),transparent 22%),radial-gradient(circle at 65% 55%,rgba(80,200,255,.9),transparent 24%),radial-gradient(circle at 50% 70%,rgba(255,220,80,.8),transparent 20%)}
+  body.trippy #tripFx{display:block;animation:tripSpin 60s linear infinite}
+  body.ctrl.trippy #ctrl{animation:tripHue 24s linear infinite}
   body.ctrl #tripFx{display:none!important}
+  @media (prefers-reduced-motion:reduce){body.trippy #scene canvas{animation:tripHue 40s linear infinite}body.trippy #tripFx{animation:none}}
   #flash{position:fixed;inset:0;z-index:45;background:#fff;opacity:0;pointer-events:none}
   #flash.on{animation:flash .7s ease-out}
   @keyframes flash{0%{opacity:.95}100%{opacity:0}}
@@ -1840,7 +1841,7 @@ function buildLounge() {
     T += dt; ball.rotation.y += dt * 0.8;
     pink.position.x = -2.5 + Math.sin(T * 1.3) * 1.2; cyan.position.x = 2.5 + Math.cos(T * 1.1) * 1.2;
     const beat = Math.pow(Math.max(0, Math.cos(T * Math.PI * 2 * (128 / 60) / 2)), 8);
-    pink.intensity = 1.2 + 0.8 * beat + st.strobe * 3 * (Math.sin(T * 40) > 0 ? 1 : 0); cyan.intensity = 1.0 + 0.8 * beat + st.strobe * 3 * (Math.sin(T * 40 + 1.6) > 0 ? 1 : 0);
+    pink.intensity = 1.2 + 0.6 * beat + st.strobe * 0.8 * (0.5 + 0.5 * Math.sin(T * 3)); cyan.intensity = 1.0 + 0.6 * beat + st.strobe * 0.8 * (0.5 + 0.5 * Math.sin(T * 3 + Math.PI));
   };
   return { g, table, tray, setHeight, st, tick };
 }
@@ -1963,8 +1964,8 @@ function tripEnd() {
 }
 function stepTrip(dt) {
   if (!TRIP) return; TRIP.t += dt; if (TRIP.t > 180) { tripEnd(); return; }
-  const k = Math.min(1, TRIP.t / 2);   // ease in
-  camera.fov = TRIP.fov + 8 * k * Math.sin(TRIP.t * 1.3); camera.updateProjectionMatrix(); camera.rotateZ(0.08 * k * Math.sin(TRIP.t * 0.85));
+  const k = Math.min(1, TRIP.t / 4);   // ease in gently
+  camera.fov = TRIP.fov + 3.5 * k * Math.sin(TRIP.t * 0.6); camera.updateProjectionMatrix(); camera.rotateZ(0.035 * k * Math.sin(TRIP.t * 0.45));
 }
 // ---------- campus debate set (Jack act: 'debate') ----------
 const CAMP = new THREE.Vector3(-300, 0, 0);
@@ -2434,7 +2435,7 @@ function startGoblin(coinPos, forceAct) {
     // …nothing… nothing… then WHOA
     S2(1.2, u => { camFace(); G.head.rotation.y = 0.15 * Math.sin(u * 4); }, () => speak('Hmm. Nothing.', 1.1, 0.95));
     S2(2.2, u => { camFace(); G.head.rotation.set(0.1 * Math.sin(u * 7), Math.PI * 2 * ease(u), 0.25 * Math.sin(u * 9)); G.body.rotation.z = 0.2 * Math.sin(u * 5); G.arms.forEach((a2, i) => a2.rotation.set(-1.4 + 0.6 * Math.sin(u * 6 + i * 3), 0, (i ? 1 : -1) * (0.6 + 0.4 * Math.sin(u * 4)))); G.jaw.scale.y = 0.6 + 0.4 * Math.sin(u * 10); },
-      () => { tripStart(); $('#flash').classList.remove('on'); void $('#flash').offsetWidth; $('#flash').classList.add('on'); tone('sine', 200, 1600, 1.8, 0.1); tone('sine', 1600, 200, 1.8, 0.06, 0.3); setTimeout(() => speak('Whoaaa… the box is breathing.', 0.9, 0.8), 700); });
+      () => { tripStart(); tone('sine', 200, 1600, 1.8, 0.1); tone('sine', 1600, 200, 1.8, 0.06, 0.3); setTimeout(() => speak('Whoaaa… the box is breathing.', 0.9, 0.8), 700); });
     S2(0.01, () => {}, () => { goblin.cam = null; G.body.rotation.z = 0; neutral(); });
   } else if (plan.act === 'swipe') {
     S2(0.01, () => { G.root.position.copy(stand); G.root.visible = false; });
@@ -5105,7 +5106,7 @@ $('#startBtn').onclick = () => {
 };
 
 // ---------- installable app + automatic updates (website version only) ----------
-const BUILD = '1795237797';
+const BUILD = '1795238868';
 if (STANDALONE) {
   try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
   let deferredInstall = null;
