@@ -356,6 +356,27 @@
   #stCursor::before{content:'';position:absolute;inset:0;background:no-repeat center/contain url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 30'%3E%3Cpath d='M2 1 L2 24 L8 18 L12 28 L16 26 L12 17 L20 17 Z' fill='white' stroke='black' stroke-width='1.6' stroke-linejoin='round'/%3E%3C/svg%3E")}
   #stCursor.grab::before{background-image:none;content:'✊';font-size:34px;line-height:42px;text-align:center;transform:translate(-30%,-30%)}
   body.ctrl #stream,body.ctrl #stCursor{display:none!important}
+  .secret-main{cursor:pointer;-webkit-tap-highlight-color:transparent}
+  #jackMenu{position:fixed;inset:0;z-index:90;background:rgba(10,6,3,.75);display:none;align-items:center;justify-content:center;padding:14px}
+  #jackMenu.on{display:flex}
+  .jm-card{background:#2a1e16;border:1px solid rgba(255,235,205,.15);border-radius:20px;width:min(460px,100%);max-height:86vh;display:flex;flex-direction:column;padding:16px;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+  .jm-top{display:flex;justify-content:space-between;align-items:center;font-family:"Permanent Marker",cursive;font-size:22px;color:#f6efe4}
+  .jm-top b{font-weight:400}
+  .jm-x{background:rgba(255,255,255,.08);color:#f6efe4;border:0;border-radius:10px;width:36px;height:36px;font-size:22px}
+  .jm-sub{color:#b9a993;font-size:14px;margin:6px 0 10px}
+  .jm-list{overflow:auto;display:grid;gap:6px}
+  .jm-list button{text-align:left;background:rgba(255,255,255,.06);color:#f6efe4;border:1px solid rgba(255,235,205,.12);border-radius:12px;padding:12px;font-size:15px}
+  .jm-list button:active{background:rgba(255,216,74,.2)}
+  body.watching #panel,body.watching #hud,body.watching #help,body.watching #menuBtn,body.watching #jazzBtn,body.watching #inviteBtn,body.watching #installBtn,body.watching #lobby,body.watching #roomCode,body.watching #phones{display:none!important}
+  #watchUI{position:fixed;inset:0;z-index:80;display:none;align-items:center;justify-content:center;background:rgba(10,6,3,.55);padding:16px}
+  #watchUI.on{display:flex}
+  .wu-card{background:#2a1e16;border:1px solid rgba(255,235,205,.15);border-radius:20px;padding:20px;width:min(420px,100%);text-align:center;display:grid;gap:10px;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+  .wu-t{color:#b9a993;font-size:14px;font-weight:700;letter-spacing:1px;text-transform:uppercase}
+  .wu-tip{color:#b9a993;font-size:13px}
+  .wu-n{font-family:"Permanent Marker",cursive;font-size:24px;color:#f6efe4;line-height:1.2}
+  .wu-card button{border:0;border-radius:14px;padding:14px;font-size:17px;font-weight:800}
+  .wu-play{background:linear-gradient(180deg,#ffd76a,#e8962a);color:#2a1606}
+  .wu-list,.wu-back{background:rgba(255,255,255,.08);color:#f6efe4}
   #flash{position:fixed;inset:0;z-index:45;background:#fff;opacity:0;pointer-events:none}
   #flash.on{animation:flash .7s ease-out}
   @keyframes flash{0%{opacity:.95}100%{opacity:0}}
@@ -549,7 +570,10 @@ const $ = s => document.querySelector(s);
 // standalone website (GitHub Pages) uses room codes; on claude.ai the page uses Claude's live room
 const STANDALONE = /github\.io$/.test(location.hostname) || new URLSearchParams(location.search).has('standalone');
 let ROOM_CODE = null;
+// '#watch-<act>': a phone opened the secret Jack-animation list — play that animation locally (no room, no hosting)
+const WATCH = (/^watch-([a-z0-9]+)$/i.exec((location.hash || '').slice(1)) || [])[1] || null;
 const CTRL = (() => {
+  if (WATCH) return false;
   const h = (location.hash || '').slice(1); let saved = null; try { saved = localStorage.getItem('pizzabox-mode'); } catch (e) {}
   const hj = /^join-([a-z]{4})$/i.exec(h);
   if (hj) { ROOM_CODE = hj[1].toUpperCase(); try { localStorage.setItem('pizzabox-mode', 'ctrl'); localStorage.setItem('pizzabox-join', ROOM_CODE); } catch (e) {} return true; }
@@ -2223,6 +2247,29 @@ function buildRoad() {
   const st = { speed: 0 };
   const tick = dt => { scroll.position.z += st.speed * dt; if (scroll.position.z > 25) scroll.position.z -= 25; };
   return { g, car, st, tick };
+}
+// ---------- secret: tap the word "main" on a phone's waiting screen → list of every Jack animation to watch ----------
+function openJackMenu() {
+  let m = document.getElementById('jackMenu'); if (m) { m.classList.add('on'); return; }
+  m = document.createElement('div'); m.id = 'jackMenu'; m.className = 'on';
+  m.innerHTML = `<div class="jm-card"><div class="jm-top"><b>👺 Jack's secret cinema</b><button class="jm-x" aria-label="Close">×</button></div><p class="jm-sub">Pick one to watch on this phone.</p><div class="jm-list">${JACK_ACTS.map(([k, l]) => `<button data-watch="${k}">${l}</button>`).join('')}</div></div>`;
+  document.body.appendChild(m);
+  m.querySelector('.jm-x').onclick = () => m.classList.remove('on');
+  m.addEventListener('click', e => { const b = e.target.closest('[data-watch]'); if (!b) { if (e.target === m) m.classList.remove('on'); return; }
+    try { sessionStorage.setItem('pb-watch-back', location.hash && !/^#watch-/.test(location.hash) ? location.hash : '#controller'); } catch (er) {}
+    location.hash = '#watch-' + b.dataset.watch; location.reload(); });
+}
+document.addEventListener('click', e => { if (e.target.closest && e.target.closest('.secret-main')) { e.preventDefault(); openJackMenu(); } });
+function watchBoot() {
+  if (!WATCH) return;
+  document.body.classList.add('watching'); document.body.classList.remove('lobby', 'intro', 'introvid'); const lb = document.getElementById('lobby'); if (lb) lb.style.display = 'none';
+  const back = () => { let h = '#controller'; try { h = sessionStorage.getItem('pb-watch-back') || h; } catch (e) {} location.hash = h; location.reload(); };
+  const ov = document.createElement('div'); ov.id = 'watchUI';
+  const label = (JACK_ACTS.find(a => a[0] === WATCH) || [WATCH, WATCH])[1];
+  const showStart = again => { ov.innerHTML = `<div class="wu-card"><div class="wu-t">${again ? '🍿 That was' : '🎬 Now showing'}</div><div class="wu-n">${label}</div><div class="wu-tip">📱↔️ Turn your phone sideways for the best view</div><button class="wu-play">${again ? '↻ Watch again' : '▶ Play'}</button><button class="wu-list">🎞️ Pick another</button><button class="wu-back">← Back to the game</button></div>`; ov.classList.add('on');
+    ov.querySelector('.wu-play').onclick = () => { ensureAudio(); ov.classList.remove('on'); setTimeout(() => { watchJack(WATCH); const w = setInterval(() => { if (!goblin) { clearInterval(w); setTimeout(() => showStart(true), 900); } }, 300); }, 150); };
+    ov.querySelector('.wu-list').onclick = () => openJackMenu(); ov.querySelector('.wu-back').onclick = back; };
+  document.body.appendChild(ov); showStart(false);
 }
 // ---------- campus debate set (Jack act: 'debate') ----------
 const CAMP = new THREE.Vector3(-300, 0, 0);
@@ -4952,6 +4999,7 @@ $('#jackList').onclick = () => {
   if (open && !el.children.length) el.innerHTML = JACK_ACTS.map(([k, l]) => `<button class="jack-act" data-act="${k}">${l}</button>`).join('');
 };
 $('#jackActs').onclick = e => { const b = e.target.closest('[data-act]'); if (b) watchJack(b.dataset.act); };
+if (WATCH) setTimeout(watchBoot, 700);
 ['Hilo:hilo', 'Tos:tos', 'Fg:fieldgoal'].forEach(x => { const [id, t] = x.split(':'); $('#try' + id).onclick = () => { if (!canAim() && !mini) return toast('Start a game with 2+ players first (and wait for the turn to finish)'); startMini(t); if (mini && t === 'fieldgoal') mini.who = current().id; }; });
 document.addEventListener('click', e => { const b = e.target.closest('[data-gp]'); if (!b || !mini) return; const k = b.dataset.gp; if (k === 'hl') hlGuess(null, b.dataset.v); else if (k === 'tos') tosChoose(null, b.dataset.v); else if (k === 'vote') tosVote(null, b.dataset.v); else if (k === 'tosq') tosAsk(null, b.dataset.v); else if (k === 'kick') fgPress(null); });
 $('#tryCups').onclick = () => { if (!canAim() && !mini) return toast('Start a game with 2+ players first (and wait for the turn to finish)'); startMini('cups'); };
@@ -5202,7 +5250,7 @@ function loop() {
 let liveT = 0, liveLast = '';
 function hostLive(dt) {
   if (CTRL || !room) return;
-  liveT += dt; if (liveT < 0.066) return; liveT = 0;
+  if (WATCH) return; liveT += dt; if (liveT < 0.066) return; liveT = 0;
   const r2 = v => Math.round(v * 100) / 100;
   const a = { h: crosshair.visible ? 1 : 0, x: r2(aim.x), z: r2(aim.z), r: aimRing.visible ? r2(aim.r) : 0, m: aim.mode === 'lock' ? 'l' : 'w', t: +aim.t.toFixed(3), lt: +aim.lockT.toFixed(3), ph: aim.ph.map(v => +v.toFixed(3)),
     c: coin.visible ? 1 : 0, cx: r2(coin.position.x), cz: r2(coin.position.z), cy: r2(coin.position.y) };
@@ -5221,7 +5269,7 @@ function gamePhase() {
   return aim.mode === 'lock' ? 'lock' : 'aim';
 }
 function hostPublish() {
-  if (CTRL || !room) return;
+  if (CTRL || WATCH || !room) return;
   const cur = state.players.length ? current() : null;
   const g = {
     role: 'host', since: hostSince, phase: gamePhase(), turn: cur ? cur.id : null, obey: obey ? { pid: obey.pid, name: obey.name, text: obey.text } : null,
@@ -5310,6 +5358,7 @@ function makePeerRoom() {
   const snap = () => [{ peer: 'me', sameTab: true, isMe: true, presence: mine }, ...Object.keys(others).map(k => ({ peer: k, sameTab: false, isMe: false, presence: others[k] }))];
   const fire = () => { const ps = snap(); subs.forEach(f => { try { f({ peers: ps }); } catch (e) {} }); };
   const api = { onPeers: f => { subs.push(f); setTimeout(fire, 0); return () => {}; }, peers: snap, emit: async () => {}, on: () => () => {}, connected: () => true };
+  if (WATCH) { api.presence = async () => {}; api.join = () => {}; return api; }
   if (!CTRL) {
     // the main screen hosts the room under its code
     const conns = new Set();
@@ -5564,7 +5613,7 @@ function renderCtrl() {
   { const app = matchMedia('(display-mode: standalone)').matches || matchMedia('(display-mode: window-controls-overlay)').matches || matchMedia('(display-mode: minimal-ui)').matches || navigator.standalone === true; const phone = matchMedia('(pointer: coarse)').matches && Math.min(screen.width, screen.height) < 600; $('#cHost').style.display = !phone && (app || !(H || STANDALONE)) ? '' : 'none'; }
   if (STANDALONE && CTRL && roomState === 'ok' && !ROOM_CODE) {
     meEl.textContent = '';
-    body.innerHTML = `<div class="c-card"><h3>Enter the room code</h3><p>It's on the main screen (top right).</p></div>
+    body.innerHTML = `<div class="c-card"><h3>Enter the room code</h3><p>It's on the <span class="secret-main">main</span> screen (top right).</p></div>
       <div class="c-row"><input id="cCode" maxlength="4" placeholder="ABCD" autocomplete="off" autocapitalize="characters" style="text-transform:uppercase;letter-spacing:6px;text-align:center;font-size:28px"><button class="c-btn" id="cGo">Join</button></div>`;
     const go = () => { const v = $('#cCode').value.trim().toUpperCase(); if (/^[A-Z]{4}$/.test(v)) { room.join(v); renderCtrl(); } };
     $('#cGo').onclick = go; $('#cCode').onkeydown = e => { if (e.key === 'Enter') go(); };
@@ -5572,11 +5621,11 @@ function renderCtrl() {
   }
   if (STANDALONE && CTRL && roomState === 'ok' && !H) {
     meEl.textContent = '';
-    body.innerHTML = `<div class="c-card"><h3>Looking for room ${esc(ROOM_CODE)}…</h3><p>Make sure the main screen is open. This can take a few seconds.</p></div><button class="c-btn c-ghost" id="cRecode">Wrong code? Enter it again</button>`;
+    body.innerHTML = `<div class="c-card"><h3>Looking for room ${esc(ROOM_CODE)}…</h3><p>Make sure the <span class="secret-main">main</span> screen is open. This can take a few seconds.</p></div><button class="c-btn c-ghost" id="cRecode">Wrong code? Enter it again</button>`;
     $('#cRecode').onclick = () => { ROOM_CODE = null; try { localStorage.removeItem('pizzabox-join'); } catch (e) {} renderCtrl(); };
     return;
   }
-  if (roomState === 'connecting' || !H) { meEl.textContent = ''; body.innerHTML = `<div class="c-card"><h3>${roomState === 'connecting' ? 'Connecting…' : 'Waiting for the main screen…'}</h3><p>Open this page on the computer that shows the pizza box. It'll appear here automatically.</p></div>`; return; }
+  if (roomState === 'connecting' || !H) { meEl.textContent = ''; body.innerHTML = `<div class="c-card"><h3>${roomState === 'connecting' ? 'Connecting…' : 'Waiting for the <span class="secret-main">main</span> screen…'}</h3><p>Open this page on the computer that shows the pizza box. It'll appear here automatically.</p></div>`; return; }
   const players = H.players || [], lobbyL = H.lobby || [], mine = players.find(p => String(p.id) === String(me.pid));
   const inLobby = !mine && lobbyL.find(p => String(p.id) === String(me.pid));
   if (inLobby) {
@@ -5700,7 +5749,7 @@ if (CTRL) { document.body.classList.add('ctrl'); renderCtrl(); }
 let lbQrFor = null;
 function renderLobby() {
   if (CTRL) return;
-  document.body.classList.toggle('lobby', !state.started);
+  document.body.classList.toggle('lobby', !state.started && !WATCH);
   if (state.started) return;
   const all = [...state.lobby, ...state.players];
   $('#lbCount').textContent = all.length ? `(${all.length})` : '';
@@ -5719,7 +5768,7 @@ $('#startBtn').onclick = () => {
 };
 
 // ---------- installable app + automatic updates (website version only) ----------
-const BUILD = '1795380237';
+const BUILD = '1795380999';
 if (STANDALONE) {
   try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
   let deferredInstall = null;
