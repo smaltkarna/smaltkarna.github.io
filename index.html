@@ -2518,6 +2518,7 @@ function startGoblin(coinPos, forceAct) {
     let stolen = false, OFF = new THREE.Vector3(), dragFrom = new THREE.Vector3(), SET = null, headset = null, cur = null, wcam = null, chatT = 0, chatRate = 1.2, views = 1204, hype = 0, coin0 = new THREE.Vector3(), coinR0 = new THREE.Euler(), curPos = new THREE.Vector2(), mainL = [];
     const camAt = (p, t) => { goblin.cam = goblin.cam || { pos: new THREE.Vector3(), tgt: new THREE.Vector3() }; goblin.cam.pos.copy(p); goblin.cam.tgt.copy(t); };
     const R = (x, y, z) => GAMERP.clone().add(new THREE.Vector3(x, y, z));
+    const say = t => { document.body.classList.add('goblinsub'); $('#subs').classList.add('on'); $('#subsText').innerHTML = `<b>GoblinGamer:</b> ${t}`; speak(t.replace(/<[^>]+>/g, ''), 1.45, 1.2); }, subsOff = () => { $('#subs').classList.remove('on'); document.body.classList.remove('goblinsub'); };
     const CALM = ['first', 'is he gonna get it', 'bro is so locked in', 'chat is this real', 'W stream', 'grab the coin!!', 'lmao', '!coin', 'COIN COIN COIN', 'he has no idea', 'whats the cursor doing', 'go go go', 'clip it if he gets it', 'hi from Italy 🇮🇹'];
     const HYPE = ['LETS GOOOOO', 'W', 'WWWWWWW', '🐐🐐🐐', 'HE GOT IT', 'NO WAY', 'HE STOLE IT 💀', 'BRO TOOK THE COIN', '🖱️💨', 'its gone lmaooo', 'HYPE HYPE HYPE', '🔥🔥🔥', 'CLIP IT', 'INSANE', 'GOBLIN DIFF', 'W GOBLIN', '🍕🍕🍕', 'HOLY'];
     const screenOf = v => { const p = v.clone().project(camera); return new THREE.Vector2((p.x + 1) / 2 * innerWidth, (1 - p.y) / 2 * innerHeight); };
@@ -2527,7 +2528,7 @@ function startGoblin(coinPos, forceAct) {
     const gaming = t => { G.arms[0].rotation.set(-1.25 + 0.06 * Math.sin(t * 22), 0, 0.3); G.arms[1].rotation.set(-1.25 + 0.06 * Math.sin(t * 19 + 1), 0, -0.3); G.head.rotation.set(0.05 + 0.03 * Math.sin(t * 3), 0.05 * Math.sin(t * 1.3), 0); };
     const camWeb = (shk = 0) => { const hp = wpos(G.head); wcam.position.copy(hp).add(new THREE.Vector3(0.35 + (Math.random() - 0.5) * shk, 0.3 + (Math.random() - 0.5) * shk, 2.5)); wcam.lookAt(hp.x, hp.y - 0.3, hp.z); };
     const gameCam = () => camAt(new THREE.Vector3(coin0.x * 0.4, 9.5, coin0.z * 0.4 + 8.5), new THREE.Vector3(coin0.x * 0.8, 0, coin0.z * 0.8));
-    const restore = () => { document.body.classList.remove('streaming'); STREAMCAM = null; if (cur) cur.classList.remove('on', 'grab'); if (SET && SET.g.parent) scene.remove(SET.g); BOLSET = null; if (headset && headset.parent) headset.parent.remove(headset); headset = null; if (stolen) { coin.position.set(0, -50, 0); coin.visible = false; } else { coin.position.copy(coin0); coin.rotation.copy(coinR0); } };
+    const restore = () => { subsOff(); document.body.classList.remove('streaming'); STREAMCAM = null; if (cur) cur.classList.remove('on', 'grab'); if (SET && SET.g.parent) scene.remove(SET.g); BOLSET = null; if (headset && headset.parent) headset.parent.remove(headset); headset = null; if (stolen) { coin.position.set(0, -50, 0); coin.visible = false; } else { coin.position.copy(coin0); coin.rotation.copy(coinR0); } };
     S2(0.01, () => {}, () => {
       cleanups.push(restore);
       coin0.copy(coin.position); coinR0.copy(coin.rotation);
@@ -2548,20 +2549,20 @@ function startGoblin(coinPos, forceAct) {
       stChat('stream is LIVE 🔴 welcome in', ['jack_the_mod', '#3cff9a']);
     });
     // calm grind: the cursor wanders in from the corner
-    S2(3.0, u => { gameCam(); gaming(goblin.t); camWeb(); chat(1 / 60); viewsTick(1 / 60);
+    S2(5.2, u => { gameCam(); gaming(goblin.t); camWeb(); chat(1 / 60); viewsTick(1 / 60);
         const tgt = screenOf(coin0), from = new THREE.Vector2(innerWidth * 0.9, innerHeight + 40), e = ease(u); curPos.set(THREE.MathUtils.lerp(from.x, tgt.x + 60, e) + 30 * Math.sin(u * 9), THREE.MathUtils.lerp(from.y, tgt.y - 50, e) + 18 * Math.sin(u * 13)); putCur(); },
-      () => { cur.classList.add('on'); setTimeout(() => stAlert('⭐ <b>greasy_dave</b> just followed!'), 900); setTimeout(() => tone('sine', 1320, 1320, 0.15, 0.06), 900); });
+      () => { cur.classList.add('on'); say('What\'s up chat, welcome back to the stream!'); setTimeout(() => { stAlert('⭐ <b>greasy_dave</b> just followed!'); tone('sine', 1320, 1320, 0.15, 0.06); }, 2300); setTimeout(() => say('Yo, thanks for the follow greasy dave, appreciate you bro!'), 2500); });
     // hovers… the goblin leans in
-    S2(1.1, u => { gameCam(); camWeb(); chat(1 / 60); viewsTick(1 / 60); G.head.rotation.set(0.15, 0, 0); G.body.rotation.x = 0.15 * ease(u); G.arms.forEach(a2 => a2.rotation.x = -1.3); chatRate = 0.6;
+    S2(1.9, u => { gameCam(); camWeb(); chat(1 / 60); viewsTick(1 / 60); G.head.rotation.set(0.15, 0, 0); G.body.rotation.x = 0.15 * ease(u); G.arms.forEach(a2 => a2.rotation.x = -1.3); chatRate = 0.6;
         const tgt = screenOf(coin0); curPos.set(THREE.MathUtils.lerp(tgt.x + 60, tgt.x, ease(u)) + 10 * Math.sin(u * 20), THREE.MathUtils.lerp(tgt.y - 50, tgt.y, ease(u)) + 6 * Math.cos(u * 20)); putCur(); },
-      () => { ['he is hovering', 'CLICK IT', 'DO IT', 'oh my god'].forEach((t, i) => setTimeout(() => stChat(t), i * 250)); });
+      () => { say('Chat. Chat. CHAT. Look at this!'); ['he is hovering', 'CLICK IT', 'DO IT', 'oh my god'].forEach((t, i) => setTimeout(() => stChat(t), i * 250)); });
     // *click* — it grabs the coin… and the goblin LOSES IT
-    S2(3.2, u => { gameCam(); camWeb(0.08 * (1 - u * 0.5)); chat(1 / 60); viewsTick(1 / 60);
+    S2(4.2, u => { gameCam(); camWeb(0.08 * (1 - u * 0.5)); chat(1 / 60); viewsTick(1 / 60);
         const lift = Math.min(1, u * 4); coin.position.set(coin0.x + 0.6 * Math.sin(u * 7) * lift, coin0.y + 1.4 * ease(lift), coin0.z + 0.4 * Math.cos(u * 7) * lift - 0.4 * lift); coin.rotation.x += 0.08;
         const sp = screenOf(coin.position); curPos.set(sp.x, sp.y); putCur();
         G.body.rotation.x = -0.15; G.root.position.y = GAMERP.y + 0.3 * Math.abs(Math.sin(u * 16)); G.arms.forEach((a2, i) => a2.rotation.set(-2.9 + 0.25 * Math.sin(u * 30 + i * 2), 0, (i ? -1 : 1) * -0.35)); G.head.rotation.set(-0.35, 0.15 * Math.sin(u * 20), 0); G.jaw.scale.y = 1.15; },
-      () => { cur.classList.add('grab'); hype = 1; chatRate = 0.08; tone('square', 1800, 1800, 0.04, 0.08); speak('LET\'S GOOOOOOOO!', 1.6, 1.05); noiseSfx('bandpass', 1400, 900, 2.6, 0.25, 0.7); shake = Math.max(shake, 0.1);
-        setTimeout(() => stAlert('🚂 <b>HYPE TRAIN</b> — LEVEL 5!'), 600); setTimeout(() => stAlert('🎁 <b>crustlord</b> gifted 10 subs!'), 1900); });
+      () => { cur.classList.add('grab'); hype = 1; chatRate = 0.08; tone('square', 1800, 1800, 0.04, 0.08); say('LET\'S GOOOOOOOO!'); noiseSfx('bandpass', 1400, 900, 2.6, 0.25, 0.7); shake = Math.max(shake, 0.1);
+        setTimeout(() => stAlert('🚂 <b>HYPE TRAIN</b> — LEVEL 5!'), 600); setTimeout(() => say('CLIP THAT! Somebody clip that!'), 1500); setTimeout(() => stAlert('🎁 <b>crustlord</b> gifted 10 subs!'), 2600); setTimeout(() => say('Thank you for the ten gifted, crustlord! Huge!'), 2800); });
     // drops it back where it was, cursor leaves, chat keeps going
     // …and DRAGS IT RIGHT OFF THE SCREEN. Stolen.
     S2(1.3, u => { gameCam(); camWeb(0.06); chat(1 / 60); viewsTick(1 / 60); const e = u * u; coin.position.lerpVectors(dragFrom, OFF, e); coin.rotation.x += 0.12; const sp = screenOf(coin.position); curPos.set(sp.x, sp.y); putCur(); G.root.position.y = GAMERP.y + 0.25 * Math.abs(Math.sin(u * 16)); G.arms.forEach((a2, i) => a2.rotation.set(-2.9 + 0.25 * Math.sin(u * 30 + i * 2), 0, (i ? -1 : 1) * -0.35)); G.jaw.scale.y = 1.15; },
@@ -2570,8 +2571,8 @@ function startGoblin(coinPos, forceAct) {
         const p = new THREE.Vector3(1.6, 0.1, 0.5).unproject(camera), dir = p.sub(camera.position).normalize(), t = (coin0.y + 1.2 - camera.position.y) / (dir.y || -1);
         OFF.copy(camera.position).addScaledVector(dir, Math.max(4, t)); whooshSfx(0.6); ['HE STOLE IT 💀', 'BRO TOOK THE COIN', 'NOOOO WAY', '🖱️💨🪙'].forEach((t2, i) => setTimeout(() => stChat(t2), i * 180)); });
     S2(0.01, () => {}, () => { coin.visible = false; cur.classList.remove('grab'); stAlert('🪙 <b>The coin has been stolen!</b>'); });
-    S2(1.4, u => { gameCam(); camWeb(); chat(1 / 60); viewsTick(1 / 60); curPos.x += 14; curPos.y += 9; putCur(); G.arms.forEach((a2, i) => a2.rotation.set(-1.3, 0, (i ? -1 : 1) * 0.3)); G.jaw.scale.y = 0.5 + 0.3 * Math.sin(u * 14); },
-      () => { hype = 0; chatRate = 0.35; setTimeout(() => speak('Chat! He stole the coin!', 1.5, 1.2), 200); });
+    S2(4.4, u => { gameCam(); camWeb(); chat(1 / 60); viewsTick(1 / 60); curPos.x += 14; curPos.y += 9; putCur(); G.arms.forEach((a2, i) => a2.rotation.set(-1.3, 0, (i ? -1 : 1) * 0.3)); G.jaw.scale.y = 0.5 + 0.3 * Math.sin(u * 14); },
+      () => { hype = 0; chatRate = 0.35; say('Chat! He STOLE the coin! That is NOT content!'); setTimeout(() => say('Anyway, that\'s the stream. Smash that follow, stay hydrated, love you guys!'), 2000); });
     S2(0.01, () => {}, () => { restore(); if (stolen) showResult('🖱️ Coin stolen!', 'A cursor dragged it right off the stream.', '#9146ff'); goblin.cam = null; neutral(); G.root.rotation.set(0, 0, 0); G.root.position.set(stand.x, 16, stand.z); noiseSfx('highpass', 4000, 1500, 0.25, 0.15, 1); });
     S2(1.1, u => { G.root.position.set(stand.x, THREE.MathUtils.lerp(16, TOP, u * u), stand.z); G.root.rotation.y = faceYaw + (1 - u) * 10; G.arms.forEach(a2 => a2.rotation.x = -2.8); }, wheeSfx);
     S2(0.01, () => neutral()); squash();
@@ -5244,7 +5245,7 @@ $('#startBtn').onclick = () => {
 };
 
 // ---------- installable app + automatic updates (website version only) ----------
-const BUILD = '1795308114';
+const BUILD = '1795308144';
 if (STANDALONE) {
   try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
   let deferredInstall = null;
