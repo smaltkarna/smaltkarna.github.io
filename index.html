@@ -2106,6 +2106,124 @@ function buildOldHouse() {
   };
   return { g, door, tick, st };
 }
+// ---------- love story set (Jack act: 'love'): one little stage per chapter ----------
+const LOVEP = new THREE.Vector3(-300, 0, -300);
+let LHEART = null;
+function heartTex() { return LHEART || (LHEART = textTex(128, 128, (x) => { x.fillStyle = '#ff4d7a'; x.beginPath(); x.moveTo(64, 112); x.bezierCurveTo(4, 70, 8, 18, 40, 16); x.bezierCurveTo(54, 15, 62, 26, 64, 36); x.bezierCurveTo(66, 26, 74, 15, 88, 16); x.bezierCurveTo(120, 18, 124, 70, 64, 112); x.fill(); })); }
+function buildLove() {
+  const g = new THREE.Group(); g.position.copy(LOVEP);
+  const M = (c, o = {}) => new THREE.MeshStandardMaterial(Object.assign({ color: c, roughness: 0.85 }, o));
+  const E = (c, i = 1.3) => new THREE.MeshStandardMaterial({ color: c, emissive: c, emissiveIntensity: i });
+  const box = (w, h, d, mat, x, y, z, par) => { const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat); m.position.set(x, y, z); m.castShadow = m.receiveShadow = true; par.add(m); return m; };
+  const cyl = (r1, r2, h, mat, x, y, z, par, seg = 16) => { const m = new THREE.Mesh(new THREE.CylinderGeometry(r1, r2, h, seg), mat); m.position.set(x, y, z); m.castShadow = m.receiveShadow = true; par.add(m); return m; };
+  const sph = (r, mat, x, y, z, par) => { const m = new THREE.Mesh(new THREE.SphereGeometry(r, 16, 12), mat); m.position.set(x, y, z); m.castShadow = true; par.add(m); return m; };
+  const ground = (c, par, w = 30) => { const p = new THREE.Mesh(new THREE.PlaneGeometry(w, w), M(c, { roughness: 1 })); p.rotation.x = -Math.PI / 2; p.receiveShadow = true; par.add(p); };
+  const tree = (x, z, par, c = '#3f7a35') => { cyl(0.2, 0.26, 2.2, M('#5b3d24'), x, 1.1, z, par); sph(1.4, M(c, { roughness: 0.95 }), x, 3.0, z, par); sph(1.0, M(c, { roughness: 0.95 }), x + 0.7, 3.6, z - 0.3, par); };
+  const st = [];
+  // 0 · the park at sunset (they meet)
+  const park = new THREE.Group(); park.position.x = 0; g.add(park); st.push(park);
+  ground('#6f9a4a', park); box(2.2, 0.02, 12, M('#c9b48a', { roughness: 1 }), 0, 0.011, 0, park);
+  box(1.8, 0.1, 0.5, M('#6b4423'), -2.0, 0.55, -0.6, park); box(1.8, 0.5, 0.08, M('#6b4423'), -2.0, 0.85, -0.85, park); [-0.8, 0.8].forEach(x => box(0.08, 0.55, 0.45, M('#2a2a2a'), -2.0 + x, 0.28, -0.6, park));
+  cyl(0.05, 0.06, 3.2, M('#2a2a2a'), 2.0, 1.6, -0.8, park); sph(0.2, E('#ffd8a0', 1.6), 2.0, 3.25, -0.8, park);
+  [[-5, -4], [4.5, -5], [-6, 3], [6, 2], [-3.5, -8], [3, -9]].forEach(([x, z]) => tree(x, z, park));
+  // 1 · candlelit dinner (they fall in love)
+  const date = new THREE.Group(); date.position.x = 30; g.add(date); st.push(date);
+  ground('#2a1a2a', date); box(30, 6, 0.2, M('#3a2238'), 0, 3, -4, date);
+  cyl(0.8, 0.8, 0.06, M('#f3ece0'), 0, 0.95, 0, date, 32); cyl(0.08, 0.12, 0.95, M('#3a2a20'), 0, 0.47, 0, date);
+  cyl(0.18, 0.18, 0.02, M('#ffffff'), 0.45, 0.99, 0, date, 24); cyl(0.18, 0.18, 0.02, M('#ffffff'), -0.45, 0.99, 0, date, 24);
+  cyl(0.03, 0.03, 0.25, M('#f8f0d8'), 0, 1.1, -0.2, date); const flame = sph(0.035, E('#ffb347', 2.5), 0, 1.25, -0.2, date);
+  const candle = new THREE.PointLight('#ffb347', 1.4, 5, 1.6); candle.position.set(0, 1.4, -0.2); date.add(candle);
+  const sl = new THREE.Mesh(new THREE.PlaneGeometry(4, 1.2), new THREE.MeshBasicMaterial({ transparent: true, map: textTex(512, 150, (x, W, H) => { x.font = '400 110px "Permanent Marker", cursive'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.shadowColor = '#ff4d7a'; x.shadowBlur = 30; x.fillStyle = '#ffd1e0'; x.fillText('Amore', W / 2, H / 2 + 6); }) })); sl.position.set(0, 3.0, -3.88); date.add(sl);
+  // 2 · the wedding
+  const wed = new THREE.Group(); wed.position.x = 60; g.add(wed); st.push(wed);
+  ground('#7fb35a', wed); box(1.4, 0.02, 10, M('#ffffff', { roughness: 0.9 }), 0, 0.012, 2, wed);
+  const arch = new THREE.Mesh(new THREE.TorusGeometry(1.5, 0.1, 10, 32, Math.PI), M('#f4f4f4')); arch.position.set(0, 1.4, -1.2); wed.add(arch); cyl(0.1, 0.1, 1.4, M('#f4f4f4'), -1.5, 0.7, -1.2, wed); cyl(0.1, 0.1, 1.4, M('#f4f4f4'), 1.5, 0.7, -1.2, wed);
+  for (let i = 0; i < 18; i++) { const a = i / 17 * Math.PI; sph(0.13, M(['#ff7ba8', '#ffffff', '#ffd1e0'][i % 3]), Math.cos(a) * 1.5, 1.4 + Math.sin(a) * 1.5, -1.15, wed); }
+  [-1, 1].forEach(s => { for (let r = 0; r < 3; r++) box(1.4, 0.45, 0.4, M('#ffffff'), s * 1.6, 0.22, 1.5 + r * 1.2, wed); });
+  cyl(0.2, 0.25, 0.8, M('#e8e0d0'), 0.0, 0.4, -0.6, wed); box(0.5, 0.08, 0.4, M('#c8102e', { roughness: 0.6 }), 0.0, 0.84, -0.6, wed);   // pillow stand for the bride
+  // 3 · home lawn with the kids (and where she gets sick)
+  const home = new THREE.Group(); home.position.x = 90; g.add(home); st.push(home);
+  ground('#7fb35a', home); box(6, 3, 4, brickify(M('#c9a27a')), 0, 1.5, -5, home); box(1, 1.8, 0.1, M('#3a6a8a'), 0, 0.9, -2.95, home);
+  for (let i = 0; i < 9; i++) box(0.08, 0.7, 0.08, M('#ffffff'), -4 + i, 0.35, 1.5, home); box(8.1, 0.06, 0.05, M('#ffffff'), 0, 0.55, 1.5, home);
+  tree(-4, -3, home); tree(4.5, -2.5, home);
+  // 4 · hospital: the consultation
+  const hosp = new THREE.Group(); hosp.position.x = 120; g.add(hosp); st.push(hosp);
+  ground('#d8e2e6', hosp); box(12, 4, 0.2, M('#eef3f4'), 0, 2, -3, hosp); box(0.2, 4, 8, M('#e4ecee'), -4, 2, 0, hosp);
+  box(2.0, 0.08, 0.9, M('#cfd8dc'), 0, 0.85, -1.6, hosp); box(0.8, 0.6, 0.02, E('#9fd0ff', 0.4), -1.5, 2.2, -2.88, hosp);
+  const xr = new THREE.Mesh(new THREE.PlaneGeometry(0.7, 0.5), new THREE.MeshBasicMaterial({ map: textTex(140, 100, (x, W, H) => { x.fillStyle = '#0e1a22'; x.fillRect(0, 0, W, H); x.strokeStyle = '#dfefff'; x.lineWidth = 5; x.beginPath(); x.arc(W / 2, H / 2, 32, 0, 7); x.stroke(); x.beginPath(); x.moveTo(W / 2 - 10, H / 2 - 6); x.lineTo(W / 2 + 12, H / 2 + 10); x.stroke(); }) })); xr.position.set(-1.5, 2.2, -2.86); hosp.add(xr);
+  // 5 · hospital room: the bed + heart monitor
+  const room = new THREE.Group(); room.position.x = 150; g.add(room); st.push(room);
+  ground('#c9d4d8', room); box(12, 4, 0.2, M('#d7e2e6'), 0, 2, -3, room); box(0.15, 2.5, 3, M('#cfe0f0', { transparent: true, opacity: 0.35 }), 3.4, 1.25, -0.5, room);
+  box(2.2, 0.5, 1.1, M('#e9eef0'), 0, 0.5, -1.4, room); box(2.2, 0.15, 1.1, M('#ffffff'), 0, 0.82, -1.4, room); box(0.08, 0.9, 1.1, M('#9aa8ae', { metalness: 0.5 }), -1.1, 0.9, -1.4, room); box(0.5, 0.12, 0.7, M('#ffffff'), -0.75, 0.95, -1.4, room);
+  box(1.6, 0.04, 1.0, M('#a9c8e8'), 0.2, 0.9, -1.4, room);   // blanket
+  cyl(0.03, 0.03, 1.8, M('#9aa8ae', { metalness: 0.6 }), 1.3, 0.9, -2.1, room); box(0.7, 0.5, 0.1, M('#1a1f24'), 1.3, 1.6, -2.1, room);
+  const ekgTex = textTex(256, 160, () => {}); const ekgC = ekgTex.image, ekgX = ekgC.getContext('2d');
+  const ekg = new THREE.Mesh(new THREE.PlaneGeometry(0.62, 0.42), new THREE.MeshBasicMaterial({ map: ekgTex })); ekg.position.set(1.3, 1.6, -2.04); room.add(ekg);
+  // 6 · the funeral, in the rain
+  const fun = new THREE.Group(); fun.position.x = 180; g.add(fun); st.push(fun);
+  ground('#4a5a44', fun); const mound = new THREE.Mesh(new THREE.SphereGeometry(1, 20, 10, 0, Math.PI * 2, 0, Math.PI / 2), M('#4a3626', { roughness: 1 })); mound.scale.set(0.8, 0.25, 1.4); mound.position.set(0, 0, -1.6); fun.add(mound);
+  const stone = new THREE.Mesh(new THREE.BoxGeometry(1.0, 1.2, 0.2), new THREE.MeshStandardMaterial({ roughness: 0.9, map: textTex(256, 300, (x, W, H) => { x.fillStyle = '#8c8f94'; x.fillRect(0, 0, W, H); x.fillStyle = 'rgba(0,0,0,.12)'; for (let i = 0; i < 300; i++) x.fillRect(Math.random() * W, Math.random() * H, 2, 2); x.fillStyle = '#2b2d31'; x.textAlign = 'center'; x.font = '700 36px Georgia, serif'; x.fillText('COIN', W / 2, 90); x.font = 'italic 22px Georgia, serif'; x.fillText('Beloved wife', W / 2, 140); x.fillText('& mother', W / 2, 170); x.font = '700 40px Georgia, serif'; x.fillText('🪙', W / 2, 240); }) }));
+  stone.position.set(0, 0.6, -2.7); stone.castShadow = true; fun.add(stone);
+  [[-0.35, '#ff7ba8'], [0.0, '#ffffff'], [0.3, '#ff4d7a']].forEach(([x, c]) => { cyl(0.01, 0.01, 0.4, M('#2f6a2a'), x, 0.2, -1.95, fun, 6); sph(0.07, M(c), x, 0.42, -1.95, fun); });
+  [[-6, -6], [6, -7], [-8, 0], [8, -2]].forEach(([x, z]) => tree(x, z, fun, '#3b5a3a'));
+  [[-3, -4], [3, -4.5], [-4.5, -2]].forEach(([x, z]) => box(0.6, 0.8, 0.15, M('#7c7f84'), x, 0.4, z, fun));
+  const N = 900, pos = new Float32Array(N * 3); for (let i = 0; i < N; i++) { pos[i * 3] = (Math.random() - 0.5) * 16; pos[i * 3 + 1] = Math.random() * 8; pos[i * 3 + 2] = (Math.random() - 0.5) * 12; }
+  const rg = new THREE.BufferGeometry(); rg.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  const rain = new THREE.Points(rg, new THREE.PointsMaterial({ color: '#b8c8d8', size: 0.05, transparent: true, opacity: 0.7, depthWrite: false })); fun.add(rain);
+  // light
+  const hemi = new THREE.HemisphereLight('#ffffff', '#555048', 0.5); g.add(hemi);
+  const sun = new THREE.DirectionalLight('#ffffff', 0.9); sun.castShadow = true; sun.shadow.mapSize.set(1024, 1024); Object.assign(sun.shadow.camera, { left: -10, right: 10, top: 10, bottom: -10, near: 1, far: 40 }); g.add(sun); g.add(sun.target);
+  const LOOK = [['#f6b07a', '#ffd3a0', 0.75, 0.45], ['#1c1226', '#a888ff', 0.12, 0.25], ['#cfe6ff', '#ffffff', 0.9, 0.55], ['#bfe0ff', '#ffffff', 0.85, 0.5], ['#e8f0f2', '#ffffff', 0.7, 0.6], ['#9fb2c2', '#d8e6ff', 0.35, 0.35], ['#6c7682', '#c6d0dc', 0.3, 0.35]];
+  const setStage = (i, sc) => { st.forEach((s, k) => s.visible = k === i); const [bg, sunC, sunI, hemiI] = LOOK[i]; sc.background.set(bg); sc.fog.color.set(bg); sun.color.set(sunC); sun.intensity = sunI; hemi.intensity = hemiI; sun.position.set(st[i].position.x - 6, 12, 8); sun.target.position.set(st[i].position.x, 0, 0); };
+  let T = 0, beat = 0, flat = false;
+  const tick = dt => {
+    T += dt; flame.scale.setScalar(1 + 0.2 * Math.sin(T * 17)); candle.intensity = 1.3 + 0.2 * Math.sin(T * 13);
+    const p = rg.attributes.position.array; for (let i = 0; i < N; i++) { p[i * 3 + 1] -= dt * 7; if (p[i * 3 + 1] < 0) p[i * 3 + 1] += 8; } rg.attributes.position.needsUpdate = true;
+    // heart monitor
+    beat += dt; ekgX.fillStyle = '#05140a'; ekgX.fillRect(0, 0, 256, 160); ekgX.strokeStyle = '#3dff7a'; ekgX.lineWidth = 4; ekgX.beginPath();
+    for (let x = 0; x <= 256; x += 4) { const ph = ((x / 256) * 2 + T * 0.8) % 1; const y = flat ? 80 : 80 - (ph > 0.45 && ph < 0.5 ? 60 * Math.sin((ph - 0.45) / 0.05 * Math.PI) : 0) + (ph > 0.5 && ph < 0.53 ? 20 : 0); x ? ekgX.lineTo(x, y) : ekgX.moveTo(x, y); }
+    ekgX.stroke(); ekgTex.needsUpdate = true;
+  };
+  return { g, st, setStage, tick, flatline: v => { flat = v; } };
+}
+// ---------- night road set (Jack act: 'crash') ----------
+const ROADP = new THREE.Vector3(300, 0, 300);
+function buildRoad() {
+  const g = new THREE.Group(); g.position.copy(ROADP);
+  const M = (c, o = {}) => new THREE.MeshStandardMaterial(Object.assign({ color: c, roughness: 0.85 }, o));
+  const E = (c, i = 1.5) => new THREE.MeshStandardMaterial({ color: c, emissive: c, emissiveIntensity: i });
+  const box = (w, h, d, mat, x, y, z, par = g) => { const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat); m.position.set(x, y, z); m.castShadow = m.receiveShadow = true; par.add(m); return m; };
+  const cyl = (r1, r2, h, mat, x, y, z, par = g, seg = 16) => { const m = new THREE.Mesh(new THREE.CylinderGeometry(r1, r2, h, seg), mat); m.position.set(x, y, z); m.castShadow = m.receiveShadow = true; par.add(m); return m; };
+  const grass = new THREE.Mesh(new THREE.PlaneGeometry(120, 400), M('#141c14', { roughness: 1 })); grass.rotation.x = -Math.PI / 2; grass.position.y = -0.01; grass.receiveShadow = true; g.add(grass);
+  const road = new THREE.Mesh(new THREE.PlaneGeometry(8, 400), M('#202226', { roughness: 0.9 })); road.rotation.x = -Math.PI / 2; road.receiveShadow = true; g.add(road);
+  // scrolling scenery: dashes, lamp posts, trees (they slide past while "driving")
+  const scroll = new THREE.Group(); g.add(scroll);
+  for (let i = 0; i < 40; i++) box(0.15, 0.01, 1.6, E('#e8e0b0', 0.25), 0, 0.012, -100 + i * 5, scroll);
+  [-4.2, 4.2].forEach(x => box(0.12, 0.01, 400, M('#d8d8d8', { roughness: 0.6 }), x, 0.011, 0, g));
+  const lamps = [];
+  for (let i = 0; i < 8; i++) { const z = -100 + i * 25, x = i % 2 ? 5.2 : -5.2; cyl(0.06, 0.08, 4.5, M('#333'), x, 2.25, z, scroll); const head = box(0.6, 0.12, 0.25, E('#ffcf8a', 1.2), x - Math.sign(x) * 0.3, 4.5, z, scroll); const pl = new THREE.PointLight('#ffb560', 0.9, 11, 1.6); pl.position.set(x - Math.sign(x) * 0.5, 4.2, z); scroll.add(pl); lamps.push(pl); }
+  for (let i = 0; i < 26; i++) { const z = -100 + i * 8, x = (i % 2 ? 1 : -1) * (9 + (i * 7) % 6); const t = new THREE.Mesh(new THREE.ConeGeometry(1.4, 4.5, 8), M('#0b140c')); t.position.set(x, 2.25, z); scroll.add(t); }
+  const moon = new THREE.Mesh(new THREE.SphereGeometry(3, 24, 16), new THREE.MeshBasicMaterial({ color: '#f4f0d8' })); moon.position.set(-30, 40, -120); g.add(moon);
+  const stars = new THREE.Points(new THREE.BufferGeometry().setAttribute('position', new THREE.BufferAttribute(new Float32Array(Array.from({ length: 900 }, (_, i) => i % 3 === 1 ? 30 + Math.random() * 60 : (Math.random() - 0.5) * 300)), 3)), new THREE.PointsMaterial({ color: '#ffffff', size: 0.35, sizeAttenuation: true })); stars.position.z = -60; g.add(stars);
+  // the car (open-top so we can see him), headlights + tail lights
+  const car = new THREE.Group(); g.add(car);
+  const paint = M('#b3122e', { roughness: 0.35, metalness: 0.4 }), dark = M('#141414', { roughness: 0.6 });
+  box(2.0, 0.55, 4.2, paint, 0, 0.55, 0, car); box(1.9, 0.25, 1.4, paint, 0, 0.92, -1.35, car); box(1.9, 0.3, 1.0, paint, 0, 0.95, 1.55, car);
+  box(1.6, 0.12, 0.9, dark, 0, 0.85, 0.35, car);   // seat
+  box(1.8, 0.5, 0.04, M('#bcd8ff', { transparent: true, opacity: 0.3, roughness: 0.05 }), 0, 1.3, -0.65, car).rotation.x = -0.35;
+  const wheel = new THREE.Mesh(new THREE.TorusGeometry(0.2, 0.03, 8, 20), dark); wheel.position.set(-0.4, 1.15, -0.35); wheel.rotation.x = -1.0; car.add(wheel); car.userData.wheel = wheel;
+  [[-1.0, -1.35], [1.0, -1.35], [-1.0, 1.4], [1.0, 1.4]].forEach(([x, z]) => { const w = cyl(0.36, 0.36, 0.25, dark, x, 0.36, z, car); w.rotation.z = Math.PI / 2; });
+  [-0.7, 0.7].forEach(x => { box(0.35, 0.18, 0.05, E('#fff6d8', 2), x, 0.68, -2.11, car); box(0.4, 0.12, 0.05, E('#ff2020', 1.6), x, 0.7, 2.11, car); });
+  const beamL = new THREE.SpotLight('#fff2cc', 2.2, 30, 0.45, 0.5, 1.2); beamL.position.set(-0.7, 0.8, -2.2); car.add(beamL); beamL.target.position.set(-0.7, 0, -14); car.add(beamL.target);
+  const beamR = new THREE.SpotLight('#fff2cc', 2.2, 30, 0.45, 0.5, 1.2); beamR.position.set(0.7, 0.8, -2.2); car.add(beamR); beamR.target.position.set(0.7, 0, -14); car.add(beamR.target);
+  const tail = new THREE.PointLight('#ff2020', 0.9, 5, 1.6); tail.position.set(0, 0.8, 2.6); car.add(tail);
+  const dash = new THREE.PointLight('#7fb0ff', 0.6, 2.5, 1.6); dash.position.set(-0.4, 1.3, -0.6); car.add(dash);
+  const hemi = new THREE.HemisphereLight('#3a4a7a', '#0a0a10', 0.35); g.add(hemi);
+  const moonL = new THREE.DirectionalLight('#9fb4ff', 0.25); moonL.position.set(-20, 30, -30); g.add(moonL);
+  const st = { speed: 0 };
+  const tick = dt => { scroll.position.z += st.speed * dt; if (scroll.position.z > 25) scroll.position.z -= 25; };
+  return { g, car, st, tick };
+}
 // ---------- campus debate set (Jack act: 'debate') ----------
 const CAMP = new THREE.Vector3(-300, 0, 0);
 function textTex(w, h, draw) { const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h); const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding; t.anisotropy = 4; return t; }
@@ -2207,7 +2325,7 @@ const OUTFITS = ['reaper', 'arrow', 'cone', 'prisoner', 'tinfoil', 'clown', 'bab
 const HEAD_OUTFITS = new Set(['reaper', 'arrow', 'cone', 'tinfoil', 'clown', 'angel', 'viking', 'chef', 'plunger', 'mummy']);
 function startGoblin(coinPos, forceAct) {
   musicStyle('sneaky');
-  const plan = { entr: pickOther(['walk', 'sky', 'lid', 'burrow'], lastGob.entr), act: forceAct || bagPick('act', ['eat', 'burp', 'juggle', 'bite', 'hat', 'polish', 'casino', 'surf', 'golf', 'wedding', 'summon', 'sneeze', 'booger', 'fartcannon', 'rockstar', 'ballet', 'breakdance', 'opera', 'thief', 'insult', 'clones', 'giant', 'plane', 'neptune', 'sting', 'smite', 'duel', 'swipe', 'debate', 'vip', 'xmas', 'acid', 'stream', 'cold', 'acid2']), exit: pickOther(['jump', 'rocket', 'burrow', 'run'], lastGob.exit) };
+  const plan = { entr: pickOther(['walk', 'sky', 'lid', 'burrow'], lastGob.entr), act: forceAct || bagPick('act', ['eat', 'burp', 'juggle', 'bite', 'hat', 'polish', 'casino', 'surf', 'golf', 'wedding', 'summon', 'sneeze', 'booger', 'fartcannon', 'rockstar', 'ballet', 'breakdance', 'opera', 'thief', 'insult', 'clones', 'giant', 'plane', 'neptune', 'sting', 'smite', 'duel', 'swipe', 'debate', 'vip', 'xmas', 'acid', 'stream', 'cold', 'acid2', 'love', 'crash']), exit: pickOther(['jump', 'rocket', 'burrow', 'run'], lastGob.exit) };
   if (plan.entr === 'burrow' && plan.exit === 'burrow') plan.exit = 'rocket';
   if (plan.act === 'plane') plan.exit = 'run';
   if (plan.act === 'sting') { plan.entr = 'walk'; plan.exit = 'run'; }
@@ -2790,6 +2908,148 @@ function startGoblin(coinPos, forceAct) {
     S2(2.6, u => { $('#fade').style.background = fadeBg; headCam(3.4, 0.5); G.root.rotation.z = 0.25 * (1 - u); G.head.rotation.set(0.2, 0.3 * Math.sin(u * 5), 0); G.jaw.scale.y = 0.5; },
       () => { say('Goblin', '…Okay. Everybody drink.', 0.9, 0.85); });
     S2(0.01, () => {}, () => { subsOff(); goblin.cam = null; G.root.rotation.z = 0; neutral(); showResult('🍺 Everybody drinks!', 'The goblin knows he\'s in a drinking game now.', '#c03bff'); });
+  } else if (plan.act === 'love') {
+    // ---- a ~30-second love story: the goblin & the coin. Meet, fall in love, marry, kids… hospital… funeral ----
+    plan.exit = 'run';
+    let SET = null, env = null, mainL = [], her = null, herMats = null, kids = [], doc = null, hat = null, veil = null, hearts = [], crying = 0, s0 = G.root.scale.x;
+    const camAt = (p, t) => { goblin.cam = goblin.cam || { pos: new THREE.Vector3(), tgt: new THREE.Vector3() }; goblin.cam.pos.copy(p); goblin.cam.tgt.copy(t); };
+    const fade = v => { $('#fade').style.opacity = v; };
+    const S = (i, x, y, z) => LOVEP.clone().add(new THREE.Vector3(i * 30 + x, y, z));
+    const cap = t => { if (t) { $('#cutCap').innerHTML = t; $('#cutCap').classList.add('on'); } else $('#cutCap').classList.remove('on'); };
+    const say = (who, text, pitch, rate) => { document.body.classList.add('goblinsub'); $('#subs').classList.add('on'); $('#subsText').innerHTML = `<b>${who}:</b> ${text}`; speak(text, pitch, rate); };
+    const subsOff = () => { $('#subs').classList.remove('on'); document.body.classList.remove('goblinsub'); };
+    const kill = o => { if (o && o.parent) o.parent.remove(o); };
+    const heart = (p, s = 0.28) => { const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: heartTex(), transparent: true, depthWrite: false })); sp.position.copy(p); sp.scale.setScalar(s); sp.userData = { t: 0, vx: (Math.random() - 0.5) * 0.4 }; scene.add(sp); hearts.push(sp); };
+    const fx = dt => { hearts = hearts.filter(h => { h.userData.t += dt; h.position.y += dt * 0.6; h.position.x += h.userData.vx * dt; h.material.opacity = Math.max(0, 1 - h.userData.t / 1.8); if (h.userData.t > 1.8) { kill(h); return false; } return true; });
+      if (crying && Math.random() < 0.5) { G.root.updateMatrixWorld(true); const e = wpos(G.mouthPt).add(new THREE.Vector3((Math.random() < 0.5 ? -1 : 1) * 0.16, 0.22, 0.05)); spawnParts(e, 1, { colors: ['#7fc8ff', '#a8dcff'], size: 0.03, shape: 'sphere', speed: 0.3, up: 0.2, life: 0.7, gravity: 6 }); } };
+    const walkG = (t, k = 1) => { G.legs.forEach((l, i) => l.rotation.x = 0.6 * k * Math.sin(t * 10 + i * Math.PI)); G.arms.forEach((a2, i) => a2.rotation.set(-0.45 * k * Math.sin(t * 10 + i * Math.PI + Math.PI), 0, (i ? 1 : -1) * 0.25)); };
+    const notes = (arr, step, wave = 'triangle', vol = 0.07) => arr.forEach((f, i) => f && tone(wave, f, f, step * 0.9, vol, i * step));
+    const mkCoin = (r, mats) => { const m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, r * 0.16, 40), mats); m.castShadow = true; scene.add(m); return m; };
+    // ---- set up ----
+    S2(0.5, u => fade(u), () => { goblin.camR = 7.5; cleanups.push(() => { fade(0); cap(''); subsOff(); crying = 0; if (SET && SET.g.parent) scene.remove(SET.g); BOLSET = null; if (env) { scene.background.copy(env.bg); scene.fog.color.copy(env.fc); scene.fog.near = env.fn; scene.fog.far = env.ff; } mainL.forEach(([l, v]) => l.intensity = v); mainL = []; [her, doc && doc.root, hat, veil].forEach(kill); kids.forEach(kill); hearts.forEach(kill); G.root.scale.setScalar(s0); }); });
+    S2(1.9, () => {}, () => {
+      SET = buildLove(); scene.add(SET.g); BOLSET = { tick: dt => { SET.tick(dt); fx(dt); } };
+      env = { bg: scene.background.clone(), fc: scene.fog.color.clone(), fn: scene.fog.near, ff: scene.fog.far }; scene.fog.near = 25; scene.fog.far = 70;
+      mainL = scene.children.filter(o => o.isLight && o.parent === scene).map(l => [l, l.intensity]); mainL.forEach(([l]) => l.intensity = 0);
+      herMats = [coinEdge.clone(), coinFace.clone(), coinFace.clone()]; her = mkCoin(0.22, herMats);
+      for (let i = 0; i < 3; i++) { const k = mkCoin(0.09, [coinEdge, coinFace, coinFace]); k.visible = false; kids.push(k); }
+      s0 = G.root.scale.x; G.root.scale.setScalar(s0 * 0.62); neutral(); SET.setStage(0, scene); G.root.position.copy(S(0, 0.3, 0, 4.2)); G.root.rotation.set(0, Math.PI, 0);
+      her.position.copy(S(0, 0.3, 0.02, 0.2)); her.rotation.set(0, 0, 0);
+      cap('💕 <b>A love story</b>');
+    });
+    // ── they met ──
+    S2(0.7, u => { fade(1 - u); camAt(S(0, 2.6, 1.7, 3.0), S(0, 0.3, 0.7, 1.0)); }, () => { cap('They met.'); notes([523, 659, 784, 988, 784, 659], 0.32); });
+    S2(2.2, u => { camAt(S(0, 2.6, 1.7, 3.0 - 0.3 * u), S(0, 0.3, 0.7, 1.0)); G.root.position.lerpVectors(S(0, 0.3, 0, 4.2), S(0, 0.3, 0, 0.75), ease(u)); walkG(goblin.t, 1 - Math.max(0, (u - 0.85) * 6)); her.rotation.y += 0.02; if (Math.random() < 0.06) spawnParts(her.position.clone().add(new THREE.Vector3(0, 0.05, 0)), 2, { colors: ['#fff6c2'], size: 0.025, shape: 'box', speed: 0.4, up: 0.6, life: 0.4, gravity: 0 }); });
+    S2(1.0, u => { G.body.rotation.x = 0.6 * Math.sin(Math.PI * u); G.head.rotation.x = 0.4; G.arms[1].rotation.set(-0.8 - 0.6 * Math.sin(Math.PI * u), 0, 0.1); if (u > 0.5) { G.root.updateMatrixWorld(true); her.position.copy(wpos(G.arms[1].hand)).add(new THREE.Vector3(0, 0.15, 0)); her.rotation.set(Math.PI / 2, 0, 0); } });
+    S2(1.6, u => { camAt(S(0, 1.5, 1.3, 2.4), S(0, 0.3, 0.85, 0.6)); G.body.rotation.x = 0; G.head.rotation.set(-0.15, 0, 0); G.arms[1].rotation.set(-1.6, 0, -0.3); G.root.updateMatrixWorld(true); her.position.copy(wpos(G.arms[1].hand)).add(new THREE.Vector3(0, 0.15, 0.1)); G.jaw.scale.y = 0.5; if (Math.random() < 0.12) heart(her.position.clone().add(new THREE.Vector3(0, 0.2, 0))); },
+      () => { tone('sine', 880, 1760, 0.3, 0.08); for (let i = 0; i < 6; i++) setTimeout(() => heart(her.position.clone().add(new THREE.Vector3((Math.random() - 0.5) * 0.6, 0.3, 0)), 0.35), i * 90); });
+    // ── they fell in love ──
+    S2(4.0, u => { camAt(S(1, 0.2 * u, 1.5, 2.6 - 0.4 * u), S(1, 0, 1.1, 0)); G.root.position.copy(S(1, -1.05, 0, 0)); G.root.rotation.set(0, Math.PI / 2, 0); G.head.rotation.set(0.1, 0, 0.12 * Math.sin(u * 4)); G.arms[1].rotation.set(-1.9, 0, 0.6); G.jaw.scale.y = 0.45;
+        her.position.copy(S(1, 0.45, 1.24, 0)); her.rotation.set(0, 0, Math.PI / 2); her.position.y += 0.03 * Math.sin(goblin.t * 3); if (Math.random() < 0.07) heart(S(1, (Math.random() - 0.5) * 0.8, 1.4, 0), 0.22); },
+      () => { neutral(); SET.setStage(1, scene); cap('They fell in love.'); notes([440, 554, 659, 554, 440, 554, 659, 880, 659], 0.4, 'sine', 0.06); });
+    // ── they got married ──
+    S2(4.6, u => { camAt(S(2, 0, 1.6, 4.6 - 1.2 * ease(u)), S(2, -0.3, 1.0, -0.6)); G.root.position.copy(S(2, -0.75, 0, -0.55)); G.root.rotation.set(0, u < 0.55 ? 0 : Math.PI / 2 * ease(Math.min(1, (u - 0.55) * 4)), 0); G.jaw.scale.y = 0.45;
+        her.position.copy(S(2, 0, 1.1, -0.6)); her.rotation.set(Math.PI / 2, 0, 0); veil.position.copy(her.position).add(new THREE.Vector3(0, 0.12, -0.12));
+        if (Math.random() < 0.25) spawnParts(S(2, (Math.random() - 0.5) * 3, 3.2, (Math.random() - 0.5) * 2), 1, { colors: ['#ff7ba8', '#ffffff', '#ffd1e0'], size: 0.05, shape: 'box', speed: 0.3, up: 0, life: 2.2, gravity: 0.6 });
+        if (u > 0.7 && Math.random() < 0.15) heart(her.position.clone().add(new THREE.Vector3(-0.2, 0.3, 0)), 0.3); },
+      () => { SET.setStage(2, scene); cap('They got married.'); neutral();
+        hat = new THREE.Group(); const hm = new THREE.MeshStandardMaterial({ color: '#111', roughness: 0.4 }); const c = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.22, 0.4, 20), hm); c.position.y = 0.2; hat.add(c); const b = new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.34, 0.03, 20), hm); hat.add(b); G.headTop.add(hat);
+        veil = new THREE.Mesh(new THREE.ConeGeometry(0.3, 0.6, 20, 1, true), new THREE.MeshStandardMaterial({ color: '#ffffff', transparent: true, opacity: 0.55, side: THREE.DoubleSide })); scene.add(veil);
+        [0, 0.5, 1.0, 1.5, 2.0].forEach(d => { tone('sine', 1047, 1047, 0.7, 0.07, d); tone('sine', 1319, 1319, 0.6, 0.04, d + 0.25); }); });
+    // ── they had kids ──
+    S2(4.4, u => { camAt(S(3, 0.3, 1.7, 4.4), S(3, -0.1, 0.6, 0)); G.root.position.copy(S(3, -0.9, 0, 0)); G.root.rotation.set(0, 0.3, 0); G.arms.forEach((a2, i) => a2.rotation.set(-2.4 + 0.3 * Math.sin(goblin.t * 8 + i), 0, (i ? 1 : -1) * 0.4)); G.jaw.scale.y = 0.32 + 0.5 * Math.abs(Math.sin(goblin.t * 7));
+        her.position.copy(S(3, 0.45, 0.23 + 0.05 * Math.abs(Math.sin(goblin.t * 4)), 0)); her.rotation.set(Math.PI / 2, 0, 0);
+        kids.forEach((k, i) => { const a = goblin.t * 1.8 + i * 2.1; k.visible = true; k.position.copy(S(3, -0.2 + Math.cos(a) * 0.9, 0.09 + 0.35 * Math.abs(Math.sin(goblin.t * 5 + i)), 0.3 + Math.sin(a) * 0.6)); k.rotation.set(Math.PI / 2, a, 0); }); },
+      () => { SET.setStage(3, scene); cap('They had kids.'); kill(veil); veil = null; G.headTop.remove(hat); notes([659, 784, 880, 784, 659, 784, 988, 880], 0.32, 'triangle', 0.06); });
+    // ── then she got sick ──
+    S2(3.4, u => { camAt(S(3, 0.6, 1.3, 3.0), S(3, 0.2, 0.4, 0)); kids.forEach((k, i) => { k.position.y = 0.09; k.position.x = S(3, -0.4 + i * 0.35, 0, 0).x; k.position.z = LOVEP.z + 0.9; });
+        const e = ease(u); herMats.forEach(m => m.color.lerp(new THREE.Color('#8a8a80'), 0.03)); her.position.copy(S(3, 0.45, 0.23 - 0.2 * e + 0.02, 0)); her.rotation.set(Math.PI / 2 * (1 - e) + 0.15 * Math.sin(u * 20) * (1 - e), 0, 0);
+        G.root.rotation.set(0, 0.6, 0); neutral(); G.body.rotation.x = 0.4 * e; G.head.rotation.x = 0.35; G.jaw.scale.y = 0.32; },
+      () => { cap('Then she got sick.'); notes([440, 0, 415, 0, 392, 0, 349], 0.4, 'sine', 0.06); });
+    // ── the news ──
+    S2(4.2, u => { camAt(S(4, -2.6, 1.4, 0.4), S(4, 0.15, 0.9, -1.3)); G.root.position.copy(S(4, 0.55, 0, -0.5)); G.root.rotation.set(0, Math.PI + 0.3, 0); doc.root.position.copy(S(4, -0.2, 0, -2.3)); doc.root.rotation.set(0, 0.2, 0); doc.head.rotation.y = 0.35 * Math.sin(u * 7); doc.jaw.scale.y = u < 0.6 ? 0.32 + 0.35 * Math.abs(Math.sin(goblin.t * 10)) : 0.32;
+        if (u > 0.55) { G.arms.forEach((a2, i) => a2.rotation.set(-2.6, 0, (i ? -1 : 1) * 0.7)); G.head.rotation.x = 0.35; G.body.rotation.x = 0.2; } },
+      () => { SET.setStage(4, scene); cap(''); kids.forEach(k => k.visible = false); her.visible = false; neutral();
+        doc = buildGoblin({ skin: '#8fbf6f', eye: '#ffffff', hat: 'none', outfit: 'none', size: 1.15 }); scene.add(doc.root); doc.root.updateMatrixWorld(true);
+        const bb = new THREE.Box3().setFromObject(doc.belly), sz = bb.getSize(new THREE.Vector3()), ctr = bb.getCenter(new THREE.Vector3());
+        const coat = new THREE.Mesh(new THREE.CylinderGeometry(Math.max(sz.x, sz.z) * 0.58, Math.max(sz.x, sz.z) * 0.64, sz.y * 1.0, 24, 1, true), new THREE.MeshStandardMaterial({ color: '#ffffff', roughness: 0.8, side: THREE.DoubleSide })); coat.position.copy(ctr); scene.add(coat); doc.root.attach(coat);
+        say('Doctor', 'I\'m so sorry. There\'s nothing more we can do.', 0.9, 0.9); });
+    // ── the hospital bed ──
+    S2(5.4, u => { subsOff(); camAt(S(5, -1.6 + 0.4 * u, 1.7, 1.3), S(5, 0.2, 0.9, -1.4)); G.root.position.copy(S(5, 0.3, 0, -0.45)); G.root.rotation.set(0, Math.PI, 0); G.body.rotation.x = 0.3; G.head.rotation.x = 0.4; G.arms[0].rotation.set(-1.2, 0, 0.2); G.jaw.scale.y = 0.32;
+        her.visible = true; her.position.copy(S(5, -0.6, 1.08, -1.4)); her.rotation.set(Math.PI / 2 - 0.5, 0, 0);
+        if (u > 0.72) { SET.flatline(true); G.body.rotation.x = 0.7; G.head.rotation.x = 0.8; crying = 1; } },
+      () => { SET.setStage(5, scene); kill(doc.root); doc = null; neutral(); [0, 1.2, 2.4, 3.5].forEach(d => tone('sine', 988, 988, 0.12, 0.08, d)); tone('sine', 988, 988, 1.6, 0.07, 3.95); });
+    // ── the funeral ──
+    S2(6.8, u => { camAt(S(6, 1.8 - 1.0 * u, 1.5, 2.6 - 0.6 * u), S(6, 0, 0.8, -2.2)); G.root.position.copy(S(6, -0.25, 0, -0.6)); G.root.rotation.set(0, Math.PI, 0); G.body.rotation.x = 0.35; G.head.rotation.x = 0.6 + 0.05 * Math.sin(u * 10); G.arms.forEach((a2, i) => a2.rotation.set(-1.9, 0, (i ? -1 : 1) * 0.5)); G.root.rotation.z = 0.03 * Math.sin(u * 14);
+        kids.forEach((k, i) => { k.visible = true; k.position.copy(S(6, 0.35 + i * 0.25, 0.09, -0.5 + (i % 2) * 0.15)); k.rotation.set(Math.PI / 2, Math.PI, 0); }); her.visible = false; },
+      () => { SET.setStage(6, scene); SET.flatline(false); crying = 1; neutral(); G.headTop.add(hat);
+        notes([392, 349, 330, 294, 0, 330, 294, 262, 0, 247, 262, 196], 0.55, 'sine', 0.06); setTimeout(() => speak('*sniff*… I love you, coin.', 0.7, 0.7), 2600); });
+    S2(0.8, u => fade(u), () => cap('💔'));
+    S2(0.01, () => {}, () => {
+      cap(''); crying = 0; scene.remove(SET.g); BOLSET = null; scene.background.copy(env.bg); scene.fog.color.copy(env.fc); scene.fog.near = env.fn; scene.fog.far = env.ff; env = null; mainL.forEach(([l, v]) => l.intensity = v); mainL = [];
+      [her, hat].forEach(kill); her = hat = null; kids.forEach(kill); kids = []; hearts.forEach(kill); hearts = []; goblin.cam = null; G.root.scale.setScalar(s0); G.root.rotation.set(0, 0, 0); neutral(); G.root.position.set(stand.x, TOP, stand.z); G.root.rotation.y = faceYaw;
+    });
+    S2(0.6, u => fade(1 - u));
+    // back in the box: he looks at the game coin… and wipes a tear
+    S2(2.4, u => { crying = 1; G.head.rotation.x = 0.5; G.body.rotation.x = 0.25; G.arms[0].rotation.set(-2.2 + 0.2 * Math.sin(u * 10), 0, 0.4); }, () => { setTimeout(() => speak('*sniff*', 0.8, 0.8), 400); });
+    S2(0.01, () => {}, () => { crying = 0; neutral(); showResult('💔 Everyone take a sip for the coin.', 'She was a good coin.', '#ff4d7a'); });
+  } else if (plan.act === 'crash') {
+    // ---- late-night drive: singing along… THUD. It's another goblin. In his pocket: the coin ----
+    plan.exit = 'run';
+    let SET = null, env = null, mainL = [], music = null, V = null, found = null, crying = 0, knee = 0, s0 = G.root.scale.x;
+    const camAt = (p, t) => { goblin.cam = goblin.cam || { pos: new THREE.Vector3(), tgt: new THREE.Vector3() }; goblin.cam.pos.copy(p); goblin.cam.tgt.copy(t); };
+    const fade = v => { $('#fade').style.opacity = v; };
+    const R = (x, y, z) => ROADP.clone().add(new THREE.Vector3(x, y, z));
+    const say = (who, text, pitch, rate) => { document.body.classList.add('goblinsub'); $('#subs').classList.add('on'); $('#subsText').innerHTML = `<b>${who}:</b> ${text}`; speak(text.replace(/<[^>]+>|♪/g, ''), pitch, rate); };
+    const subsOff = () => { $('#subs').classList.remove('on'); document.body.classList.remove('goblinsub'); };
+    const kill = o => { if (o && o.parent) o.parent.remove(o); };
+    const walkG = (t, k = 1, sp = 8) => { G.legs.forEach((l, i) => l.rotation.x = 0.55 * k * Math.sin(t * sp + i * Math.PI)); G.arms.forEach((a2, i) => a2.rotation.set(-0.4 * k * Math.sin(t * sp + i * Math.PI + Math.PI), 0, (i ? 1 : -1) * 0.25)); };
+    const seat = () => R(-0.4, 0.15, 0.4);
+    const stopMusic = () => { if (music) { clearInterval(music); music = null; } };
+    const startMusic = () => { const bass = [110, 110, 147, 131], lead = [440, 494, 523, 587, 523, 494, 440, 392]; let k = 0; music = setInterval(() => { tone('sine', bass[(k >> 2) % 4], bass[(k >> 2) % 4], 0.22, 0.12); if (k % 2 === 0) tone('triangle', lead[(k >> 1) % 8], lead[(k >> 1) % 8], 0.2, 0.05); noiseSfx('highpass', 7000, 9000, 0.04, 0.03, 1); k++; }, 240); };
+    const tearFx = () => { if (crying && Math.random() < 0.6) { G.root.updateMatrixWorld(true); const e = wpos(G.mouthPt).add(new THREE.Vector3((Math.random() < 0.5 ? -1 : 1) * 0.16, 0.22, 0.05)); spawnParts(e, 1, { colors: ['#7fc8ff', '#a8dcff'], size: 0.03, shape: 'sphere', speed: 0.3, up: 0.3, life: 0.7, gravity: 6 }); } };
+    S2(0.5, u => fade(u), () => { goblin.camR = 7.5; cleanups.push(() => { stopMusic(); fade(0); subsOff(); $('#cutCap').classList.remove('on'); crying = 0; if (SET && SET.g.parent) scene.remove(SET.g); BOLSET = null; if (env) { scene.background.copy(env.bg); scene.fog.color.copy(env.fc); scene.fog.near = env.fn; scene.fog.far = env.ff; } mainL.forEach(([l, v]) => l.intensity = v); mainL = []; [V && V.root, found].forEach(kill); G.root.scale.setScalar(s0); }); });
+    S2(0.01, () => {}, () => {
+      SET = buildRoad(); scene.add(SET.g); BOLSET = { tick: dt => { SET.tick(dt); tearFx(); } };
+      env = { bg: scene.background.clone(), fc: scene.fog.color.clone(), fn: scene.fog.near, ff: scene.fog.far }; scene.background.set('#060914'); scene.fog.color.set('#060914'); scene.fog.near = 25; scene.fog.far = 90;
+      mainL = scene.children.filter(o => o.isLight && o.parent === scene).map(l => [l, l.intensity]); mainL.forEach(([l]) => l.intensity = 0);
+      s0 = G.root.scale.x; G.root.scale.setScalar(0.62); neutral(); G.root.position.copy(seat()); G.root.rotation.set(0, Math.PI, 0); SET.st.speed = 22;
+      // the other goblin, lying in the road just ahead (hidden until the reveal)
+      V = buildGoblin({ skin: '#6f9e4f', eye: '#ffffff', hat: 'none', outfit: 'none', size: 1.15 }); V.root.scale.setScalar(0.62); V.root.visible = false; scene.add(V.root);
+      camAt(R(-5, 1.6, -4), R(0, 0.9, 0.5)); $('#cutCap').innerHTML = '🌙 Late at night…'; $('#cutCap').classList.add('on'); startMusic();
+    });
+    S2(0.7, u => fade(1 - u));
+    // cruising, singing along
+    S2(3.4, u => { camAt(R(-5 + 2 * u, 1.6, -4 + 1.5 * u), R(0, 0.9, 0.5)); G.head.rotation.set(0.05, 0.25 * Math.sin(goblin.t * 4), 0.12 * Math.sin(goblin.t * 8)); G.jaw.scale.y = 0.32 + 0.5 * Math.abs(Math.sin(goblin.t * 6)); G.arms.forEach((a2, i) => a2.rotation.set(-1.3, 0, (i ? -1 : 1) * 0.2)); SET.car.userData.wheel.rotation.z = 0.15 * Math.sin(goblin.t * 2); },
+      () => { setTimeout(() => { $('#cutCap').classList.remove('on'); say('Goblin', '♪ Ohhh baby, baby, you’re my shiny little thing… ♪', 1.5, 1.05); }, 900); });
+    S2(3.2, u => { camAt(R(0.15, 1.45, -1.3), R(-0.4, 1.1, 0.4)); G.head.rotation.set(-0.2, 0.3 * Math.sin(goblin.t * 4), 0.15 * Math.sin(goblin.t * 8)); G.jaw.scale.y = 0.32 + 0.7 * Math.abs(Math.sin(goblin.t * 7)); G.arms[1].rotation.set(-2.6 + 0.3 * Math.sin(goblin.t * 8), 0, -0.4); G.arms[0].rotation.set(-1.3, 0, 0.2); },
+      () => say('Goblin', '♪ I’d never let you GOOOO! ♪', 1.7, 1.1));
+    // THUD — music cuts out
+    S2(1.3, u => { camAt(R(0.15, 1.45, -1.3), R(-0.4, 1.1, 0.4)); SET.st.speed = 22 * Math.max(0, 1 - u * 3); G.head.rotation.set(0.25, 0, 0); G.jaw.scale.y = 1.2; G.arms.forEach((a2, i) => a2.rotation.set(-1.4, 0, (i ? -1 : 1) * 0.2)); G.body.rotation.x = 0.3 * Math.max(0, 1 - u * 2); },
+      () => { subsOff(); stopMusic(); speechSynthesis.cancel && speechSynthesis.cancel(); thudSfx(1); noiseSfx('bandpass', 2600, 1200, 0.9, 0.25, 6); shake = Math.max(shake, 0.6); });
+    // silence. crickets.
+    S2(1.8, u => { camAt(R(-0.3, 1.3, -1.4), R(-0.4, 1.2, 0.4)); G.head.rotation.set(-0.1, 0, 0); G.jaw.scale.y = 0.32; G.arms.forEach(a2 => a2.rotation.set(-1.3, 0, 0)); },
+      () => { [0, 0.5, 1.0, 1.5].forEach(d => { tone('sine', 4200, 4400, 0.05, 0.02, d); tone('sine', 4200, 4400, 0.05, 0.02, d + 0.1); }); });
+    // he gets out and walks round to the front…
+    let w0 = new THREE.Vector3(), w1 = new THREE.Vector3();
+    S2(3.6, u => { const e = ease(u); G.root.position.lerpVectors(w0, w1, e); G.root.rotation.y = yawTo(w0, w1); walkG(goblin.t, 0.7, 6); camAt(R(1.6, 1.1, -1.0), R(-0.8, 0.6, -3.2)); },
+      () => { neutral(); w0.copy(R(-1.4, 0, 0.0)); w1.copy(R(-0.4, 0, -3.2)); G.root.position.copy(w0); V.root.visible = true; V.root.position.copy(R(0.1, 0.12, -4.6)); V.root.rotation.set(-Math.PI / 2, 0.3, 0, 'YXZ'); V.root.rotation.order = 'YXZ'; V.root.rotation.set(-Math.PI / 2, 0.4, 0); [0, 0.7, 1.4, 2.1, 2.8].forEach(d => tone('square', 160, 140, 0.04, 0.03, d)); });
+    // NOOOOO
+    S2(4.4, u => { camAt(R(1.8, 1.3, -2.2), R(-0.1, 0.4, -4.2)); G.root.rotation.y = yawTo(G.root.position, V.root.position); knee = ease(Math.min(1, u * 3)); G.root.position.y = ROADP.y - 0.22 * knee; G.legs.forEach(l => l.rotation.x = -1.1 * knee); G.body.rotation.x = 0.35 * knee; G.head.rotation.x = -0.5 * knee; G.arms.forEach((a2, i) => a2.rotation.set(-2.7 + 0.2 * Math.sin(u * 14 + i), 0, (i ? -1 : 1) * 0.5)); G.jaw.scale.y = 1.25; crying = u > 0.2 ? 1 : 0; },
+      () => { setTimeout(() => say('Goblin', 'NOOOOOOOOOOOOOOO!', 1.3, 0.75), 300); [0, 0.8].forEach(d => tone('sine', 220, 196, 1.6, 0.05, d)); });
+    // …something shiny in his pocket
+    S2(2.4, u => { crying = 1; G.head.rotation.x = 0.4; G.body.rotation.x = 0.5; G.arms.forEach(a2 => a2.rotation.set(-0.6, 0, 0)); G.jaw.scale.y = 0.6; V.root.updateMatrixWorld(true); const pk = wpos(V.belly).add(new THREE.Vector3(0.25, 0.25, 0)); camAt(pk.clone().add(new THREE.Vector3(1.2, 1.0, 1.0)), pk); if (Math.random() < 0.25) spawnParts(pk, 2, { colors: ['#fff6c2', '#ffd84a'], size: 0.03, shape: 'box', speed: 0.6, up: 0.6, life: 0.5, gravity: 0 }); },
+      () => { subsOff(); tone('sine', 2600, 3400, 0.4, 0.06); setTimeout(() => tone('sine', 3000, 3800, 0.4, 0.05), 500); });
+    // he pulls it out… the coin
+    S2(3.4, u => { crying = 0; const e = ease(Math.min(1, u * 1.6)); G.arms[1].rotation.set(-0.6 - 1.6 * e, 0, -0.2); G.body.rotation.x = 0.5 - 0.4 * e; G.head.rotation.x = -0.1 * e; G.root.updateMatrixWorld(true); found.position.copy(wpos(G.arms[1].hand)).add(new THREE.Vector3(0, 0.14, 0)); found.rotation.set(Math.PI / 2, 0.4 * Math.sin(goblin.t * 2), 0); G.jaw.scale.y = 0.32 + 0.6 * e;
+        const hp = wpos(G.head); camAt(hp.clone().add(new THREE.Vector3(Math.sin(G.root.rotation.y) * 1.3 + 0.25, 0.05, Math.cos(G.root.rotation.y) * 1.3)), found.position.clone().lerp(hp, 0.5)); if (Math.random() < 0.3) spawnParts(found.position, 1, { colors: ['#fff6c2'], size: 0.03, shape: 'box', speed: 0.5, up: 0.5, life: 0.5, gravity: 0 }); },
+      () => { found = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.02, 32), [coinEdge, coinFace, coinFace]); scene.add(found); tone('sine', 880, 1760, 0.5, 0.08); setTimeout(() => speak('…the coin.', 0.8, 0.7), 900); });
+    S2(0.8, u => fade(u));
+    S2(0.01, () => {}, () => {
+      stopMusic(); crying = 0; subsOff(); scene.remove(SET.g); BOLSET = null; scene.background.copy(env.bg); scene.fog.color.copy(env.fc); scene.fog.near = env.fn; scene.fog.far = env.ff; env = null; mainL.forEach(([l, v]) => l.intensity = v); mainL = [];
+      kill(V.root); V = null; kill(found); found = null; goblin.cam = null; G.root.scale.setScalar(s0); G.root.rotation.set(0, 0, 0); neutral(); G.root.position.set(stand.x, TOP, stand.z); G.root.rotation.y = faceYaw;
+    });
+    S2(0.6, u => fade(1 - u));
   } else if (plan.act === 'swipe') {
     S2(0.01, () => { G.root.position.copy(stand); G.root.visible = false; });
   } else if (plan.entr === 'walk') {
@@ -2818,7 +3078,7 @@ function startGoblin(coinPos, forceAct) {
   const unhide = () => { coin.visible = true; coin.scale.set(1, 1, 1); };
 
   const cleanups = []; let stomps = -1;
-  const NOGRAB = new Set(['acid2', 'cold', 'stream', 'acid', 'xmas', 'vip', 'debate', 'swipe', 'duel', 'plane', 'neptune', 'sting', 'surf', 'golf', 'wedding', 'summon', 'sneeze', 'booger', 'fartcannon', 'rockstar', 'ballet', 'breakdance', 'insult', 'clones', 'giant']);
+  const NOGRAB = new Set(['crash', 'love', 'acid2', 'cold', 'stream', 'acid', 'xmas', 'vip', 'debate', 'swipe', 'duel', 'plane', 'neptune', 'sting', 'surf', 'golf', 'wedding', 'summon', 'sneeze', 'booger', 'fartcannon', 'rockstar', 'ballet', 'breakdance', 'insult', 'clones', 'giant']);
   if (plan.act === 'casino') plan.exit = 'run';
   if (!NOGRAB.has(plan.act)) grab();
   if (plan.act === 'sting') {
@@ -3547,7 +3807,7 @@ function startGoblin(coinPos, forceAct) {
     S2(1.3, u => { G.root.position.lerpVectors(p1, p2, u); G.root.rotation.y = yawTo(p1, p2); pose(u * 60, 1.4); G.body.rotation.x = 0.35; });
   }
   goblin = { G, steps, i: 0, t: 0, started: false, hold: false, plan, after: () => cleanups.forEach(f => { try { f(); } catch (e) {} }) }; jazzDuck(true);
-  addLog('👺 Goblin ' + ({ eat: 'ate the coin and pooped it out', burp: 'swallowed the coin and burped it back up', juggle: 'juggled the coin', bite: 'bit the coin and chucked it', hat: 'wore the coin as a hat', polish: 'polished the coin', casino: 'lost a coin flip and threw a tantrum', surf: 'surfed the coin around the box', acid2: 'took another tab and realised he is in a drinking game', cold: 'stole the coin… and got arrested 47 years later', stream: 'went live and stole the coin on stream', acid: 'took an acid tab… everything went trippy', xmas: 'opened a Christmas present', vip: 'did a line in the VIP room… right next to the coin', debate: 'tried to snipe the coin at its campus debate booth', sting: 'got caught on Dateline GBC: To Catch a Coin Thief', neptune: 'stole Neptune\'s trident in Bologna and stabbed the coin in half', plane: 'stole the coin in a plane… and crash-landed it right back', golf: 'played goblin golf', wedding: 'proposed to the coin (it said no)', summon: 'summoned his cousin', sneeze: 'sneezed on the coin', booger: 'flicked a booger at the screen', fartcannon: 'fart-cannoned the coin', rockstar: 'shredded a guitar solo', ballet: 'did ballet and faceplanted', breakdance: 'breakdanced', opera: 'sang opera and broke a cup', thief: 'pretended to steal the coin', insult: 'roasted somebody', clones: 'split into tiny clones', giant: 'turned into a giant' }[plan.act] || 'showed up')); renderUI();
+  addLog('👺 Goblin ' + ({ eat: 'ate the coin and pooped it out', burp: 'swallowed the coin and burped it back up', juggle: 'juggled the coin', bite: 'bit the coin and chucked it', hat: 'wore the coin as a hat', polish: 'polished the coin', casino: 'lost a coin flip and threw a tantrum', surf: 'surfed the coin around the box', crash: 'hit another goblin on a night drive and found the coin in his pocket', love: 'lived a whole love story with the coin', acid2: 'took another tab and realised he is in a drinking game', cold: 'stole the coin… and got arrested 47 years later', stream: 'went live and stole the coin on stream', acid: 'took an acid tab… everything went trippy', xmas: 'opened a Christmas present', vip: 'did a line in the VIP room… right next to the coin', debate: 'tried to snipe the coin at its campus debate booth', sting: 'got caught on Dateline GBC: To Catch a Coin Thief', neptune: 'stole Neptune\'s trident in Bologna and stabbed the coin in half', plane: 'stole the coin in a plane… and crash-landed it right back', golf: 'played goblin golf', wedding: 'proposed to the coin (it said no)', summon: 'summoned his cousin', sneeze: 'sneezed on the coin', booger: 'flicked a booger at the screen', fartcannon: 'fart-cannoned the coin', rockstar: 'shredded a guitar solo', ballet: 'did ballet and faceplanted', breakdance: 'breakdanced', opera: 'sang opera and broke a cup', thief: 'pretended to steal the coin', insult: 'roasted somebody', clones: 'split into tiny clones', giant: 'turned into a giant' }[plan.act] || 'showed up')); renderUI();
 }
 // missed coin: a goblin fetches it and throws it into the box (that's where it counts)
 function startRescue(coinPos) {
@@ -4676,7 +4936,7 @@ const previewIntro = () => { ensureAudio(); if (toss || goblin || placing) retur
 $('#tryHot').onclick = () => { if (!canAim() && !mini) return toast('Start a game with 2+ players first (and wait for the turn to finish)'); startMini('hot'); };
 $('#cupRows').onclick = e => { const b = e.target.closest('[data-cp]'); if (!b) return; if (b.dataset.n === '0') { if (mini && mini.picks) { delete mini.picks[String(b.dataset.cp)]; renderCupPanel(); } return; } cupPick(b.dataset.cp, b.dataset.n); };
 $('#tryHolo').onclick = () => sayYugo(true);
-const JACK_ACTS = [['acid2', '🌀 Acid trip #2: realises he\'s in a drinking game'], ['cold', '🚔 Steals the coin… arrested 47 years later'], ['stream', '🔴 Goes live: plays as a goblin and steals the coin on stream'], ['acid', '🌀 Takes an acid tab — trippy for a turn'], ['xmas', '🎄 Christmas: rip his present open — coin or coal?'], ['vip', '🪩 VIP room: does a line… so does the coin'], ['debate', '🎓 Campus debate: snipes the coin… ricochet!'], ['swipe', '💚 Dating app: swipes left on every goblin… until the coin'], ['duel', '⚔️ Pizza-cutter sword duel over the coin'], ['smite', '⚡ Dictator goblin steals it… and gets smitten'], ['sting', '📺 Dateline GBC: To Catch a Coin Thief'], ['neptune', '🔱 Steals Neptune\'s trident in Bologna'], ['plane', '✈️ Steals it in a plane… and crashes'], ['eat', '💩 Eats the coin, poops it out'], ['burp', '🤢 Swallows it, burps it up'], ['juggle', '🤹 Juggles the coin'], ['bite', '🦷 Bites it and chucks it'],
+const JACK_ACTS = [['crash', '🚗 Late-night drive… hits a goblin, finds the coin'], ['love', '💕 A love story: the goblin & the coin'], ['acid2', '🌀 Acid trip #2: realises he\'s in a drinking game'], ['cold', '🚔 Steals the coin… arrested 47 years later'], ['stream', '🔴 Goes live: plays as a goblin and steals the coin on stream'], ['acid', '🌀 Takes an acid tab — trippy for a turn'], ['xmas', '🎄 Christmas: rip his present open — coin or coal?'], ['vip', '🪩 VIP room: does a line… so does the coin'], ['debate', '🎓 Campus debate: snipes the coin… ricochet!'], ['swipe', '💚 Dating app: swipes left on every goblin… until the coin'], ['duel', '⚔️ Pizza-cutter sword duel over the coin'], ['smite', '⚡ Dictator goblin steals it… and gets smitten'], ['sting', '📺 Dateline GBC: To Catch a Coin Thief'], ['neptune', '🔱 Steals Neptune\'s trident in Bologna'], ['plane', '✈️ Steals it in a plane… and crashes'], ['eat', '💩 Eats the coin, poops it out'], ['burp', '🤢 Swallows it, burps it up'], ['juggle', '🤹 Juggles the coin'], ['bite', '🦷 Bites it and chucks it'],
   ['hat', '🎩 Wears the coin as a hat'], ['polish', '✨ Polishes the coin'], ['casino', '🎰 Loses a coin flip, tantrum'], ['surf', '🏄 Surfs the coin around'], ['golf', '⛳ Golfs the coin'], ['wedding', '💍 Proposes to the coin'],
   ['summon', '🔮 Summons a demon'], ['sneeze', '🤧 Giant sneeze'], ['booger', '👃 Booger flick'], ['fartcannon', '💨 Fart cannon'], ['rockstar', '🎸 Rock star guitar solo'], ['ballet', '🩰 Ballet'], ['breakdance', '🕺 Breakdance'],
   ['opera', '🎭 Opera'], ['thief', '🦹 Steals it and hides'], ['insult', '🗯️ Roasts the players'], ['clones', '👯 Clones himself'], ['giant', '🗿 Turns giant']];
@@ -5459,7 +5719,7 @@ $('#startBtn').onclick = () => {
 };
 
 // ---------- installable app + automatic updates (website version only) ----------
-const BUILD = '1795379410';
+const BUILD = '1795380237';
 if (STANDALONE) {
   try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
   let deferredInstall = null;
