@@ -482,7 +482,7 @@
   <button id="tossBtn">🎯 Flip the coin <kbd>Space</kbd></button>
   <button id="viewBtn">Top view</button>
 </div>
-<button id="jazzBtn">🎷 Jazz: on</button>
+<button id="jazzBtn">🎵 Groove</button>
 <button id="inviteBtn">📱 Invite phones</button>
 <button id="installBtn">⬇️ Install app</button>
 <div id="invite"><div class="card">
@@ -3919,7 +3919,7 @@ function stepGoblin(dt) {
 }
 
 // ---------- jazz band (generated live) ----------
-const BPM = 96, SW = 0.667; let SPB = 60 / BPM; // swung 8ths
+const BPM = 124, SW = 0.667; let SPB = 60 / BPM; // swung 8ths
 const mtof = m => 440 * Math.pow(2, (m - 69) / 12);
 // 8-bar loop in C: Dm9 | G13 | Cmaj9 | A7b9 | Fmaj9 | Bb9 | Em9 A7b9 | Dm9 G7b9
 const PROG = [
@@ -3977,7 +3977,7 @@ function ride(t, vel) {
 }
 function kick(t) { const o = actx.createOscillator(), g = actx.createGain(); o.frequency.setValueAtTime(70, t); o.frequency.exponentialRampToValueAtTime(42, t + 0.12); g.gain.setValueAtTime(0.18, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.18); o.connect(g).connect(jazz.drum); o.start(t); o.stop(t + 0.2); }
 function nearest(pc, prev, lo = 31, hi = 50) { let best = null; for (let m = lo; m <= hi; m++) if (((m % 12) + 12) % 12 === ((pc % 12) + 12) % 12 && (best === null || Math.abs(m - prev) < Math.abs(best - prev))) best = m; return best; }
-function scheduleBeat(b, t) { if (jazz.style !== 'jazz' && STYLES[jazz.style]) return STYLES[jazz.style](b, t); return jazzBeat(b, t); }
+function scheduleBeat(b, t) { if (jazz.style === 'jazz') return grooveBeat(b, t); if (STYLES[jazz.style]) return STYLES[jazz.style](b, t); return jazzBeat(b, t); }
 function jazzBeat(b, t) {
   const beat = b % 4, c = chordAt(b), nx = chordAt(b + 1), changes = nx !== c;
   const firstOfChord = chordAt(b - 1) !== c || b === 0;
@@ -4015,9 +4015,33 @@ function jazzTick() {
   if (jazz.next < actx.currentTime - 0.05) jazz.next = actx.currentTime + 0.05;
   while (jazz.next < actx.currentTime + 0.3) { scheduleBeat(jazz.beat, jazz.next); jazz.next += SPB; jazz.beat++; }
 }
+// ---------- the default track: a high-energy party groove (four-on-the-floor, slap-octave bass, chord stabs, a hook) ----------
+function pump(t) { if (!jazz.syn) return; const g = jazz.syn.gain; g.cancelScheduledValues(t); g.setValueAtTime(0.35, t); g.linearRampToValueAtTime(1, t + SPB * 0.55); }
+function leadNote(t, m, dur, vol = 0.045) { synNote(t, m, dur, 'square', vol, 3600); synNote(t, m + 12, dur, 'sawtooth', vol * 0.35, 5200); }
+function riser(t, dur) { const A = actx, n = A.createBufferSource(), f = A.createBiquadFilter(), g = A.createGain(); n.buffer = noiseBuf(); n.loop = true; f.type = 'bandpass'; f.Q.value = 1.2; f.frequency.setValueAtTime(400, t); f.frequency.exponentialRampToValueAtTime(7000, t + dur); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.16, t + dur); g.gain.exponentialRampToValueAtTime(0.0001, t + dur + 0.05); n.connect(f).connect(g).connect(jazz.drum); n.start(t); n.stop(t + dur + 0.1); }
+const GROOVE = { roots: [45, 41, 36, 43], chords: [[57, 60, 64], [57, 60, 65], [55, 60, 64], [55, 59, 62]],
+  hook: [[76, 0, 76, 74, 76, 0, 79, 0, 76, 0, 74, 0, 72, 0, 74, 0], [72, 0, 72, 71, 72, 0, 74, 0, 76, 0, 0, 0, 69, 0, 0, 0], [76, 0, 76, 74, 76, 0, 79, 0, 81, 0, 79, 0, 76, 0, 74, 0], [72, 0, 74, 0, 76, 0, 79, 0, 76, 0, 0, 0, 0, 0, 0, 0]] };
+function grooveBeat(b, t) {
+  mBus(); const bar = Math.floor(b / 4), beat = b % 4, q = SPB / 4, sec = bar % 16, ci = bar % 4, root = GROOVE.roots[ci], ch = GROOVE.chords[ci];
+  const build = sec === 15, intro = bar < 2;
+  // drums
+  if (!(build && beat >= 2)) bigKick(t, 0.85); pump(t);
+  if (!intro) { if (beat % 2) { clap(t); snare(t, 0.3); } hat(t + SPB / 2, 0.9, true); [1, 3].forEach(k => hat(t + k * q, 0.35)); }
+  if (beat === 0 && (bar % 8 === 0) && bar > 0) crash(t);
+  if (build) { for (let k = 0; k < 4; k++) snare(t + k * q, 0.25 + 0.2 * beat + 0.05 * k); if (beat === 0) riser(t, SPB * 4); }
+  // slap-octave bass (16ths)
+  const bl = [root, 0, root + 12, root, 0, root + 12, root, root + 12];
+  for (let k = 0; k < 4; k++) { const m = bl[(beat * 4 + k) % 8]; if (m && !intro) synNote(t + k * q, m, q * 0.9, 'sawtooth', k === 0 ? 0.16 : 0.12, 750, jazz.bassBus); }
+  if (intro && beat % 2 === 0) synNote(t, root, SPB * 0.9, 'sawtooth', 0.13, 600, jazz.bassBus);
+  // chord stabs on the off-beats
+  if (beat % 2 === 0 || Math.random() < 0.25) ch.forEach(m => synNote(t + SPB / 2, m, 0.16, 'sawtooth', 0.032, 2400));
+  if (beat === 0 && sec >= 8) ch.forEach(m => synNote(t, m + 12, SPB * 3.6, 'triangle', 0.012, 3000));   // shimmer pad in the second half
+  // the hook: call (bars 4–7) and response (bars 12–14)
+  if ((sec >= 4 && sec <= 7) || (sec >= 12 && sec <= 14)) { const ph = GROOVE.hook[sec % 4]; for (let k = 0; k < 4; k++) { const m = ph[beat * 4 + k]; if (m) leadNote(t + k * q, m, q * 1.6); } }
+}
 // ---------- extra music styles (jazz is the default; others follow what's happening) ----------
-const STYLE_BPM = { jazz: 96, metal: 172, boss: 138, gameshow: 126, tension: 92, sneaky: 108 };
-const STYLE_NAME = { jazz: '🎷 Jazz', metal: '🤘 Metal', boss: '⚔️ Battle', gameshow: '🎉 Party', tension: '😰 Tension', sneaky: '👺 Sneaky' };
+const STYLE_BPM = { jazz: 124, metal: 176, boss: 150, gameshow: 134, tension: 112, sneaky: 126 };
+const STYLE_NAME = { jazz: '🎵 Groove', metal: '🤘 Metal', boss: '⚔️ Battle', gameshow: '🎉 Party', tension: '😰 Tension', sneaky: '👺 Sneaky' };
 let distCurve = null;
 function getDist() { if (distCurve) return distCurve; const n = 2048, c = new Float32Array(n); for (let i = 0; i < n; i++) { const x = i / n * 2 - 1; c[i] = Math.tanh(x * 9) * 0.9; } return (distCurve = c); }
 function mBus() { if (!jazz.gtr) { jazz.gtr = actx.createGain(); jazz.gtr.connect(jazz.out); jazz.syn = actx.createGain(); jazz.syn.connect(jazz.out); } }
@@ -4056,12 +4080,12 @@ const STYLES = {
     mBus(); const bar = Math.floor(b / 4), beat = b % 4, roots = [38, 38, 46, 45], r = roots[bar % 4];
     for (let k = 0; k < 4; k++) synNote(t + k * SPB / 4, r + [0, 12, 0, 7][k], SPB / 4 * 0.9, 'sawtooth', 0.07, 1100);
     if (beat === 0 || beat === 2) taiko(t, 1); if (beat === 3) { taiko(t, 0.6); taiko(t + SPB / 2, 0.8); }
-    if (beat % 2) snare(t, 0.5);
+    if (beat % 2) snare(t, 0.7); bigKick(t, 0.7); bigKick(t + SPB / 2, 0.5); hat(t + SPB / 2, 0.6);
     if (beat === 0 && bar % 2 === 0) { [r + 24, r + 27, r + 31].forEach(m => synNote(t, m, SPB * 3.5, 'sawtooth', 0.05, 1400)); crash(t); }
   },
   gameshow(b, t) {
     mBus(); const bar = Math.floor(b / 4), beat = b % 4, prog = [[48, [60, 64, 67]], [45, [57, 60, 64]], [41, [57, 60, 65]], [43, [59, 62, 67]]], c = prog[bar % 4];
-    bigKick(t, 0.75); if (beat % 2) { clap(t); snare(t, 0.3); } hat(t + SPB / 2, 1, beat === 3); hat(t, 0.4);
+    bigKick(t, 0.9); pump(t); if (beat % 2) { clap(t); snare(t, 0.35); } hat(t + SPB / 2, 1, true); hat(t, 0.4); hat(t + SPB / 4, 0.3); hat(t + SPB * 3 / 4, 0.3);
     synNote(t, c[0] - 12, SPB * 0.4, 'square', 0.09, 900); synNote(t + SPB / 2, c[0], SPB * 0.4, 'square', 0.07, 900);
     if (beat === 0 || beat === 2) c[1].forEach(m => synNote(t + SPB / 2, m, SPB * 0.4, 'square', 0.03, 2400));
     const arp = [...c[1], c[1][0] + 12]; if (bar % 2) for (let k = 0; k < 2; k++) synNote(t + k * SPB / 2, arp[(beat * 2 + k) % 4] + 12, SPB * 0.4, 'triangle', 0.06, 5000);
@@ -4069,13 +4093,13 @@ const STYLES = {
   tension(b, t) {
     mBus(); const bar = Math.floor(b / 4), beat = b % 4;
     if (beat === 0 || beat === 2) { bigKick(t, 0.6); bigKick(t + 0.16, 0.4); }
-    hat(t, 0.5); hat(t + SPB / 2, 0.3); block(t, beat === 0 ? 84 : 79);
+    hat(t, 0.5); hat(t + SPB / 2, 0.3); block(t, beat === 0 ? 84 : 79); for (let k = 0; k < 4; k++) synNote(t + k * SPB / 4, 38 + (bar % 4 === 3 ? 1 : 0), SPB / 4 * 0.8, 'sawtooth', 0.08, 520, jazz.bassBus); if (beat % 2) snare(t, 0.25);
     if (beat === 0) { synNote(t, 38, SPB * 4, 'sawtooth', 0.05, 300 + (bar % 4) * 150); [74, 75].forEach(m => synNote(t, m + (bar % 4), SPB * 4, 'triangle', 0.02, 3000)); }
   },
   sneaky(b, t) {
     mBus(); const bar = Math.floor(b / 4), beat = b % 4, line = [[47, 0, 50, 0, 49, 0, 48, 0], [47, 0, 54, 53, 52, 0, 51, 0], [45, 0, 48, 0, 47, 0, 46, 0], [44, 47, 50, 53, 52, 0, 0, 0]][bar % 4];
     for (let k = 0; k < 2; k++) { const m = line[beat * 2 + k]; if (m) synNote(t + k * SPB / 2, m, 0.14, 'triangle', 0.16, 1600, jazz.bassBus); }
-    hat(t + SPB / 2, 0.35); if (beat % 2) block(t, 77); if (beat === 3 && bar % 2) [83, 82, 81].forEach((m, k) => synNote(t + k * 0.09, m, 0.1, 'sine', 0.05, 6000));
+    hat(t + SPB / 2, 0.6); hat(t, 0.3); if (beat % 2) { block(t, 77); clap(t); } else bigKick(t, 0.8); if (beat === 3) bigKick(t + SPB / 2, 0.5); if (beat === 3 && bar % 2) [83, 82, 81].forEach((m, k) => synNote(t + k * 0.09, m, 0.1, 'sine', 0.05, 6000));
   }
 };
 function musicStyle(s) {
@@ -5786,7 +5810,7 @@ $('#startBtn').onclick = () => {
 };
 
 // ---------- installable app + automatic updates (website version only) ----------
-const BUILD = '1795389653';
+const BUILD = '1795389771';
 if (STANDALONE) {
   try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
   let deferredInstall = null;
