@@ -3071,40 +3071,44 @@ function startGoblin(coinPos, forceAct) {
       () => { setTimeout(() => { $('#cutCap').classList.remove('on'); say('Goblin', '♪ Ohhh baby, baby, you’re my shiny little thing… ♪', 1.5, 1.05); }, 900); });
     S2(3.2, u => { camAt(R(0.55, 1.5, -1.0), R(-0.4, 1.15, 0.4)); G.head.rotation.set(-0.2, 0.3 * Math.sin(goblin.t * 4), 0.15 * Math.sin(goblin.t * 8)); G.jaw.scale.y = 0.32 + 0.7 * Math.abs(Math.sin(goblin.t * 7)); G.arms[1].rotation.set(-2.6 + 0.3 * Math.sin(goblin.t * 8), 0, -0.4); G.arms[0].rotation.set(-1.3, 0, 0.2); },
       () => say('Goblin', '♪ I’d never let you GOOOO! ♪', 1.7, 1.1));
-    // from behind the car: someone steps into the headlights…
-    let vp0 = new THREE.Vector3(), vp1 = new THREE.Vector3(), vpL = new THREE.Vector3(), pocket = new THREE.Vector3();
-    const vWalk = (t, k = 1) => { V.legs.forEach((l, i) => l.rotation.x = 0.6 * k * Math.sin(t * 9 + i * Math.PI)); V.arms.forEach((a2, i) => a2.rotation.set(-0.45 * k * Math.sin(t * 9 + i * Math.PI + Math.PI), 0, (i ? 1 : -1) * 0.25)); };
-    S2(1.6, u => { camAt(R(1.4, 1.9, 4.2), R(0, 0.6, -6)); V.root.visible = true; V.root.position.lerpVectors(vp0, vp1, u); V.root.rotation.set(0, Math.PI / 2 + 0.6, 0); vWalk(goblin.t); G.head.rotation.set(-0.2, 0.3 * Math.sin(goblin.t * 4), 0); G.jaw.scale.y = 0.32 + 0.6 * Math.abs(Math.sin(goblin.t * 7)); },
-      () => { vp0.copy(R(-3.2, 0, -15)); vp1.copy(R(-0.2, 0, -2.6)); V.root.rotation.order = 'YXZ'; });
-    // THUD — music cuts out, he's thrown down the road
-    S2(1.1, u => { camAt(R(1.4, 1.9, 4.2), R(0, 0.6, -6)); SET.st.speed = 22 * Math.max(0, 1 - u * 2.5); const e = ease(u); V.root.position.lerpVectors(vp1, vpL, e); V.root.position.y = ROADP.y + 1.6 * Math.sin(Math.PI * Math.min(1, u * 1.2)); V.root.rotation.set(-Math.PI / 2 * e - 4 * Math.PI * e, Math.PI / 2 + 0.6 * (1 - e) + 0.4 * e, 0); vWalk(0, 0); },
+    // from behind the car: a goblin steps into the headlights, admiring something shiny in his hand…
+    let vp0 = new THREE.Vector3(), vp1 = new THREE.Vector3(), vpL = new THREE.Vector3(), fwd = new THREE.Vector3(), faceAt = new THREE.Vector3(), g0 = new THREE.Vector3(), held = 'v';
+    const vWalk = (t, k = 1) => { V.legs.forEach((l, i) => l.rotation.x = 0.6 * k * Math.sin(t * 9 + i * Math.PI)); V.arms[0].rotation.set(-0.45 * k * Math.sin(t * 9 + Math.PI), 0, -0.25); };
+    const vHand = () => { V.root.updateMatrixWorld(true); return wpos(V.arms[1].hand); };
+    const glint = p => { if (Math.random() < 0.35) spawnParts(p.clone().add(new THREE.Vector3(0, 0.06, 0)), 2, { colors: ['#fff6c2', '#ffd84a', '#ffffff'], size: 0.025, shape: 'box', speed: 0.5, up: 0.5, life: 0.45, gravity: 0 }); };
+    const coinInV = () => { if (held !== 'v') return; found.position.copy(vHand()).add(new THREE.Vector3(0, 0.1, 0)); found.rotation.set(Math.PI / 2, goblin.t * 2, 0); };
+    S2(1.6, u => { camAt(R(1.4, 1.9, 4.2), R(0, 0.6, -6)); V.root.visible = true; V.root.position.lerpVectors(vp0, vp1, u); V.root.rotation.set(0, Math.PI / 2 + 0.6, 0); vWalk(goblin.t); V.arms[1].rotation.set(-1.7, 0, 0.2); V.head.rotation.x = 0.35; coinInV(); glint(found.position);
+        G.head.rotation.set(-0.2, 0.3 * Math.sin(goblin.t * 4), 0); G.jaw.scale.y = 0.32 + 0.6 * Math.abs(Math.sin(goblin.t * 7)); },
+      () => { vp0.copy(R(-3.2, 0, -15)); vp1.copy(R(-0.2, 0, -2.6)); V.root.rotation.order = 'YXZ'; found = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.018, 32), [coinEdge, coinFace, coinFace]); scene.add(found); });
+    // THUD — music cuts out, he's thrown down the road (still clutching it)
+    S2(1.1, u => { camAt(R(1.4, 1.9, 4.2), R(0, 0.6, -6)); SET.st.speed = 22 * Math.max(0, 1 - u * 2.5); const e = ease(u); V.root.position.lerpVectors(vp1, vpL, e); V.root.position.y = ROADP.y + 1.6 * Math.sin(Math.PI * Math.min(1, u * 1.2)); V.root.rotation.set(-Math.PI / 2 * e - 4 * Math.PI * e, Math.PI / 2 + 0.6 * (1 - e) + 0.4 * e, 0); vWalk(0, 0); V.arms[1].rotation.set(-1.7 * (1 - e), 0, 0.2 + 1.3 * e); coinInV(); },
       () => { subsOff(); stopMusic(); try { speechSynthesis.cancel(); } catch (e) {} thudSfx(1); noiseSfx('bandpass', 2600, 1200, 0.9, 0.25, 6); shake = Math.max(shake, 0.6); vpL.copy(R(0.1, 0.12, -6.2)); });
+    const lying = () => { V.root.position.copy(vpL); V.root.rotation.set(-Math.PI / 2, 1.0, 0); V.arms[1].rotation.set(0, 0, 1.5); V.arms[0].rotation.set(0, 0, -0.6); V.head.rotation.x = 0; coinInV(); };
     // inside the car: silence. crickets.
-    S2(2.0, u => { V.root.position.copy(vpL); V.root.rotation.set(-Math.PI / 2, 1.0, 0); camAt(R(0.45, 1.4, -1.1), R(-0.4, 1.2, 0.4)); G.head.rotation.set(-0.1, 0, 0); G.jaw.scale.y = 1.0; G.arms.forEach(a2 => a2.rotation.set(-1.3, 0, 0)); },
+    S2(2.0, u => { lying(); camAt(R(0.45, 1.4, -1.1), R(-0.4, 1.2, 0.4)); G.head.rotation.set(-0.1, 0, 0); G.jaw.scale.y = 1.0; G.arms.forEach(a2 => a2.rotation.set(-1.3, 0, 0)); },
       () => { [0.3, 0.8, 1.3, 1.8].forEach(d => { tone('sine', 4200, 4400, 0.05, 0.02, d); tone('sine', 4200, 4400, 0.05, 0.02, d + 0.1); }); });
     // he gets out and walks round the front, into the headlights
     let w0 = new THREE.Vector3(), w1 = new THREE.Vector3();
-    S2(3.8, u => { const e = ease(u); G.root.position.lerpVectors(w0, w1, e); G.root.rotation.y = yawTo(w0, w1); walkG(goblin.t, 0.7, 6); camAt(R(4.2, 1.8, -2.2), R(-0.3, 0.4, -4.4)); },
+    S2(3.8, u => { lying(); const e = ease(u); G.root.position.lerpVectors(w0, w1, e); G.root.rotation.y = yawTo(w0, w1); walkG(goblin.t, 0.7, 6); camAt(R(4.2, 1.8, -2.2), R(-0.3, 0.4, -4.4)); },
       () => { neutral(); w0.copy(R(-1.4, 0, 0.0)); w1.copy(R(-0.55, 0, -5.4)); G.root.position.copy(w0); [0, 0.7, 1.4, 2.1, 2.8].forEach(d => tone('square', 160, 140, 0.04, 0.03, d)); });
     // it's another goblin. NOOOO
-    S2(4.4, u => { camAt(R(2.4, 1.5, -3.6), R(-0.2, 0.3, -6.0)); G.root.rotation.y = yawTo(G.root.position, vpL); knee = ease(Math.min(1, u * 3)); G.root.position.y = ROADP.y - 0.22 * knee; G.legs.forEach(l => l.rotation.x = -1.1 * knee); G.body.rotation.x = 0.35 * knee; G.head.rotation.x = -0.5 * knee; G.arms.forEach((a2, i) => a2.rotation.set(-2.7 + 0.2 * Math.sin(u * 14 + i), 0, (i ? -1 : 1) * 0.5)); G.jaw.scale.y = 1.25; crying = u > 0.2 ? 1 : 0; },
+    S2(4.4, u => { lying(); camAt(R(2.4, 1.5, -3.6), R(-0.2, 0.3, -6.0)); G.root.rotation.y = yawTo(G.root.position, vpL); knee = ease(Math.min(1, u * 3)); G.root.position.y = ROADP.y - 0.22 * knee; G.legs.forEach(l => l.rotation.x = -1.1 * knee); G.body.rotation.x = 0.35 * knee; G.head.rotation.x = -0.5 * knee; G.arms.forEach((a2, i) => a2.rotation.set(-2.7 + 0.2 * Math.sin(u * 14 + i), 0, (i ? -1 : 1) * 0.5)); G.jaw.scale.y = 1.25; crying = u > 0.2 ? 1 : 0; },
       () => { setTimeout(() => say('Goblin', 'NOOOOOOOOOOOOOOO!', 1.3, 0.75), 300); [0, 0.8].forEach(d => tone('sine', 220, 196, 1.6, 0.05, d)); });
-    // …wait. Something shiny, sticking out of his pocket
-    S2(2.6, u => { crying = 1; G.head.rotation.x = 0.4; G.body.rotation.x = 0.5; G.arms.forEach(a2 => a2.rotation.set(-0.6, 0, 0)); G.jaw.scale.y = 0.6; found.position.copy(pocket); found.rotation.set(0.5, 1.0, Math.PI / 2 - 0.3); camAt(pocket.clone().add(new THREE.Vector3(0.9, 0.7, 0.9)), pocket); if (Math.random() < 0.3) spawnParts(pocket.clone().add(new THREE.Vector3(0, 0.06, 0)), 2, { colors: ['#fff6c2', '#ffd84a'], size: 0.03, shape: 'box', speed: 0.6, up: 0.6, life: 0.5, gravity: 0 }); },
-      () => { subsOff(); V.root.updateMatrixWorld(true); const bb = new THREE.Box3().setFromObject(V.belly); pocket.set((bb.min.x + bb.max.x) / 2 + 0.12, bb.max.y + 0.02, (bb.min.z + bb.max.z) / 2 + 0.05);
-        const pk = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.03, 0.2), new THREE.MeshStandardMaterial({ color: '#4a3220', roughness: 0.9 })); pk.position.copy(pocket).add(new THREE.Vector3(0, -0.02, 0)); scene.add(pk); cleanups.push(() => kill(pk)); V.root.attach(pk);
-        found = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.018, 32), [coinEdge, coinFace, coinFace]); scene.add(found); found.position.copy(pocket);
-        tone('sine', 2600, 3400, 0.4, 0.06); setTimeout(() => tone('sine', 3000, 3800, 0.4, 0.05), 600); });
-    // he reaches over… and pulls the coin out of the pocket
-    let hand0 = new THREE.Vector3();
-    S2(2.0, u => { crying = 0; const e = ease(u); G.body.rotation.x = 0.5 + 0.2 * Math.sin(Math.PI * u); G.arms[1].rotation.set(-1.2 - 0.3 * Math.sin(Math.PI * u), 0, -0.3); G.root.updateMatrixWorld(true); const h = wpos(G.arms[1].hand);
-        found.position.copy(u < 0.45 ? pocket.clone().add(new THREE.Vector3(0, 0.08 * (u / 0.45), 0)) : pocket.clone().add(new THREE.Vector3(0, 0.08, 0)).lerp(h, ease((u - 0.45) / 0.55))); found.rotation.set(0.5 * (1 - e), 1.0, Math.PI / 2 * (1 - e) + Math.PI / 2 * e);
-        camAt(R(1.6, 1.1, -4.4), pocket.clone().lerp(wpos(G.head), 0.5)); },
-      () => { tone('sine', 700, 1200, 0.25, 0.06); });
-    // holds it up into the headlights: the coin.
-    S2(3.0, u => { const e = ease(Math.min(1, u * 2)); G.arms[1].rotation.set(-1.5 - 1.0 * e, 0, -0.2); G.body.rotation.x = 0.6 - 0.5 * e; G.head.rotation.x = -0.25 * e; G.jaw.scale.y = 0.32 + 0.6 * e; G.root.updateMatrixWorld(true); found.position.copy(wpos(G.arms[1].hand)).add(new THREE.Vector3(0, 0.12, 0)); found.rotation.set(Math.PI / 2, 0.4 * Math.sin(goblin.t * 2), 0);
-        const hp = wpos(G.head); camAt(hp.clone().add(new THREE.Vector3(0.9, -0.1, 1.2)), found.position.clone().lerp(hp, 0.4)); if (Math.random() < 0.3) spawnParts(found.position, 1, { colors: ['#fff6c2'], size: 0.03, shape: 'box', speed: 0.5, up: 0.5, life: 0.5, gravity: 0 }); },
-      () => { tone('sine', 880, 1760, 0.5, 0.08); setTimeout(() => speak('…the coin.', 0.8, 0.7), 800); });
+    // …then he notices what's in the other goblin's hand
+    S2(2.6, u => { lying(); crying = 1; G.head.rotation.x = 0.4; G.body.rotation.x = 0.5; G.arms.forEach(a2 => a2.rotation.set(-0.6, 0, 0)); G.jaw.scale.y = 0.6; const p = found.position; camAt(p.clone().add(new THREE.Vector3(0.55, 0.75 - 0.15 * ease(u), 0.95 - 0.25 * ease(u))), p); glint(p); },
+      () => { subsOff(); tone('sine', 2600, 3400, 0.4, 0.06); setTimeout(() => tone('sine', 3000, 3800, 0.4, 0.05), 700); });
+    // he reaches over and takes it from his hand
+    let from = new THREE.Vector3();
+    S2(2.2, u => { lying(); held = 'g'; crying = 0; const reach = Math.sin(Math.PI * Math.min(1, u * 1.2)); G.root.position.copy(g0); G.body.rotation.x = 0.5 + 0.3 * reach; G.arms[1].rotation.set(-1.0 - 0.4 * reach, 0, -0.25); G.root.updateMatrixWorld(true); const h = wpos(G.arms[1].hand);
+        const k = ease(Math.max(0, (u - 0.35) / 0.65)); found.position.copy(from).lerp(h.add(new THREE.Vector3(0, 0.1, 0)), k); found.rotation.set(Math.PI / 2, goblin.t * 2 * (1 - k), 0);
+        camAt(from.clone().add(new THREE.Vector3(0.7, 0.8, 1.1)), from.clone().lerp(wpos(G.head), 0.45)); },
+      () => { g0.copy(G.root.position); from.copy(found.position); held = 'g'; tone('sine', 700, 1200, 0.3, 0.06); });
+    // final shot: his face, the coin held up in front of it. Disbelief.
+    S2(4.0, u => { G.root.position.copy(g0); const e = ease(Math.min(1, u * 2)); G.body.rotation.x = 0.8 - 0.7 * e; G.arms[1].rotation.set(-1.3 - 0.5 * e, 0, -0.35); G.arms[0].rotation.set(-0.4, 0, 0.3); G.head.rotation.set(-0.05 * e, 0.06 * Math.sin(u * 3), 0.08 * e); G.jaw.scale.y = 0.32 + 0.55 * e; crying = 0;
+        G.root.updateMatrixWorld(true); const hp = wpos(G.head); fwd.set(Math.sin(G.root.rotation.y), 0, Math.cos(G.root.rotation.y));
+        faceAt.copy(hp).addScaledVector(fwd, 0.5).add(new THREE.Vector3(0, -0.1, 0)); found.position.lerp(faceAt, 0.12 + 0.88 * e); found.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), fwd.clone().negate()); found.rotateY(0.2 * Math.sin(goblin.t * 1.5)); glint(found.position);
+        camAt(hp.clone().addScaledVector(fwd, 1.45 - 0.35 * ease(u)).add(new THREE.Vector3(0.12, -0.08, 0)), hp.clone().addScaledVector(fwd, 0.25).add(new THREE.Vector3(0, -0.06, 0))); },
+      () => { tone('sine', 523, 523, 1.6, 0.05); tone('sine', 659, 659, 1.6, 0.04, 0.4); tone('sine', 784, 784, 2.2, 0.035, 0.8); setTimeout(() => speak('…the coin?', 0.75, 0.6), 1500); });
     S2(0.8, u => fade(u));
     S2(0.01, () => {}, () => {
       stopMusic(); crying = 0; subsOff(); scene.remove(SET.g); BOLSET = null; scene.background.copy(env.bg); scene.fog.color.copy(env.fc); scene.fog.near = env.fn; scene.fog.far = env.ff; env = null; mainL.forEach(([l, v]) => l.intensity = v); mainL = [];
@@ -5782,7 +5786,7 @@ $('#startBtn').onclick = () => {
 };
 
 // ---------- installable app + automatic updates (website version only) ----------
-const BUILD = '1795382684';
+const BUILD = '1795384094';
 if (STANDALONE) {
   try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
   let deferredInstall = null;
