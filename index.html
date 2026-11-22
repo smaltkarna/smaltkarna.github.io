@@ -332,6 +332,7 @@
   @media (prefers-reduced-motion:reduce){body.trippy #scene canvas{animation:tripHue 40s linear infinite}body.trippy #tripFx{animation:none}}
   #stream{position:fixed;inset:0;z-index:27;display:none;pointer-events:none;font-family:Inter,system-ui,sans-serif}
   body.streaming #stream{display:block}
+  body.streaming #subs{bottom:auto;top:58px;left:calc(50% - min(160px,15vw));width:min(640px,58vw)}
   body.streaming #panel,body.streaming #hud,body.streaming #help,body.streaming #menuBtn,body.streaming #jazzBtn,body.streaming #inviteBtn,body.streaming #installBtn,body.streaming #roundRule,body.streaming #result,body.streaming #toast{display:none!important}
   .st-top{position:absolute;left:16px;top:14px;display:flex;gap:10px;align-items:center;max-width:calc(100vw - 360px)}
   .st-live{background:#e91916;color:#fff;font-weight:900;font-size:14px;padding:4px 10px;border-radius:6px;letter-spacing:1px;animation:stBlink 1.6s ease-in-out infinite}
@@ -5245,7 +5246,7 @@ $('#startBtn').onclick = () => {
 };
 
 // ---------- installable app + automatic updates (website version only) ----------
-const BUILD = '1795308144';
+const BUILD = '1795309250';
 if (STANDALONE) {
   try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
   let deferredInstall = null;
