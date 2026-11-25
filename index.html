@@ -1413,8 +1413,8 @@ const MAP_BUILD = {
     for (let k = 0; k < 4; k++) { const x = 24, z = -12 + k * 8; addM(g, new THREE.CylinderGeometry(0.08, 0.08, 4.2, 8), mstd('#444'), x, 2.1, z); addM(g, new THREE.ConeGeometry(2.6, 1, 8), umb[k % 2], x, 4.4, z); addM(g, new THREE.CylinderGeometry(0.8, 0.8, 0.08, 16), mstd('#ddd'), x - 1, 1.3, z); addM(g, new THREE.CylinderGeometry(0.07, 0.07, 1.3, 6), mstd('#444'), x - 1, 0.65, z); [-0.9, 0.9].forEach(d => addM(g, new THREE.BoxGeometry(0.55, 0.9, 0.55), mstd('#7a5530'), x - 1 + d, 0.45, z + 0.7)); }
     const bc = ['#1a1a1a', '#c8202a', '#2a5ca8', '#e8dcc4']; for (let k = 0; k < 7; k++) mkBike(g, -27, -14 + k * 2.2, Math.PI / 2, bc[k % 4]);
     // pigeons strutting about the piazza
-    const pigeons = []; for (let i = 0; i < 10; i++) { const p = new THREE.Group(); addM(p, new THREE.SphereGeometry(0.25, 10, 8), mstd('#7a7f8a'), 0, 0.3, 0).scale.set(1.4, 1, 1); addM(p, new THREE.SphereGeometry(0.14, 8, 6), mstd('#5a6070'), 0.3, 0.5, 0); p.userData = { cx: -6 + (i % 5) * 3, cz: 13 + Math.floor(i / 5) * 2, p: i }; g.add(p); pigeons.push(p); }
-    mapTick = t => { jets.forEach((j, k) => j.scale.y = 0.9 + 0.1 * Math.sin(t * 6 + k)); pigeons.forEach(p => { const u = p.userData; p.position.set(u.cx + Math.sin(t * 0.3 + u.p) * 1.5, 0, u.cz + Math.cos(t * 0.25 + u.p * 2) * 1.2); p.rotation.y = -(t * 0.3 + u.p); p.rotation.z = Math.max(0, Math.sin(t * 4 + u.p * 2)) * -0.5; }); };
+    const pigeons = []; for (let i = 0; i < 12; i++) { const p = mkPigeon(); Object.assign(p.userData, { cx: -7 + (i % 6) * 2.6, cz: 13 + Math.floor(i / 6) * 2.2, p: i }); g.add(p); pigeons.push(p); }
+    mapTick = t => { jets.forEach((j, k) => j.scale.y = 0.9 + 0.1 * Math.sin(t * 6 + k)); pigeons.forEach(p => { const u = p.userData; p.position.set(u.cx + Math.sin(t * 0.3 + u.p) * 1.5, 0, u.cz + Math.cos(t * 0.25 + u.p * 2) * 1.2); p.rotation.y = Math.atan2(Math.sin(t * 0.25 + u.p * 2) * 0.3, Math.cos(t * 0.3 + u.p) * 0.45); peck(p, t, u.p * 1.7); }); };
     return { bg: '#f2c592', fog: [45, 140], hemi: ['#ffe7c4', '#7a5a40', 0.62], sun: ['#ffcf98', 1.1], pendant: 0, ground: 'piazza', groundRough: 0.85 };
   },
   morocco(g) {
@@ -2026,12 +2026,12 @@ Object.assign(MAP_BUILD, {
     for (let i = 0; i < 18; i++) { const a = i / 18 * Math.PI * 2; const sp = addM(wheel, new THREE.CylinderGeometry(0.06, 0.06, 12, 6), steel, Math.cos(a) * 6, Math.sin(a) * 6, 0); sp.rotation.z = a + Math.PI / 2; const cb = addM(fw, new THREE.CylinderGeometry(0.7, 0.7, 1.2, 10), mstd(['#c8202a', '#f2c418', '#1f5fa8', '#2f8a4a', '#ff6a9a'][i % 5]), 0, 0, 0); cb.rotation.x = Math.PI / 2; cb.userData.a = a; cabins.push(cb); }
     [-1, 1].forEach(s => { const leg = addM(fw, new THREE.CylinderGeometry(0.3, 0.45, 15.5, 8), steel, s * 4, -7, 0); leg.rotation.z = -s * 0.28; });
     // gulls
-    const gulls = []; for (let i = 0; i < 6; i++) { const gl = new THREE.Group(); [-1, 1].forEach(s => { const wng = addM(gl, new THREE.PlaneGeometry(1.2, 0.3), new THREE.MeshBasicMaterial({ color: '#f4f4f4', side: THREE.DoubleSide }), s * 0.6, 0, 0); wng.rotation.z = s * 0.3; }); g.add(gl); gl.userData.p = i * 1.1; gulls.push(gl); }
+    const gulls = []; for (let i = 0; i < 6; i++) { const gl = mkBirdPro('gull', 1.4); g.add(gl); gl.userData.p = i * 1.1; gulls.push(gl); }
     mapTick = t => {
       wheel.rotation.z = t * 0.1; cabins.forEach(c => { const a = c.userData.a + t * 0.1; c.position.set(Math.cos(a) * 12, Math.sin(a) * 12 - 1, 0); });
       wtex.offset.set(t * 0.002, t * 0.008); foams.forEach((f, k) => { const u = ((t * 0.18 + k / 3) % 1); f.position.z = -26 + u * 6; f.material.opacity = 0.8 * Math.sin(u * Math.PI); }); wet.material.opacity = 0.5 + 0.2 * Math.sin(t * 1.1);
       pedalo.position.set(10 + Math.sin(t * 0.07) * 14, 0.1 * Math.sin(t * 1.3), -32 + Math.cos(t * 0.05) * 3); pedalo.rotation.y = Math.sin(t * 0.07 + 1.5) * 0.6; flag.rotation.y = 0.3 * Math.sin(t * 2);
-      gulls.forEach((gl, i) => { const a = t * 0.25 + gl.userData.p; gl.position.set(Math.sin(a) * 22, 16 + Math.sin(t + i) * 1.5, -22 + Math.cos(a) * 10); gl.rotation.y = -a; gl.children.forEach((w, k) => w.rotation.z = (k ? 1 : -1) * (0.3 + 0.4 * Math.sin(t * 6 + i))); });
+      gulls.forEach((gl, i) => { const a = t * 0.25 + gl.userData.p; gl.position.set(Math.sin(a) * 22, 16 + Math.sin(t + i) * 1.5, -22 + Math.cos(a) * 10); gl.rotation.y = Math.atan2(Math.sin(a) * 10, Math.cos(a) * 22); flap(gl, t + i, 5, 0.45); });
     };
     return { bg: '#8ccdf0', fog: [55, 170], hemi: ['#ffffff', '#d9b87a', 0.72], sun: ['#fff6e0', 1.15], pendant: 0, ground: 'sand', groundRough: 0.95 };
   },
@@ -2075,8 +2075,8 @@ Object.assign(MAP_BUILD, {
     addM(g, new THREE.PlaneGeometry(1.6, 1.2), new THREE.MeshStandardMaterial({ map: canvasTex(256, 192, (q, w, h) => { q.fillStyle = '#f4efe4'; q.fillRect(0, 0, w, h); q.fillStyle = '#9ac8e8'; q.fillRect(8, 8, w - 16, h - 60); q.strokeStyle = '#5e4c3a'; q.lineWidth = 5; q.beginPath(); q.moveTo(80, h - 52); q.lineTo(128, 20); q.lineTo(176, h - 52); q.moveTo(95, 100); q.lineTo(161, 100); q.stroke(); }), side: THREE.DoubleSide }), 6, 2.3, 12, -0.4).rotation.x = -0.15;
     [-0.5, 0.5].forEach(k => addM(g, new THREE.CylinderGeometry(0.04, 0.04, 2.6, 5), mstd('#7a5530'), 6 + k, 1.3, 12.1));
     // pigeons
-    const pigeons = []; for (let i = 0; i < 9; i++) { const p = new THREE.Group(); addM(p, new THREE.SphereGeometry(0.25, 10, 8), mstd('#7a7f8a'), 0, 0.3, 0).scale.set(1.4, 1, 1); addM(p, new THREE.SphereGeometry(0.14, 8, 6), mstd('#5a6070'), 0.3, 0.5, 0); p.position.set(-6 + (i % 5) * 1.3, 0, 9 + Math.floor(i / 5) * 1.2); p.userData.p = i; g.add(p); pigeons.push(p); }
-    mapTick = t => { spin.rotation.y = t * 0.35; horses.forEach((h, i) => h.position.y = 0.35 * Math.sin(t * 1.4 + i)); pigeons.forEach(p => { p.rotation.z = Math.max(0, Math.sin(t * 4 + p.userData.p * 2)) * -0.5; p.rotation.y = Math.sin(t * 0.3 + p.userData.p) * 2; }); };
+    const pigeons = []; for (let i = 0; i < 10; i++) { const p = mkPigeon(); p.position.set(-7 + (i % 5) * 1.5, 0, 9 + Math.floor(i / 5) * 1.4); p.userData.p = i; g.add(p); pigeons.push(p); }
+    mapTick = t => { spin.rotation.y = t * 0.35; horses.forEach((h, i) => h.position.y = 0.35 * Math.sin(t * 1.4 + i)); pigeons.forEach(p => { p.rotation.y = Math.sin(t * 0.3 + p.userData.p) * 2; peck(p, t, p.userData.p * 1.7); }); };
     return { bg: '#e8d4dc', fog: [50, 160], hemi: ['#fff0f0', '#5a5060', 0.65], sun: ['#ffe2c8', 1.05], pendant: 0, ground: 'pave', groundRough: 0.8 };
   },
   sahara(g) {
@@ -2315,13 +2315,66 @@ SKIN_DRAW.cyber = {
 };
 
 // ---------- random live events on every map (one every ~40-80 s, never during cutscenes) ----------
+// ---------- better bird + animal models ----------
+const BIRD_PRESETS = {
+  pigeon: { body: '#5c626e', wing: '#6a707c', bar: '#3a3e48', head: '#474d5a', neck: '#2a6a5a', beak: '#2a2a2a', leg: '#c8506a', tail: '#33363e', eye: '#ff7a20' },
+  gull: { body: '#f6f6f4', wing: '#848c96', bar: '#1a1a1a', head: '#f8f8f6', neck: '#f6f6f4', beak: '#f2c418', leg: '#e8b070', tail: '#f0f0ee', eye: '#f2c418' },
+  dove: { body: '#f4f4f0', wing: '#ecece8', bar: '#d8d8d2', head: '#f8f8f4', neck: '#f4f4f0', beak: '#e89a7a', leg: '#e8909a', tail: '#ecece8', eye: '#1a1a1a' },
+  jay: { body: '#1f4a98', wing: '#163a80', bar: '#111', head: '#163068', neck: '#e8e8f0', beak: '#222', leg: '#333', tail: '#2a4a8a', eye: '#111' },
+  vulture: { body: '#2a1e16', wing: '#3a2a1e', bar: '#1a120c', head: '#c88a7a', neck: '#e8e0d4', beak: '#d8c8a8', leg: '#8a7a6a', tail: '#2a1e16', eye: '#111' },
+  stork: { body: '#f4f4f0', wing: '#f4f4f0', bar: '#151515', head: '#f4f4f0', neck: '#f4f4f0', beak: '#e8501a', leg: '#e8501a', tail: '#f4f4f0', eye: '#111' },
+};
+function mkBirdPro(kind = 'pigeon', s = 1) {
+  const P = BIRD_PRESETS[kind] || BIRD_PRESETS.pigeon, b = new THREE.Group();
+  const pts = []; for (let i = 0; i <= 16; i++) { const t = i / 16; pts.push(new THREE.Vector2(Math.max(0.005, 0.2 * Math.pow(Math.sin(Math.PI * Math.pow(t, 0.75)), 0.8)), -0.5 + t)); }
+  const body = addM(b, new THREE.LatheGeometry(pts, 16), mstd(P.body, { roughness: 0.6 }), 0, 0, 0); body.rotation.z = -Math.PI / 2; body.scale.set(1, 1, 0.9);
+  addM(b, new THREE.SphereGeometry(0.17, 14, 10), mstd(P.body, { roughness: 0.6 }), 0.18, -0.04, 0).scale.set(1.2, 1, 1);     // round breast
+  const head = new THREE.Group(); head.position.set(0.36, 0.12, 0); b.add(head);
+  addM(head, new THREE.SphereGeometry(0.12, 12, 10), mstd(P.neck, { roughness: 0.35, metalness: kind === 'pigeon' ? 0.4 : 0 }), -0.06, -0.04, 0).scale.set(1, 1.1, 1);   // neck (iridescent on pigeons)
+  addM(head, new THREE.SphereGeometry(0.1, 12, 10), mstd(P.head, { roughness: 0.5 }), 0.04, 0.06, 0);
+  const bk = addM(head, new THREE.ConeGeometry(0.03, kind === 'stork' ? 0.5 : kind === 'vulture' ? 0.14 : 0.11, 6), mstd(P.beak, { roughness: 0.4 }), kind === 'stork' ? 0.34 : 0.16, 0.04, 0); bk.rotation.z = -Math.PI / 2 - 0.1;
+  [-1, 1].forEach(z => { addM(head, new THREE.SphereGeometry(0.022, 8, 6), mstd(P.eye, { roughness: 0.2 }), 0.09, 0.09, z * 0.065); addM(head, new THREE.SphereGeometry(0.01, 6, 4), mstd('#000'), 0.1, 0.09, z * 0.075); });
+  const tail = new THREE.Shape(); tail.moveTo(0, -0.06); tail.lineTo(-0.32, -0.12); tail.lineTo(-0.36, 0); tail.lineTo(-0.32, 0.12); tail.lineTo(0, 0.06);
+  const tg = new THREE.ShapeGeometry(tail); tg.rotateX(-Math.PI / 2); addM(b, tg, mstd(P.tail, { side: THREE.DoubleSide }), -0.42, 0.02, 0).rotation.z = 0.15;
+  const wingShape = new THREE.Shape(); wingShape.moveTo(0.12, 0); wingShape.bezierCurveTo(0.16, 0.3, 0.06, 0.6, -0.16, 0.95); wingShape.lineTo(-0.2, 0.86); wingShape.lineTo(-0.22, 0.74); wingShape.lineTo(-0.25, 0.6); wingShape.lineTo(-0.26, 0.42); wingShape.lineTo(-0.25, 0.22); wingShape.lineTo(-0.2, 0);
+  b.userData.wings = [-1, 1].map(sd => { const wg = new THREE.ShapeGeometry(wingShape); wg.rotateX(Math.PI / 2); if (sd < 0) wg.scale(1, 1, -1); const w = new THREE.Mesh(wg, mstd(P.wing, { side: THREE.DoubleSide, roughness: 0.7 })); w.position.set(0.04, 0.1, sd * 0.1); w.userData.s = -sd;
+    if (kind === 'pigeon') for (let k = 0; k < 2; k++) { const bar = addM(w, new THREE.BoxGeometry(0.035, 0.004, 0.2), mstd(P.bar), -0.08 - k * 0.07, 0.003, sd * (0.28 + k * 0.04)); bar.rotation.y = sd * 0.35; }
+    if (kind === 'gull' || kind === 'stork') { const tip = addM(w, new THREE.BoxGeometry(0.1, 0.006, 0.22), mstd('#151515'), -0.18, 0.004, sd * 0.76); tip.rotation.y = sd * 0.5; }
+    b.add(w); return w; });
+  b.userData.legs = [-1, 1].map(z => { const l = addM(b, new THREE.CylinderGeometry(0.012, 0.012, kind === 'stork' ? 0.7 : 0.16, 5), mstd(P.leg), 0.02, kind === 'stork' ? -0.5 : -0.24, z * 0.06); addM(l, new THREE.BoxGeometry(0.08, 0.01, 0.05), mstd(P.leg), 0.03, -(kind === 'stork' ? 0.35 : 0.08), 0); return l; });
+  b.userData.head = head; b.scale.setScalar(s * 1.6); return b;
+}
+function mkBat(s = 1) {
+  const b = new THREE.Group(), fur = mstd('#1e1820', { roughness: 0.9 });
+  addM(b, new THREE.SphereGeometry(0.16, 12, 10), fur, 0, 0, 0).scale.set(1.5, 1, 1); addM(b, new THREE.SphereGeometry(0.11, 10, 8), fur, 0.22, 0.05, 0);
+  [-1, 1].forEach(z => { addM(b, new THREE.ConeGeometry(0.04, 0.12, 5), fur, 0.22, 0.17, z * 0.05); addM(b, new THREE.SphereGeometry(0.018, 6, 4), new THREE.MeshBasicMaterial({ color: '#ff4a3a' }), 0.31, 0.07, z * 0.04); });
+  const ws = new THREE.Shape(); ws.moveTo(0.1, 0); ws.lineTo(0.18, 0.5); ws.lineTo(0.05, 0.85); ws.quadraticCurveTo(-0.02, 0.7, -0.08, 0.72); ws.quadraticCurveTo(-0.1, 0.55, -0.18, 0.5); ws.quadraticCurveTo(-0.18, 0.32, -0.24, 0.26); ws.quadraticCurveTo(-0.18, 0.12, -0.15, 0);
+  b.userData.wings = [-1, 1].map(sd => { const wg = new THREE.ShapeGeometry(ws); wg.rotateX(Math.PI / 2); if (sd < 0) wg.scale(1, 1, -1); const w = new THREE.Mesh(wg, mstd('#2e2430', { side: THREE.DoubleSide, roughness: 0.8 })); w.userData.s = -sd; b.add(w); return w; });
+  b.scale.setScalar(s * 1.8); return b;
+}
+// replace the old blocky bird with the new models
+function mkBird(col, s = 1) { const map = { '#8a8f9a': 'pigeon', '#f4f4f2': 'dove', '#e8e8ea': 'gull', '#f4f4f0': 'stork', '#2a4a8a': 'jay', '#3a2a1a': 'vulture', '#1a1418': 'bat' }; const k = map[col] || 'pigeon'; return k === 'bat' ? mkBat(s) : mkBirdPro(k, s); }
+// a ground pigeon that struts and pecks
+function mkPigeon() { const p = mkBirdPro('pigeon', 0.9); p.userData.wings.forEach(w => { w.rotation.x = 0; w.scale.set(0.7, 1, 0.5); w.position.y = 0.06; }); p.position.y = 0.42; const g2 = new THREE.Group(); g2.add(p); g2.userData.bird = p; return g2; }
+function peck(pg, t, ph) { const b = pg.userData.bird; const k = Math.max(0, Math.sin(t * 3 + ph)); b.userData.head.rotation.z = -k * 0.9; b.userData.head.position.x = 0.36 + Math.sin(t * 6 + ph) * 0.03; b.rotation.z = -k * 0.25; b.userData.legs.forEach((l, i) => l.rotation.z = 0.25 * Math.sin(t * 6 + ph + i * Math.PI)); }
+// nicer four-legged animals: chest + hips, jointed tapered legs, tail
+function mkQuad(body, col, s = 1, extra) {
+  const q = new THREE.Group(), m = mstd(col, { roughness: 0.8 }), dark = mstd(new THREE.Color(col).multiplyScalar(0.55), { roughness: 0.8 });
+  const L = body[0] * 0.5, H = body[1] * 0.5, W = body[2] * 0.5;
+  addM(q, new THREE.SphereGeometry(1, 18, 12), m, L * 0.35, 1, 0).scale.set(L * 0.75, H * 1.05, W);
+  addM(q, new THREE.SphereGeometry(1, 18, 12), m, -L * 0.4, 1.02, 0).scale.set(L * 0.7, H * 0.95, W * 0.95);
+  addM(q, new THREE.SphereGeometry(1, 14, 10), m, 0, 0.95, 0).scale.set(L * 0.6, H * 0.85, W * 0.9);
+  const legs = [[0.55, 1], [0.55, -1], [-0.55, 1], [-0.55, -1]].map(([x, z]) => { const p = new THREE.Group(); p.position.set(x * L, 0.95, z * W * 0.55); q.add(p);
+    addM(p, new THREE.CylinderGeometry(0.075, 0.1, 0.5, 8), m, 0, -0.25, 0); const knee = new THREE.Group(); knee.position.y = -0.48; p.add(knee); addM(knee, new THREE.CylinderGeometry(0.05, 0.065, 0.45, 8), m, 0, -0.22, 0); addM(knee, new THREE.SphereGeometry(0.07, 8, 6), dark, 0.02, -0.46, 0).scale.set(1.3, 0.6, 1); p.userData.knee = knee; return p; });
+  q.userData.legs = legs; if (extra) extra(q); q.scale.setScalar(s); return q;
+}
+const walkLegs2 = (o, t, sp = 9, a = 0.5) => (o.userData.legs || []).forEach((l, i) => { const ph = t * sp + (i === 0 || i === 3 ? 0 : Math.PI); l.rotation.z = a * Math.sin(ph); if (l.userData.knee) l.userData.knee.rotation.z = -Math.max(0, Math.sin(ph + 1)) * a * 1.2; });
+
 const evGroup = new THREE.Group(); scene.add(evGroup);
 let EV = null, evNext = 25 + Math.random() * 25;
 function evClear() { if (EV && EV.end) try { EV.end(); } catch (e) {} EV = null; while (evGroup.children.length) evGroup.remove(evGroup.children[0]); }
 const evAdd = o => { evGroup.add(o); return o; };
 const faceAlong = (o, dx, dz) => { o.rotation.y = Math.atan2(-dz, dx); };
-function mkBird(col, s = 1) { const b = new THREE.Group(); const body = addM(b, new THREE.SphereGeometry(0.22, 8, 6), mstd(col), 0, 0, 0); body.scale.set(1.7, 0.8, 0.8); addM(b, new THREE.SphereGeometry(0.13, 8, 6), mstd(col), 0.35, 0.08, 0); addM(b, new THREE.ConeGeometry(0.05, 0.16, 5), mstd('#e8a020'), 0.5, 0.06, 0).rotation.z = -Math.PI / 2;
-  b.userData.wings = [-1, 1].map(s2 => { const geo = new THREE.PlaneGeometry(0.42, 0.8); geo.rotateX(-Math.PI / 2); geo.translate(0, 0, s2 * 0.4); const w = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: col, side: THREE.DoubleSide })); w.userData.s = s2; b.add(w); return w; }); b.scale.setScalar(s); return b; }
 const flap = (b, t, sp = 14, amp = 0.7) => (b.userData.wings || []).forEach(w => w.rotation.x = w.userData.s * amp * Math.sin(t * sp));
 function evAcross(obj, p0, p1, dur, opt = {}) { evAdd(obj); faceAlong(obj, p1[0] - p0[0], p1[2] - p0[2]); if (opt.yaw) obj.rotation.y += opt.yaw;
   return { dur, tick(u, t) { obj.position.set(p0[0] + (p1[0] - p0[0]) * u, p0[1] + (p1[1] - p0[1]) * u + (opt.bob ? Math.sin(t * opt.bob) * (opt.bobA || 0.15) : 0) + (opt.arc ? Math.sin(u * Math.PI) * opt.arc : 0), p0[2] + (p1[2] - p0[2]) * u); flap(obj, t); if (opt.each) opt.each(obj, u, t); } }; }
@@ -2339,8 +2392,7 @@ function mkGobRider(outfit) { const G = buildGoblin({ skin: SKINS[Math.floor(Mat
 function mkVehicle(len, col, h = 1.4, win = '#1d2630') { const v = new THREE.Group(); addM(v, new THREE.BoxGeometry(len, h, 1.8), mstd(col, { roughness: 0.4, metalness: 0.3 }), 0, h / 2 + 0.4, 0); addM(v, new THREE.BoxGeometry(len * 0.5, h * 0.6, 1.7), mstd(win, { roughness: 0.1 }), -len * 0.05, h + 0.6, 0); [-len * 0.32, len * 0.32].forEach(x => [-0.85, 0.85].forEach(z => { const w = addM(v, new THREE.CylinderGeometry(0.38, 0.38, 0.25, 14), mstd('#111'), x, 0.38, z); w.rotation.x = Math.PI / 2; })); addM(v, new THREE.SphereGeometry(0.12, 8, 6), new THREE.MeshBasicMaterial({ color: '#fff6d0' }), len / 2, 0.9, 0.6); addM(v, new THREE.SphereGeometry(0.12, 8, 6), new THREE.MeshBasicMaterial({ color: '#fff6d0' }), len / 2, 0.9, -0.6); return v; }
 function mkCyclist() { const g2 = new THREE.Group(); mkBike(g2, 0, 0, 0, ['#c8202a', '#2a5ca8', '#f2c418'][Math.floor(Math.random() * 3)]); const R = mkGobRider(); R.root.scale.setScalar(0.9); R.root.position.set(-0.2, 0.75, 0); R.root.rotation.y = Math.PI / 2; R.legs.forEach(l => l.rotation.x = -1.2); R.arms.forEach(a => a.rotation.x = -1.2); g2.add(R.root); g2.rotation.order = 'YXZ'; return g2; }
 function mkTurkeyBird() { const t2 = new THREE.Group(); addM(t2, new THREE.SphereGeometry(0.6, 14, 10), mstd('#6a3a1a'), 0, 0.9, 0).scale.set(1.2, 1, 0.9); for (let i = 0; i < 7; i++) { const f = addM(t2, new THREE.PlaneGeometry(0.35, 1.1), mstd(['#a8501a', '#e9a23a', '#7a3a1e'][i % 3], { side: THREE.DoubleSide }), -0.55, 1.4, 0); f.geometry.translate(0, 0.55, 0); f.rotation.set(0, Math.PI / 2, (i - 3) * 0.3); } addM(t2, new THREE.CylinderGeometry(0.08, 0.1, 0.6, 8), mstd('#8a4a2a'), 0.55, 1.4, 0); addM(t2, new THREE.SphereGeometry(0.16, 10, 8), mstd('#8a4a2a'), 0.6, 1.75, 0); addM(t2, new THREE.SphereGeometry(0.08, 8, 6), mstd('#d02020'), 0.68, 1.62, 0).scale.y = 1.8; addM(t2, new THREE.ConeGeometry(0.05, 0.14, 5), mstd('#e8a020'), 0.78, 1.75, 0).rotation.z = -Math.PI / 2; const legs = [-0.2, 0.2].map(z => addM(t2, new THREE.CylinderGeometry(0.04, 0.04, 0.6, 5), mstd('#e8a020'), 0, 0.3, z)); t2.userData.legs = legs; return t2; }
-function mkQuad(body, col, s = 1, extra) { const q = new THREE.Group(); const b = addM(q, new THREE.SphereGeometry(0.5, 14, 10), mstd(col), 0, 1, 0); b.scale.set(body[0], body[1], body[2]); const legs = [[0.4, 0.2], [0.4, -0.2], [-0.4, 0.2], [-0.4, -0.2]].map(([x, z]) => { const p = new THREE.Group(); p.position.set(x * body[0], 0.9, z); q.add(p); addM(p, new THREE.CylinderGeometry(0.05, 0.05, 0.9, 6), mstd(col), 0, -0.45, 0); return p; }); q.userData.legs = legs; if (extra) extra(q); q.scale.setScalar(s); return q; }
-const walkLegs = (o, t, sp = 9, a = 0.5) => (o.userData.legs || []).forEach((l, i) => l.rotation.z = a * Math.sin(t * sp + (i === 0 || i === 3 ? 0 : Math.PI)));
+const walkLegs = (o, t, sp = 9, a = 0.5) => walkLegs2(o, t, sp, a);
 function mkUFO() { const u2 = new THREE.Group(); addM(u2, new THREE.CylinderGeometry(2.6, 3.2, 0.5, 32), mstd('#b8c0c8', { metalness: 0.9, roughness: 0.2 }), 0, 0, 0); addM(u2, new THREE.SphereGeometry(1.2, 20, 12, 0, Math.PI * 2, 0, Math.PI / 2), new THREE.MeshStandardMaterial({ color: '#7af4c8', transparent: true, opacity: 0.6, emissive: '#3aff9a', emissiveIntensity: 0.5 }), 0, 0.25, 0); for (let i = 0; i < 8; i++) { const a = i / 8 * Math.PI * 2; addM(u2, new THREE.SphereGeometry(0.15, 8, 6), new THREE.MeshBasicMaterial({ color: '#ffe14d' }), Math.cos(a) * 2.9, -0.05, Math.sin(a) * 2.9); } const beam = addM(u2, new THREE.ConeGeometry(2.6, 8, 24, 1, true), new THREE.MeshBasicMaterial({ color: '#9affc8', transparent: true, opacity: 0.0, depthWrite: false, side: THREE.DoubleSide }), 0, -4.2, 0); u2.userData.beam = beam; return u2; }
 function mkGhost() { const gh = new THREE.Group(); const m = new THREE.MeshStandardMaterial({ color: '#f0f4ff', transparent: true, opacity: 0.7, emissive: '#c8d8ff', emissiveIntensity: 0.4, side: THREE.DoubleSide }); addM(gh, new THREE.SphereGeometry(1, 20, 14, 0, Math.PI * 2, 0, Math.PI / 2), m, 0, 2, 0); addM(gh, new THREE.CylinderGeometry(1, 1.2, 2, 20, 1, true), m, 0, 1, 0); [-0.35, 0.35].forEach(z => addM(gh, new THREE.SphereGeometry(0.16, 8, 6), mstd('#111'), 0.85, 2.3, z)); addM(gh, new THREE.SphereGeometry(0.2, 8, 6), mstd('#111'), 0.9, 1.8, 0).scale.y = 1.4; return gh; }
 function mkBanner(text, col) { const g2 = new THREE.Group(); const pl = addM(g2, new THREE.CylinderGeometry(0.4, 0.3, 4, 10), mstd('#f4f4f0'), 0, 0, 0); pl.rotation.z = Math.PI / 2; addM(g2, new THREE.BoxGeometry(0.8, 0.08, 5), mstd('#c8202a'), 0.3, 0, 0); addM(g2, new THREE.BoxGeometry(0.6, 1, 0.08), mstd('#c8202a'), -1.8, 0.5, 0); const ban = addM(g2, new THREE.PlaneGeometry(12, 1.6), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, map: canvasTex(1024, 136, (q, w, h) => { q.fillStyle = '#fff'; q.fillRect(0, 0, w, h); q.fillStyle = col; q.font = '900 86px Inter, sans-serif'; q.textAlign = 'center'; q.textBaseline = 'middle'; q.fillText(text, w / 2, h / 2 + 4); }) }), -9, 0, 0); return g2; }
@@ -2440,6 +2492,115 @@ const MAP_EVENTS = {
   ],
 };
 const MAP_TAGS = {};
+// ---------- more random events ----------
+function evWalker(opts, p0, p1, dur, extra) { const G = buildGoblin({ skin: SKINS[Math.floor(Math.random() * SKINS.length)], eye: '#ffe14d', hat: opts.hat || 'none', outfit: opts.outfit || 'none', size: 1.2 }); G.root.scale.setScalar(opts.s || 1.5); if (opts.add) opts.add(G);
+  const wrap = new THREE.Group(); wrap.add(G.root); G.root.rotation.y = Math.PI / 2;
+  return evAcross(wrap, p0, p1, dur, { each: (o, u, t) => { G.legs.forEach((l, i) => l.rotation.x = 0.6 * Math.sin(t * (opts.sp || 8) + i * Math.PI)); if (!opts.armsUp) G.arms.forEach((a, i) => a.rotation.x = -0.5 * Math.sin(t * (opts.sp || 8) + i * Math.PI)); o.position.y += Math.abs(Math.sin(t * (opts.sp || 8))) * 0.08; if (extra) extra(G, u, t); } }); }
+function evGroupWalk(n, mk, p0, p1, dur, gapZ = 1.6) { const list = []; for (let i = 0; i < n; i++) { const off = i * 2.2; const dx = p1[0] - p0[0], dz = p1[2] - p0[2], L = Math.hypot(dx, dz); const bx = -dx / L * off, bz = -dz / L * off; list.push(mk(i, [p0[0] + bx, p0[1], p0[2] + bz + (i % 2) * gapZ], [p1[0] + bx, p1[1], p1[2] + bz + (i % 2) * gapZ])); } return evPar(list); }
+const LR = () => coinFlipDir() ? 1 : -1;
+function mkBalloon(cols) { const b = new THREE.Group(); const tex = canvasTex(256, 128, (q, w, h) => { for (let i = 0; i < 8; i++) { q.fillStyle = cols[i % cols.length]; q.fillRect(i * w / 8, 0, w / 8, h); } }); addM(b, new THREE.SphereGeometry(3, 20, 16), new THREE.MeshStandardMaterial({ map: tex }), 0, 4, 0).scale.y = 1.2; addM(b, new THREE.CylinderGeometry(0.9, 1.6, 1.2, 12, 1, true), new THREE.MeshStandardMaterial({ map: tex, side: THREE.DoubleSide }), 0, 0.9, 0); addM(b, new THREE.BoxGeometry(1.2, 0.9, 1.2), mstd('#8a5a2a'), 0, -1.6, 0); [-0.5, 0.5].forEach(x => [-0.5, 0.5].forEach(z => addM(b, new THREE.CylinderGeometry(0.02, 0.02, 1.4, 4), mstd('#333'), x, -0.6, z))); return b; }
+function mkHeli() { const h = new THREE.Group(); addM(h, new THREE.SphereGeometry(1.2, 16, 12), mstd('#c8202a', { roughness: 0.3 }), 0, 0, 0).scale.set(1.5, 1, 1); const tail = addM(h, new THREE.CylinderGeometry(0.15, 0.3, 3.5, 8), mstd('#c8202a'), -2.8, 0.3, 0); tail.rotation.z = Math.PI / 2; addM(h, new THREE.SphereGeometry(0.7, 12, 10), mstd('#1d2630', { roughness: 0.1 }), 0.9, 0.2, 0); const rot = addM(h, new THREE.BoxGeometry(6.5, 0.05, 0.3), mstd('#222'), 0, 1.3, 0); [-0.5, 0.5].forEach(z => addM(h, new THREE.BoxGeometry(2.6, 0.08, 0.08), mstd('#333'), 0, -1.2, z)); h.userData.rot = rot; return h; }
+function mkFlyBug(s = 1) { const f = new THREE.Group(); addM(f, new THREE.SphereGeometry(0.4, 10, 8), mstd('#1a1a1a'), 0, 0, 0).scale.set(1.5, 1, 1); [-0.2, 0.2].forEach(z => addM(f, new THREE.SphereGeometry(0.2, 8, 6), mstd('#8a1010', { roughness: 0.2 }), 0.5, 0.1, z)); f.userData.wings = [-1, 1].map(s2 => { const geo = new THREE.PlaneGeometry(0.6, 0.9); geo.rotateX(-Math.PI / 2); geo.translate(-0.1, 0, s2 * 0.45); const w = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: '#cfe8ff', transparent: true, opacity: 0.5, side: THREE.DoubleSide })); w.position.y = 0.3; w.userData.s = s2; f.add(w); return w; }); f.scale.setScalar(s); return f; }
+function evBuzz(obj, c, R, h, dur, sfx) { evAdd(obj); if (sfx) tone('sawtooth', 180, 200, dur * 0.9, 0.02); return { dur, tick(u, t) { const a = t * 2.2; obj.position.set(c[0] + Math.sin(a) * R + Math.sin(t * 7) * 0.6, h + Math.sin(t * 3) * 1.5, c[2] + Math.cos(a * 1.3) * R * 0.7); obj.rotation.y = -a; flap(obj, t, 40, 0.5); } }; }
+const push = (k, ...fns) => (MAP_EVENTS[k] = MAP_EVENTS[k] || []).push(...fns);
+push('party',
+  () => { const s = LR(); return evWalker({ hat: 'party', add: G => { const bx = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.12, 0.9), mstd('#c9a271')); bx.position.set(0, 0.1, 0.35); G.arms[1].hand.add(bx); } }, [s * 16, 0, 8], [-s * 16, 0, 8], 9, (G) => G.arms[1].rotation.x = -1.4); },
+  () => { const db = new THREE.Mesh(new THREE.IcosahedronGeometry(1.1, 1), mstd('#e8eef4', { metalness: 1, roughness: 0.05, flatShading: true, envMap: window.__env })); evAdd(db); const spots = []; for (let i = 0; i < 10; i++) { const sp = evAdd(new THREE.Mesh(new THREE.CircleGeometry(0.6, 16), new THREE.MeshBasicMaterial({ color: ['#ff3ac8', '#3ae8ff', '#ffd84a', '#7aff5a'][i % 4], transparent: true, opacity: 0.35, depthWrite: false }))); sp.rotation.x = -Math.PI / 2; spots.push(sp); }
+    return { dur: 12, tick(u, t) { const d = u < 0.15 ? u / 0.15 : u > 0.85 ? (1 - u) / 0.15 : 1; db.position.set(0, 16 - d * 6, -2); db.rotation.y = t * 0.8; spots.forEach((s2, i) => { const a = t * 0.5 + i / 10 * Math.PI * 2; s2.position.set(Math.cos(a) * (7 + (i % 3) * 3), 0.03, -2 + Math.sin(a) * (6 + (i % 3) * 2)); s2.material.opacity = 0.35 * d; }); } }; },
+);
+push('bologna',
+  () => { const s = LR(); return evGroupWalk(5, (i, a, b) => evWalker(i === 0 ? { hat: 'none', outfit: 'tourist', add: G => { const fl = new THREE.Mesh(new THREE.PlaneGeometry(0.6, 0.4), new THREE.MeshBasicMaterial({ color: '#ffd84a', side: THREE.DoubleSide })); fl.position.set(0, 0.9, 0); G.arms[1].hand.add(fl); addM(G.arms[1].hand, new THREE.CylinderGeometry(0.02, 0.02, 1.4, 4), mstd('#333'), 0, 0.3, 0); } } : { outfit: 'tourist' }, a, b, 14), [s * 26, 0, 14], [-s * 26, 0, 16], 14); },
+  () => { for (let k = 0; k < 6; k++) tone('triangle', [392, 330, 294, 262][k % 4], [392, 330, 294, 262][k % 4] * 0.99, 1.4, 0.06, k * 0.6); return evFlock(14, () => mkBird('#f4f4f2', 1.1), [0, 22, -32], [-30, 16, 20], 9, 6); },
+);
+push('morocco',
+  () => { const cm = mkCamel(evGroup); evGroup.remove(cm.c); const s = LR(); return evAcross(cm.c, [s * 30, 0, 12], [-s * 30, 0, 4], 16, { each: (o, u, t) => cm.legs.forEach((l, k) => l.rotation.z = 0.35 * Math.sin(t * 3.2 + (k === 0 || k === 3 ? 0 : Math.PI))) }); },
+  () => evAcross(mkBalloon(['#c8202a', '#e9b949', '#1f6f8b', '#2a8a6a']), [-50, 18, -30], [50, 24, -20], 18, { bob: 0.6, bobA: 0.6 }),
+);
+push('london',
+  () => { const cab = mkVehicle(4.5, '#151515', 1.8); const s = LR(); return evAcross(cab, [s * 45, 0, -16], [-s * 45, 0, -16], 6); },
+  () => { const s = LR(); return evGroupWalk(3, (i, a, b) => evWalker({ s: 1.6, sp: 5, add: G => { addM(G.head, new THREE.CylinderGeometry(0.22, 0.26, 0.7, 16), mstd('#111', { roughness: 0.95 }), 0, 0.5, 0); G.belly.add(new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.32, 0.6, 16), mstd('#c8102e'))); } }, a, b, 14), [s * 26, 0, 12], [-s * 26, 0, 12], 14, 0); },
+  () => { [523, 659, 587, 392, 392, 587, 659, 523].forEach((f, k) => tone('triangle', f, f, 1.1, 0.06, k * 0.75)); for (let k = 0; k < 4; k++) tone('sine', 262, 260, 2.5, 0.08, 6.5 + k * 1.6); return evFlock(12, () => mkBird('#8a8f9a', 1.1), [-14, 30, -42], [26, 14, 10], 10, 6); },
+);
+push('ucsc',
+  () => { const s = LR(); return evWalker({ hat: 'bandana', add: G => { const sb = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.05, 1.3), mstd('#2a2a2a')); sb.position.set(0, -0.02, 0); G.root.add(sb); } }, [s * 30, 0, 10], [-s * 30, 0, 2], 7, G => { G.legs.forEach(l => l.rotation.x = 0); G.root.rotation.z = Math.sin(performance.now() / 300) * 0.06; }); },
+  () => { const slug = (mapGroup && mapGroup.children.find(o => o.name === 'slug')) || null; const at = slug ? slug.position.toArray() : [9.5, 3, -10.5]; tone('sawtooth', 120, 60, 1.2, 0.05); return evBurst(40, ['#e8eef0', '#d8e0e4', '#f4f8fa'], [at[0], at[1] + 1.5, at[2]], { geo: new THREE.SphereGeometry(0.7, 8, 6), up: 3, g: -0.6, sp: 2.5, dur: 8 }); },
+);
+push('airport',
+  () => { const h = mkHeli(); noiseSfx('lowpass', 300, 200, 9, 0.3, 2); return evAcross(h, [-40, 14, 6], [40, 18, -20], 12, { bob: 1.2, bobA: 0.6, each: (o, u, t) => { o.userData.rot.rotation.y = t * 30; o.rotation.z = 0.12; } }); },
+  () => { const tr = mkVehicle(6, '#e8e8e2', 2.2); addM(tr, new THREE.CylinderGeometry(1, 1, 4, 16), mstd('#d8dce0', { metalness: 0.6 }), -0.8, 2.2, 0).rotation.z = Math.PI / 2; const s = LR(); return evAcross(tr, [s * 34, 0, -16], [-s * 34, 0, -16], 10); },
+);
+push('dumpster',
+  () => { const gt = mkVehicle(8, '#2f6b35', 3.2); addM(gt, new THREE.BoxGeometry(5, 3, 2.4), mstd('#3a7a42'), -1.5, 3, 0); const s = LR(); noiseSfx('lowpass', 200, 120, 9, 0.35, 1); return evAcross(gt, [s * 40, 0, -15], [-s * 40, 0, -15], 11); },
+  () => { const list = []; for (let i = 0; i < 6; i++) { const r = mkQuad([0.9, 0.5, 0.4], '#5a5050', 0.55, q => { const tl = addM(q, new THREE.CylinderGeometry(0.03, 0.02, 1, 5), mstd('#c88a8a'), -0.8, 1, 0); tl.rotation.z = 1.3; addM(q, new THREE.SphereGeometry(0.2, 8, 6), mstd('#5a5050'), 0.5, 1.05, 0); }); const z = -6 + i * 2.6, s = i % 2 ? 1 : -1; list.push(Object.assign(evAcross(r, [s * 24, 0, z], [-s * 24, 0, z + 3], 4 + Math.random() * 2, { each: (o, u, t) => walkLegs(o, t, 22) }), { gap: 0.3 })); } squeakSfx(); return evSeq(list); },
+);
+push('feet',
+  () => evBuzz(mkFlyBug(2.4), [0, 0, -8], 12, 6, 12, true),
+  () => { const sock = new THREE.Group(); const m = mstd('#f4f0e6', { roughness: 1 }); addM(sock, new THREE.CylinderGeometry(1.4, 1.4, 4, 16), m, 0, 2, 0); addM(sock, new THREE.SphereGeometry(1.4, 16, 10), m, 0, 0, 0); for (let k = 0; k < 3; k++) addM(sock, new THREE.TorusGeometry(1.42, 0.12, 6, 20), mstd(['#c8202a', '#2a5ca8', '#c8202a'][k]), 0, 3.2 + k * 0.4, 0).rotation.x = Math.PI / 2; return evAcross(sock, [-6, 30, -20], [-6, 3, -19], 4, { each: (o, u, t) => o.rotation.z = (1 - u) * 2 + Math.sin(t * 3) * 0.2 * (1 - u) }); },
+);
+push('dungeon',
+  () => { const s = LR(); return evWalker({ outfit: 'mummy', sp: 4, armsUp: true }, [s * 22, 0, 10], [-s * 22, 0, 4], 16, G => G.arms.forEach(a => a.rotation.x = -1.5)); },
+  () => { const dr = new THREE.Group(); const sk = mstd('#3a6a2a', { roughness: 0.5 }); addM(dr, new THREE.SphereGeometry(1.4, 16, 12), sk, 0, 0, 0).scale.set(2.2, 0.8, 0.8); const nk = addM(dr, new THREE.CylinderGeometry(0.4, 0.6, 2.4, 10), sk, 3, 0.8, 0); nk.rotation.z = -1; addM(dr, new THREE.SphereGeometry(0.7, 12, 10), sk, 4.1, 1.6, 0).scale.set(1.6, 0.8, 0.8); const tl = addM(dr, new THREE.ConeGeometry(0.6, 4, 10), sk, -4.2, 0, 0); tl.rotation.z = Math.PI / 2;
+    dr.userData.wings = [-1, 1].map(s2 => { const shp = new THREE.Shape(); shp.moveTo(0, 0); shp.lineTo(-1.5, 4); shp.lineTo(-0.5, 3); shp.lineTo(0.6, 4.4); shp.lineTo(1.2, 2.8); shp.lineTo(2, 3.6); shp.lineTo(1.8, 0); const geo = new THREE.ShapeGeometry(shp); geo.rotateX(s2 > 0 ? -Math.PI / 2 : Math.PI / 2); if (s2 < 0) geo.scale(1, 1, 1); const w = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: '#2a4a1a', side: THREE.DoubleSide })); w.position.set(-0.5, 0.4, 0); w.userData.s = s2; dr.add(w); return w; });
+    tone('sawtooth', 90, 50, 2, 0.08); return evAcross(dr, [-50, 18, -26], [50, 20, -10], 9, { bob: 1, bobA: 1, each: (o, u, t) => flap(o, t, 5, 0.6) }); },
+);
+push('venice',
+  () => { const bt = new THREE.Group(); addM(bt, new THREE.BoxGeometry(6, 1, 2.2), mstd('#8a5a2a', { roughness: 0.3 }), 0, 0.4, 0); addM(bt, new THREE.BoxGeometry(2.6, 1, 1.9), mstd('#f4f0e6'), -0.5, 1.3, 0); const wake = []; for (let k = 0; k < 10; k++) { const wv = addM(bt, new THREE.PlaneGeometry(1.2, 0.5), new THREE.MeshBasicMaterial({ color: '#ffffff', transparent: true, opacity: 0.6 }), -3.5 - k * 1.1, 0.06, 0); wv.rotation.x = -Math.PI / 2; wake.push(wv); } const s = LR(); noiseSfx('lowpass', 500, 300, 6, 0.2, 1); return evAcross(bt, [s * 45, 0, -22], [-s * 45, 0, -24], 7, { each: (o, u, t) => { o.rotation.z = 0.05; wake.forEach((w, k) => { w.scale.x = 1 + k * 0.3; w.material.opacity = 0.5 * (1 - k / 10); }); } }); },
+  () => { const s = LR(); return evGroupWalk(4, (i, a, b) => evWalker({ hat: ['crown', 'tophat', 'party', 'crown'][i], add: G => { const mk = new THREE.Mesh(new THREE.SphereGeometry(0.2, 12, 8, 0, Math.PI * 2, 0, Math.PI / 2), mstd(['#ffffff', '#ffd84a', '#c8202a', '#3a86ff'][i], { metalness: 0.3 })); mk.rotation.x = Math.PI / 2; mk.position.set(0, 0.25, 0.25); G.head.add(mk); } }, a, b, 15), [s * 24, 0, 12], [-s * 24, 0, 10], 15); },
+);
+push('hollywood',
+  () => { const s = LR(); return evWalker({ outfit: 'superhero', s: 1.7, sp: 5 }, [0, 0, 30], [0, 0, 8], 9, (G, u) => { if (u > 0.9) G.arms.forEach((a, i) => a.rotation.z = (i ? 1 : -1) * 2.4); }); },
+  () => { const s = LR(); return evWalker({ hat: 'tophat', add: G => { const mg = new THREE.Mesh(new THREE.ConeGeometry(0.15, 0.5, 12, 1, true), mstd('#f2c418', { side: THREE.DoubleSide })); mg.rotation.x = Math.PI / 2; mg.position.set(0, 0, 0.3); G.arms[1].hand.add(mg); } }, [s * 24, 0, 12], [-s * 24, 0, 6], 11, (G, u, t) => { G.arms[1].rotation.x = -1.6; if (Math.floor(u * 4) !== G.root.userData.k) { G.root.userData.k = Math.floor(u * 4); speak(['Action!', 'Cut!', 'Again, with feeling!', "That's a wrap!"][G.root.userData.k], 0.9, 1.1); } }); },
+);
+push('face',
+  () => { const ball = new THREE.Mesh(new THREE.SphereGeometry(3, 24, 16), new THREE.MeshStandardMaterial({ map: facePhotoTex() })); const s = LR(); return evAcross(ball, [s * 34, 3, -16], [-s * 34, 3, -8], 8, { each: (o, u, t) => o.rotation.z = s * t * 1.6 }); },
+  () => evFlock(14, () => { const b = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshStandardMaterial({ map: facePhotoTex() })); b.userData.wings = []; return b; }, [-30, 10, -10], [30, 14, 6], 9, 6),
+);
+push('thanksgiving',
+  () => { const pk = mkPumpkin(evGroup, 0, 0, 1.6); evGroup.remove(pk); const s = LR(); return evAcross(pk, [s * 24, 0, 10], [-s * 24, 0, 2], 6, { each: (o, u, t) => o.rotation.z = s * t * 3 }); },
+  () => { noiseSfx('bandpass', 300, 1000, 3, 0.2, 0.8); return evBurst(60, ['#c8501a', '#e9a23a', '#a8321a', '#d9862a'], [-20, 3, 0], { up: 4, sp: 10, g: 1.5, dur: 7, flat: true }); },
+);
+push('amsterdam',
+  () => { const tr = new THREE.Group(); addM(tr, new THREE.BoxGeometry(14, 3, 2.6), mstd('#f2f2ea'), 0, 2, 0); addM(tr, new THREE.BoxGeometry(14.1, 0.6, 2.62), mstd('#2a5ca8'), 0, 1, 0); for (let i = 0; i < 6; i++) addM(tr, new THREE.BoxGeometry(1.6, 1.2, 2.64), mstd('#1d2630', { roughness: 0.1 }), -5.5 + i * 2.2, 2.6, 0); const s = LR(); tone('sine', 1800, 1800, 0.15, 0.05); tone('sine', 1800, 1800, 0.15, 0.05, 0.25); return evAcross(tr, [s * 45, 0, -18], [-s * 45, 0, -18], 10); },
+  () => { const st = mkBird('#f4f4f0', 2.4); st.children[0].material = mstd('#f4f4f0'); addM(st, new THREE.CylinderGeometry(0.03, 0.03, 0.9, 5), mstd('#e8501a'), -0.3, -0.5, 0); return evAcross(st, [-40, 16, -10], [40, 20, -24], 10, { bob: 1, bobA: 0.5 }); },
+);
+push('rimini',
+  () => { const js = new THREE.Group(); addM(js, new THREE.BoxGeometry(2.6, 0.6, 1), mstd('#f2c418', { roughness: 0.3 }), 0, 0.3, 0); const R = mkGobRider(); R.root.scale.setScalar(1.1); R.root.position.set(-0.2, 0.6, 0); R.root.rotation.y = Math.PI / 2; js.add(R.root); const s = LR(); noiseSfx('bandpass', 600, 900, 7, 0.15, 2); return evAcross(js, [s * 45, 0, -30], [-s * 45, 0, -26], 8, { each: (o, u, t) => { o.position.y = Math.abs(Math.sin(t * 4)) * 0.4; o.rotation.z = Math.sin(t * 4) * 0.1; } }); },
+  () => { const s = LR(); let said = false; return evWalker({ hat: 'bandana', add: G => { const bk = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.3, 0.3, 12), mstd('#c9a46a')); bk.position.set(0, 0.85, 0); G.head.add(bk); for (let k = 0; k < 3; k++) addM(bk, new THREE.SphereGeometry(0.12, 8, 6), mstd('#5a3a1a'), -0.15 + k * 0.15, 0.15, 0); } }, [s * 26, 0, 12], [-s * 26, 0, 14], 14, (G, u) => { if (!said && u > 0.3) { said = true; speak('Cocco bello! Cocco fresco!', 1.1, 1); } }); },
+);
+push('paris',
+  () => { const s = LR(); return evWalker({ add: G => { addM(G.head, new THREE.CylinderGeometry(0.24, 0.26, 0.08, 18), mstd('#151515'), 0, 0.42, 0).scale.z = 0.9; const shirt = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.32, 0.55, 16), new THREE.MeshStandardMaterial({ map: canvasTex(16, 64, (q, w, h) => { for (let i = 0; i < 8; i++) { q.fillStyle = i % 2 ? '#f4f4f0' : '#111'; q.fillRect(0, i * h / 8, w, h / 8); } }) })); G.belly.add(shirt); } }, [s * 24, 0, 12], [-s * 24, 0, 10], 14, (G, u, t) => { G.arms.forEach((a, i) => { a.rotation.x = -1.2; a.rotation.z = (i ? 1 : -1) * (0.6 + 0.3 * Math.sin(t * 2)); }); }); },
+  () => evAcross(mkBalloon(['#1f3f9a', '#ffffff', '#c8202a']), [50, 20, -36], [-50, 26, -24], 18, { bob: 0.6, bobA: 0.6 }),
+);
+push('sahara',
+  () => { const sc = new THREE.Group(); const bl = mstd('#2a1a10', { roughness: 0.3 }); addM(sc, new THREE.SphereGeometry(0.5, 10, 8), bl, 0, 0.3, 0).scale.set(1.6, 0.5, 1); const tail = []; for (let i = 0; i < 5; i++) tail.push(addM(sc, new THREE.SphereGeometry(0.16 - i * 0.01, 8, 6), bl, -0.8 - i * 0.12, 0.4 + i * 0.25, 0)); [-1, 1].forEach(z => addM(sc, new THREE.SphereGeometry(0.2, 8, 6), bl, 0.9, 0.3, z * 0.4).scale.x = 1.8); sc.scale.setScalar(1.6); const s = LR(); return evAcross(sc, [s * 22, 0, 10], [-s * 22, 0, 6], 9, { each: (o, u, t) => tail.forEach((b, i) => b.position.x = -0.8 - i * 0.12 + (i > 2 ? Math.sin(t * 4) * 0.05 * i : 0)) }); },
+  () => { const list = []; for (let i = 0; i < 3; i++) { const v = mkBird('#3a2a1a', 2); list.push({ dur: 14, tick(u, t) { if (!v.parent) evAdd(v); const a = t * 0.4 + i * 2.1; v.position.set(Math.sin(a) * 12, 22 + i * 2, -12 + Math.cos(a) * 10); v.rotation.y = -a - Math.PI / 2; v.rotation.z = 0.3; flap(v, t, 2, 0.15); } }); } return evPar(list); },
+);
+push('debate',
+  () => { const bl = new THREE.Group(); addM(bl, new THREE.SphereGeometry(3, 20, 14), mstd('#c8c8d0', { metalness: 0.3, roughness: 0.4 }), 0, 0, 0).scale.set(3, 1, 1); addM(bl, new THREE.PlaneGeometry(14, 2.2), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, map: canvasTex(1024, 160, (q, w, h) => { q.fillStyle = '#14306b'; q.fillRect(0, 0, w, h); q.fillStyle = '#fff'; q.font = '900 96px Inter, sans-serif'; q.textAlign = 'center'; q.textBaseline = 'middle'; q.fillText('VOTE COIN 2026', w / 2, h / 2); }) }), 0, 0, 3.05); addM(bl, new THREE.BoxGeometry(1.6, 0.8, 1), mstd('#333'), 0, -3.2, 0); return evAcross(bl, [-50, 22, -22], [50, 22, -26], 20); },
+  () => { const s = LR(); return evAcross(mkVehicle(6, '#f4f4f0', 2.6), [s * 40, 0, 14], [-s * 40, 0, 14], 8, { each: (o) => { if (!o.userData.dish) { o.userData.dish = addM(o, new THREE.SphereGeometry(0.8, 12, 8, 0, Math.PI * 2, 0, Math.PI / 2), mstd('#ddd'), -1, 3.6, 0); o.userData.dish.rotation.z = 0.6; } } }); },
+);
+push('moon',
+  () => { const list = []; for (let i = 0; i < 8; i++) { const m = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.25, 6, 6), new THREE.MeshBasicMaterial({ color: '#fff4c0', transparent: true, opacity: 0.8, fog: false })); const x = -40 + Math.random() * 60, y = 40 + Math.random() * 20; list.push(Object.assign(evAcross(m, [x, y, -80], [x + 30, y - 25, -70], 1.2, { each: (o) => o.rotation.z = 0.9 }), { gap: 0.7 })); } return evSeq(list); },
+  () => { const rk = new THREE.Group(); addM(rk, new THREE.CylinderGeometry(0.8, 0.8, 6, 16), mstd('#f4f4f0'), 0, 3, 0); addM(rk, new THREE.ConeGeometry(0.8, 2, 16), mstd('#c8202a'), 0, 7, 0); [0, 1, 2].forEach(k => { const f = addM(rk, new THREE.BoxGeometry(0.1, 1.6, 1.2), mstd('#c8202a'), Math.cos(k * 2.1) * 0.8, 0.8, Math.sin(k * 2.1) * 0.8); f.rotation.y = -k * 2.1; }); const fl = addM(rk, new THREE.ConeGeometry(0.7, 3, 12), new THREE.MeshBasicMaterial({ color: '#ffb020', transparent: true, opacity: 0.85 }), 0, -1.5, 0); fl.rotation.x = Math.PI; noiseSfx('lowpass', 300, 80, 8, 0.4, 1);
+    return evAcross(rk, [24, 0, -30], [24, 90, -40], 9, { each: (o, u, t) => { o.position.y = 90 * u * u; fl.scale.y = 1 + 0.3 * Math.sin(t * 20); } }); },
+);
+push('microwave',
+  () => { const bag = new THREE.Group(); const bm = addM(bag, new THREE.BoxGeometry(3, 0.5, 4), mstd('#f4f0e6'), 0, 0.3, 0); addM(bag, new THREE.PlaneGeometry(2.6, 1.2), new THREE.MeshBasicMaterial({ map: canvasTex(256, 128, (q, w, h) => { q.fillStyle = '#c8202a'; q.fillRect(0, 0, w, h); q.fillStyle = '#ffd84a'; q.font = '900 52px Inter'; q.textAlign = 'center'; q.textBaseline = 'middle'; q.fillText('POP!', w / 2, h / 2); }) }), 0, 0.56, 0).rotation.x = -Math.PI / 2; bag.position.set(-12, 0, -10); evAdd(bag); let pops = 0;
+    return { dur: 8, tick(u) { const s = 0.5 + Math.min(1, u * 1.3) * 5; bm.scale.y = s; bm.position.y = s * 0.25; bag.children[1].position.y = s * 0.5 + 0.06; if (Math.random() < 0.15 && pops < 40) { pops++; tone('square', 300 + Math.random() * 500, 120, 0.04, 0.04); } } }; },
+  () => { for (let k = 0; k < 3; k++) tone('sine', 2093, 2090, 0.35, 0.08, k * 0.5); return evBurst(40, ['#ffffff', '#f4f8fa', '#e8eef0'], [0, 2, 0], { geo: new THREE.SphereGeometry(0.8, 8, 6), up: 3, g: -0.8, sp: 5, dur: 6 }); },
+);
+push('plate',
+  () => { const sh = new THREE.Group(); addM(sh, new THREE.CylinderGeometry(1.6, 1.8, 6, 16), new THREE.MeshPhysicalMaterial({ color: '#ffffff', transparent: true, opacity: 0.5, roughness: 0.1 }), 0, 0, 0); addM(sh, new THREE.SphereGeometry(1.6, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2), mstd('#d8dce0', { metalness: 0.9 }), 0, 3, 0); evAdd(sh); const salt = evBurst(70, ['#ffffff'], [8, 8, -8], { geo: new THREE.BoxGeometry(0.15, 0.15, 0.15), up: -2, sp: 2, g: 6, dur: 7 });
+    return { dur: 7, tick(u, t) { sh.position.set(8, 13 + Math.sin(t * 14) * 0.6, -8); sh.rotation.z = Math.PI + Math.sin(t * 14) * 0.25; salt.tick(u, t); } }; },
+  () => evBuzz(mkFlyBug(2.8), [0, 0, -6], 13, 7, 11, true),
+);
+push('cyber',
+  () => { const mech = new THREE.Group(); const mm = mstd('#2a2a36', { metalness: 0.8, roughness: 0.3 }); addM(mech, new THREE.BoxGeometry(5, 4, 4), mm, 0, 12, 0); addM(mech, new THREE.BoxGeometry(2.4, 0.5, 0.2), new THREE.MeshBasicMaterial({ color: '#ff3ac8' }), 2.55, 12.6, 0); const legs = [-1.3, 1.3].map(z => { const p = new THREE.Group(); p.position.set(0, 10, z); mech.add(p); addM(p, new THREE.BoxGeometry(1, 10, 1), mm, 0, -5, 0); addM(p, new THREE.BoxGeometry(2, 0.6, 1.4), mm, 0.4, -10, 0); return p; }); mech.userData.legs = legs; const s = LR();
+    return evAcross(mech, [s * 60, 0, -46], [-s * 60, 0, -42], 22, { each: (o, u, t) => { legs.forEach((l, i) => l.rotation.z = 0.35 * Math.sin(t * 1.6 + i * Math.PI)); o.position.y = Math.abs(Math.sin(t * 1.6)) * 0.5; if (Math.sin(t * 1.6) > 0.99) thudSfx(0.25); } }); },
+  () => { const fish = new THREE.Group(); const fm = new THREE.MeshBasicMaterial({ color: '#3ae8ff', transparent: true, opacity: 0.35, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }); addM(fish, new THREE.SphereGeometry(2, 16, 10), fm, 0, 0, 0).scale.set(2.2, 1, 0.6); const tl = addM(fish, new THREE.ConeGeometry(1.6, 2.4, 3), fm, -5, 0, 0); tl.rotation.z = Math.PI / 2; fish.add(new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.SphereGeometry(2, 10, 6)), new THREE.LineBasicMaterial({ color: '#7af4ff', transparent: true, opacity: 0.6 }))); fish.children[2].scale.set(2.2, 1, 0.6);
+    return evAcross(fish, [-50, 20, -20], [50, 24, -12], 16, { bob: 1, bobA: 1.2, each: (o, u, t) => { tl.rotation.y = Math.sin(t * 4) * 0.5; } }); },
+);
+
 function stepEvents(dt) {
   if (CTRL) return;
   const busy = (goblin && goblin.cam) || document.body.classList.contains('intro') || document.body.classList.contains('lobby');
@@ -2451,7 +2612,7 @@ function stepEvents(dt) {
   try { const e = list[Math.floor(Math.random() * list.length)](); e.t = 0; EV = e; } catch (er) { console.warn(er); evClear(); }
 }
 
-window.__look = { fireEvent: (k) => { evClear(); const l = MAP_EVENTS[state.map || 'party']; const e = l[k % l.length](); e.t = 0; EV = e; }, setMap, applySkin, LIDCTL, castVote, get goal() { return goal; }, get mapGroup() { return mapGroup; }, buildGoblin: o => buildGoblin(o), scene, get VOTE() { return VOTE; } };
+window.__look = { testModels: () => { const K = ['pigeon', 'gull', 'dove', 'jay', 'vulture', 'stork']; K.forEach((k, i) => { const b = mkBirdPro(k, 1.6); b.position.set(-5 + i * 2, 2.5, 2); b.userData.wings.forEach(w => w.rotation.x = w.userData.s * 0.5); scene.add(b); }); const bt = mkBat(1.6); bt.position.set(7, 2.5, 2); scene.add(bt); const pg2 = mkPigeon(); pg2.position.set(-3, 1, 4.5); pg2.scale.setScalar(2); scene.add(pg2); const d = MAP_EVENTS.ucsc[0](); d.t = 0; d.tick(0.5, 1); return evGroup.children.length; }, fireEvent: (k) => { evClear(); const l = MAP_EVENTS[state.map || 'party']; const e = l[k % l.length](); e.t = 0; EV = e; }, setMap, applySkin, LIDCTL, castVote, get goal() { return goal; }, get mapGroup() { return mapGroup; }, buildGoblin: o => buildGoblin(o), scene, get VOTE() { return VOTE; } };
 LIDCTL.pos = LIDCTL.want = (CTRL || WATCH || state.started) ? 1 : 0; stepLid(0);
 if (!CTRL && state.map && state.map !== 'party') setTimeout(() => setMap(state.map), 0);
 if (state.skin && curSkin().photo) faceImg();
@@ -7666,7 +7827,7 @@ $('#startBtn').onclick = () => {
 };
 
 // ---------- installable app + automatic updates (website version only) ----------
-const BUILD = '1795622077';
+const BUILD = '1795622823';
 if (STANDALONE) {
   try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
   let deferredInstall = null;
