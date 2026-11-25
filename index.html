@@ -1114,9 +1114,148 @@ const SKIN_DRAW = {
     base(g, S) { g.globalAlpha = 0.35; txt(g, 'THANK YOU · ENJOY', S / 2, 70, '800 60px Georgia, serif', '#c8202a'); txt(g, 'THANK YOU · ENJOY', S / 2, S - 70, '800 60px Georgia, serif', '#c8202a'); g.globalAlpha = 1; },
   },
 };
+// ---------- more box skins (incl. joke ones) + the photo skin ----------
+const FACE_IMG = new Image(); let faceAsked = false;
+function faceImg() { if (!faceAsked) { faceAsked = true; FACE_IMG.src = 'face.jpg'; FACE_IMG.onload = () => { if (curSkin().photo) applySkin(curSkin().id); }; } return FACE_IMG; }
+const faceReady = () => faceImg().complete && FACE_IMG.naturalWidth > 0;
+function faceCover(g, x, y, w, h, top) {   // draw the photo cropped to fill a rect
+  if (!faceReady()) { g.fillStyle = '#c98f6a'; g.fillRect(x, y, w, h); return; }
+  const iw = FACE_IMG.naturalWidth, ih = FACE_IMG.naturalHeight, s = Math.max(w / iw, h / ih), sw = w / s, sh = h / s;
+  g.drawImage(FACE_IMG, (iw - sw) / 2, top == null ? (ih - sh) / 2 : Math.min(ih - sh, ih * top), sw, sh, x, y, w, h);
+}
+function facePhotoTex(rep) {
+  const t = new THREE.Texture(faceImg()); t.encoding = THREE.sRGBEncoding; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = maxAniso; if (rep) t.repeat.set(rep, rep);
+  if (faceReady()) t.needsUpdate = true; else FACE_IMG.addEventListener('load', () => { t.needsUpdate = true; }, { once: true });
+  return t;
+}
+function goblinFace(g, x, y, s) {
+  g.save(); g.translate(x, y); g.scale(s, s);
+  g.fillStyle = '#6aa53a'; [-1, 1].forEach(k => { g.beginPath(); g.moveTo(k * 70, -20); g.lineTo(k * 190, -90); g.lineTo(k * 85, 30); g.fill(); });
+  g.beginPath(); g.ellipse(0, 0, 105, 115, 0, 0, Math.PI * 2); g.fill(); g.lineWidth = 6; g.strokeStyle = '#2d4a18'; g.stroke();
+  [-1, 1].forEach(k => { g.fillStyle = '#ffd23f'; g.beginPath(); g.ellipse(k * 40, -20, 24, 18, k * 0.3, 0, Math.PI * 2); g.fill(); g.fillStyle = '#111'; g.beginPath(); g.ellipse(k * 40, -20, 6, 15, 0, 0, Math.PI * 2); g.fill(); });
+  g.fillStyle = '#2d4a18'; g.beginPath(); g.ellipse(0, 18, 14, 22, 0, 0, Math.PI * 2); g.fill();
+  g.fillStyle = '#3a1a10'; g.beginPath(); g.moveTo(-55, 55); g.quadraticCurveTo(0, 95, 55, 55); g.quadraticCurveTo(0, 75, -55, 55); g.fill();
+  g.fillStyle = '#f4eed8'; [[-30, 60], [25, 62]].forEach(([tx, ty]) => { g.beginPath(); g.moveTo(tx - 8, ty); g.lineTo(tx + 8, ty); g.lineTo(tx, ty + 18); g.fill(); });
+  g.restore();
+}
+BOX_SKINS.push(
+  { id: 'deepdish', name: 'Windy City Deep Dish', emoji: '🌆', lid: '#1d2d55', lidIn: '#efe9df', base: '#ece6da', side: '#1d2d55', dark: true },
+  { id: 'scooter', name: 'Mamma Mia Express', emoji: '🛵', lid: '#e9e4d8', lidIn: '#efe9df', base: '#ece6da', side: '#2f7d3a' },
+  { id: 'pineapple', name: 'Pineapple Crimes', emoji: '🍍', lid: '#e8d9b0', lidIn: '#ece3c8', base: '#e6dcc0', side: '#c9a271', joke: true },
+  { id: 'goblin', name: 'Goblin Grease Co.', emoji: '👺', lid: '#9b7a4e', lidIn: '#c9a271', base: '#c9a271', side: '#5f8a2e', joke: true },
+  { id: 'hazard', name: 'Mystery Meat', emoji: '☣️', lid: '#f2c418', lidIn: '#efe6c0', base: '#ece4c6', side: '#f2c418', joke: true },
+  { id: 'cursed', name: 'Do Not Open', emoji: '👻', lid: '#1b1720', lidIn: '#d9d2c8', base: '#d8d0c4', side: '#1b1720', dark: true, joke: true },
+  { id: 'tax', name: 'Form 1040-PZA', emoji: '🧾', lid: '#f4f6f2', lidIn: '#f2f2ec', base: '#efefe8', side: '#e8ebe6', joke: true },
+  { id: 'notpizza', name: 'Definitely Not Pizza', emoji: '📦', lid: '#c49a68', lidIn: '#c9a271', base: '#c9a271', side: '#b98d5b', joke: true },
+  { id: 'face', name: 'Face Box', emoji: '🤳', lid: '#c98f6a', lidIn: '#c98f6a', base: '#e9d6c4', side: '#c98f6a', photo: true, joke: true },
+);
+Object.assign(SKIN_DRAW, {
+  deepdish: {
+    lid(g) {
+      g.fillStyle = '#c8202a'; g.fillRect(0, 0, 1024, 40); g.fillRect(0, 984, 1024, 40);
+      g.fillStyle = '#7fb3e0'; [[90, 330], [170, 450], [240, 260], [320, 400], [400, 200], [470, 380], [540, 300], [620, 170], [690, 360], [770, 280], [850, 420], [930, 330]].forEach(([x, h]) => g.fillRect(x - 36, 700 - h, 72, h));
+      g.fillStyle = '#1d2d55'; for (let x = 60; x < 980; x += 26) for (let y = 260; y < 690; y += 34) if (Math.random() < 0.5) g.fillRect(x, y, 9, 14);
+      g.fillStyle = '#7fb3e0'; g.fillRect(0, 700, 1024, 8);
+      for (let i = 0; i < 4; i++) txt(g, '✶', 290 + i * 150, 140, '700 90px sans-serif', '#c8202a');
+      txt(g, 'WINDY CITY', 512, 790, '900 96px Inter, sans-serif', '#fff'); txt(g, 'DEEP DISH  ·  2 INCHES OF REGRET', 512, 880, '700 34px Inter, sans-serif', '#7fb3e0');
+    },
+    base(g, S) { g.globalAlpha = 0.3; for (let i = 0; i < 6; i++) txt(g, '✶', S * 0.1 + i * S * 0.16, 70, '700 80px sans-serif', '#c8202a'); g.globalAlpha = 1; },
+  },
+  scooter: {
+    lid(g) {
+      g.fillStyle = '#2f7d3a'; g.fillRect(0, 0, 1024, 150); g.fillStyle = '#cf2a2a'; g.fillRect(0, 150, 1024, 22);
+      txt(g, 'Mamma Mia', 512, 82, 'italic 700 104px Georgia, serif', '#fff');
+      g.save(); g.translate(512, 520); g.strokeStyle = g.fillStyle = '#2f7d3a'; g.lineWidth = 16; g.lineCap = 'round';
+      [-170, 170].forEach(x => { g.beginPath(); g.arc(x, 120, 70, 0, Math.PI * 2); g.stroke(); });
+      g.beginPath(); g.moveTo(-170, 120); g.lineTo(-40, 120); g.quadraticCurveTo(60, 120, 110, 20); g.lineTo(170, 120); g.stroke();
+      g.beginPath(); g.moveTo(110, 20); g.lineTo(80, -100); g.lineTo(140, -110); g.stroke();
+      g.fillRect(-200, -40, 170, 110); g.fillStyle = '#e9e4d8'; txt(g, 'PIZZA', -115, 15, '900 38px Inter, sans-serif', '#e9e4d8');
+      for (let i = 0; i < 3; i++) { g.lineWidth = 10; g.beginPath(); g.moveTo(-290 - i * 40, -20 + i * 40); g.lineTo(-380 - i * 40, -20 + i * 40); g.stroke(); }
+      g.restore();
+      txt(g, 'EXPRESS  ·  30 MINUTES OR IT\'S STILL PIZZA', 512, 850, '800 32px Inter, sans-serif', '#cf2a2a');
+    },
+    lidIn(g) { g.globalAlpha = 0.45; txt(g, 'Grazie mille!', 512, 512, 'italic 700 100px Georgia, serif', '#2f7d3a'); g.globalAlpha = 1; },
+  },
+  pineapple: {
+    lid(g) {
+      g.strokeStyle = '#3a2a12'; g.lineWidth = 10; g.strokeRect(60, 60, 904, 904);
+      txt(g, 'WANTED', 512, 170, '900 150px Georgia, serif', '#3a2a12');
+      g.save(); g.translate(512, 470);
+      g.fillStyle = '#e8b93a'; g.beginPath(); g.ellipse(0, 40, 120, 160, 0, 0, Math.PI * 2); g.fill();
+      g.strokeStyle = '#a77a1a'; g.lineWidth = 5; for (let k = -6; k <= 6; k++) { g.beginPath(); g.moveTo(k * 40 - 160, -140); g.lineTo(k * 40 + 160, 220); g.stroke(); g.beginPath(); g.moveTo(k * 40 + 160, -140); g.lineTo(k * 40 - 160, 220); g.stroke(); }
+      g.fillStyle = '#3f8a2e'; for (let k = -3; k <= 3; k++) { g.beginPath(); g.moveTo(k * 14, -110); g.lineTo(k * 45, -260 + Math.abs(k) * 25); g.lineTo(k * 14 + 18, -110); g.fill(); }
+      g.fillStyle = '#111'; g.fillRect(-150, 10, 300, 50); txt(g, 'CENSORED', 0, 36, '900 32px Inter, sans-serif', '#fff');
+      g.restore();
+      txt(g, 'FOR CRIMES AGAINST ITALY', 512, 770, '900 50px Georgia, serif', '#8a1a12');
+      txt(g, 'REWARD: ONE (1) NORMAL PIZZA', 512, 860, '700 40px Georgia, serif', '#3a2a12');
+    },
+    lidIn(g) { g.globalAlpha = 0.5; txt(g, 'If found, do not put on pizza.', 512, 512, 'italic 700 54px Georgia, serif', '#8a1a12'); g.globalAlpha = 1; },
+    base(g, S) { g.globalAlpha = 0.28; txt(g, '🍍 ✗', 110, 110, '400 90px sans-serif', '#000'); txt(g, '🍍 ✗', S - 130, S - 110, '400 90px sans-serif', '#000'); g.globalAlpha = 1; },
+  },
+  goblin: {
+    lid(g) {
+      goblinFace(g, 512, 420, 1.35);
+      txt(g, 'GOBLIN GREASE CO.', 512, 760, '900 82px Inter, sans-serif', '#2d4a18', { stroke: '#e9d9a8', lw: 8 });
+      txt(g, 'MAY CONTAIN GOBLIN.  PROBABLY CONTAINS GOBLIN.', 512, 850, '800 30px Inter, sans-serif', '#2d4a18');
+      g.globalAlpha = 0.25; for (let i = 0; i < 9; i++) { g.fillStyle = '#3d2a10'; g.beginPath(); g.ellipse(100 + i * 110, 960 - (i % 3) * 30, 50, 22, i, 0, Math.PI * 2); g.fill(); } g.globalAlpha = 1;
+    },
+    lidIn(g) { g.globalAlpha = 0.5; txt(g, 'the goblin was here 👺', 512, 512, '700 60px "Permanent Marker", cursive', '#2d4a18'); g.globalAlpha = 1; },
+    base(g, S) { g.globalAlpha = 0.4; for (let i = 0; i < 8; i++) txt(g, '👣', 80 + i * (S - 160) / 7, i % 2 ? 80 : S - 80, '400 70px sans-serif', '#2d4a18'); g.globalAlpha = 1; },
+  },
+  hazard: {
+    lid(g) {
+      g.save(); g.beginPath(); g.rect(0, 0, 1024, 110); g.rect(0, 914, 1024, 110); g.clip(); g.fillStyle = '#111'; for (let x = -200; x < 1200; x += 90) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x + 45, 0); g.lineTo(x - 155, 1024); g.lineTo(x - 200, 1024); g.fill(); } g.restore();
+      g.save(); g.translate(512, 420); g.fillStyle = '#111';
+      for (let k = 0; k < 3; k++) { g.save(); g.rotate(k * Math.PI * 2 / 3); g.beginPath(); g.arc(0, -110, 95, 0, Math.PI * 2); g.fill(); g.fillStyle = '#f2c418'; g.beginPath(); g.arc(0, -135, 68, 0, Math.PI * 2); g.fill(); g.fillStyle = '#111'; g.restore(); }
+      g.fillStyle = '#f2c418'; g.beginPath(); g.arc(0, 0, 48, 0, Math.PI * 2); g.fill(); g.fillStyle = '#111'; g.beginPath(); g.arc(0, 0, 30, 0, Math.PI * 2); g.fill();
+      g.restore();
+      txt(g, 'MYSTERY MEAT', 512, 720, '900 104px Inter, sans-serif', '#111');
+      txt(g, 'CONTENTS: ???  ·  DO NOT ASK THE CHEF', 512, 815, '800 34px Inter, sans-serif', '#111');
+    },
+    lidIn(g) { g.globalAlpha = 0.55; txt(g, 'You opened it. That\'s on you.', 512, 512, '800 56px Inter, sans-serif', '#8a1a12'); g.globalAlpha = 1; },
+    base(g, S) { g.globalAlpha = 0.35; g.save(); g.beginPath(); g.rect(0, 0, S, 60); g.rect(0, S - 60, S, 60); g.clip(); g.fillStyle = '#111'; for (let x = -100; x < S + 100; x += 80) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x + 40, 0); g.lineTo(x - 60, S); g.lineTo(x - 100, S); g.fill(); } g.restore(); g.globalAlpha = 1; },
+  },
+  cursed: {
+    lid(g) {
+      g.strokeStyle = '#6a6470'; g.lineWidth = 18; [[0, 0, 1024, 1024], [1024, 0, 0, 1024]].forEach(([a, b, c, d]) => { g.setLineDash([40, 18]); g.beginPath(); g.moveTo(a, b); g.lineTo(c, d); g.stroke(); }); g.setLineDash([]);
+      g.fillStyle = '#8a7a5a'; rrect(g, 452, 452, 120, 140, 14); g.fill(); g.strokeStyle = '#8a7a5a'; g.lineWidth = 16; g.beginPath(); g.arc(512, 452, 40, Math.PI, 0); g.stroke(); g.fillStyle = '#1b1720'; g.beginPath(); g.arc(512, 510, 14, 0, Math.PI * 2); g.fill(); g.fillRect(506, 510, 12, 40);
+      g.save(); g.translate(250, 260); g.globalAlpha = 0.85; g.fillStyle = '#e8e4f2'; g.beginPath(); g.arc(0, 0, 70, Math.PI, 0); g.lineTo(70, 100); for (let k = 0; k < 5; k++) g.lineTo(70 - k * 35 - 17, k % 2 ? 100 : 80); g.lineTo(-70, 100); g.fill(); g.fillStyle = '#1b1720'; [-25, 25].forEach(x => { g.beginPath(); g.ellipse(x, -5, 10, 16, 0, 0, Math.PI * 2); g.fill(); }); g.beginPath(); g.ellipse(0, 40, 14, 20, 0, 0, Math.PI * 2); g.fill(); g.restore();
+      txt(g, 'DO NOT OPEN', 512, 760, '900 110px Georgia, serif', '#d6d0e0', { glow: '#9a7ad8', blur: 20 });
+      txt(g, 'cursed pizza  ·  previous owners: missing', 512, 860, 'italic 600 38px Georgia, serif', '#9a90a8');
+    },
+    lidIn(g) { g.globalAlpha = 0.45; txt(g, 'you shouldn\'t have done that', 512, 470, 'italic 700 56px Georgia, serif', '#5a1a1a'); txt(g, '👁', 512, 600, '400 120px sans-serif', '#5a1a1a'); g.globalAlpha = 1; },
+    base(g, S) { g.globalAlpha = 0.22; for (let i = 0; i < 14; i++) { g.strokeStyle = '#5a1a1a'; g.lineWidth = 6; const x = 60 + (i % 7) * (S - 120) / 6, y = i < 7 ? 70 : S - 70; for (let k = 0; k < 4; k++) { g.beginPath(); g.moveTo(x - 30 + k * 12, y - 30); g.lineTo(x - 30 + k * 12, y + 30); g.stroke(); } g.beginPath(); g.moveTo(x - 40, y + 20); g.lineTo(x + 30, y - 20); g.stroke(); } g.globalAlpha = 1; },
+  },
+  tax: {
+    lid(g) {
+      g.fillStyle = '#111'; g.fillRect(40, 40, 944, 6); txt(g, 'Form 1040-PZA', 70, 110, '900 66px Inter, sans-serif', '#111', { align: 'left' }); txt(g, 'Department of the Pizza Treasury', 70, 170, '600 30px Inter, sans-serif', '#333', { align: 'left' }); txt(g, '2026', 950, 110, '900 80px Inter, sans-serif', '#111', { align: 'right' });
+      g.fillStyle = '#111'; g.fillRect(40, 205, 944, 4);
+      const rows = ['1  Slices eaten', '2  Slices eaten by roommate (deductible)', '3  Crusts left behind', '4  Pineapple penalty', '5  Total cheese owed', '6  Goblin tax (non-negotiable)', '7  Sign here and cry'];
+      rows.forEach((r, i) => { const y = 270 + i * 92; g.strokeStyle = '#99a'; g.lineWidth = 2; g.beginPath(); g.moveTo(60, y + 34); g.lineTo(960, y + 34); g.stroke(); txt(g, r, 70, y, '600 32px Inter, sans-serif', '#222', { align: 'left' }); g.strokeStyle = '#111'; g.strokeRect(780, y - 26, 180, 52); txt(g, ['8', '6', '11', '-∞', '∞', '$4.20', ''][i], 870, y, '700 34px "Permanent Marker", cursive', '#1a3fa0'); });
+      txt(g, 'AUDIT RISK: HIGH', 512, 950, '900 44px Inter, sans-serif', '#c8202a');
+    },
+    lidIn(g) { g.globalAlpha = 0.5; txt(g, 'Page 2 of 47', 512, 512, '700 60px Inter, sans-serif', '#333'); g.globalAlpha = 1; },
+  },
+  notpizza: {
+    lid(g) {
+      g.save(); g.translate(512, 512); g.rotate(Math.PI); txt(g, '↑ THIS SIDE UP ↑', 0, -420, '900 58px Inter, sans-serif', '#3a2a12'); g.restore();
+      txt(g, 'DEFINITELY', 512, 330, '900 120px Inter, sans-serif', '#3a2a12'); txt(g, 'NOT PIZZA', 512, 460, '900 140px Inter, sans-serif', '#c8202a');
+      txt(g, 'nothing to see here. move along.', 512, 580, 'italic 600 44px Georgia, serif', '#3a2a12');
+      g.strokeStyle = '#3a2a12'; g.lineWidth = 6; g.strokeRect(310, 660, 404, 180); txt(g, 'FRAGILE', 512, 720, '900 60px Inter, sans-serif', '#c8202a'); txt(g, '(emotionally)', 512, 790, '600 34px Inter, sans-serif', '#3a2a12');
+    },
+    lidIn(g) { g.globalAlpha = 0.55; txt(g, 'ok it was pizza', 512, 512, '700 70px "Permanent Marker", cursive', '#3a2a12'); g.globalAlpha = 1; },
+  },
+  face: {
+    lid(g) { faceCover(g, 0, 0, 1024, 1024, 0.08); },
+    lidIn(g) { faceCover(g, 0, 0, 1024, 1024, 0.08); },
+    base(g, S) { faceCover(g, 0, 0, S, S, 0.08); g.fillStyle = 'rgba(255,245,235,0.32)'; g.fillRect(0, 0, S, S); },   // a light wash so circles stay readable
+  },
+});
+function photoSide() { return canvasTex(1024, 96, (g, w, h) => { for (let x = 0; x < w; x += 72) faceCover(g, x, 0, 72, h, 0.1); }); }
+
 function applySkin(id) {
   state.skin = skinById(id).id;
-  const sk = curSkin(), ns = sideTexture(21, sk.side), ns2 = sideTexture(22, sk.side);
+  const sk = curSkin(), ns = sk.photo ? photoSide() : sideTexture(21, sk.side), ns2 = sk.photo ? photoSide() : sideTexture(22, sk.side); if (sk.photo) faceImg();
   if (sideMat.map) sideMat.map.dispose(); if (sideMat2.map) sideMat2.map.dispose();
   sideMat.map = ns; sideMat2.map = ns2; sideMat.needsUpdate = sideMat2.needsUpdate = true;
   plain.color.set(sk.side).multiplyScalar(0.85);
@@ -1265,7 +1404,7 @@ const MAP_BUILD = {
     ring(16, 12, 20, 4).forEach(([x, z, a, rnd]) => { for (let k = 0; k < 6; k++) { const f = new THREE.Mesh(new THREE.PlaneGeometry(0.5, 2), fern); f.geometry.translate(0, 1, 0); f.position.set(x, 0, z); f.rotation.set(-0.6, k / 6 * Math.PI * 2, 0, 'YXZ'); g.add(f); } });
     // a big yellow banana slug on a mossy rock
     const rock = addM(g, new THREE.DodecahedronGeometry(2.2, 1), mstd('#6c7366'), 12, 0.9, -14); rock.scale.set(1.4, 0.6, 1);
-    const slug = new THREE.Group(), yel = mstd('#f2cf2e', { roughness: 0.35 });
+    const slug = new THREE.Group(), yel = mstd('#d9a300', { roughness: 0.35 });
     for (let i = 0; i < 9; i++) { const s = 0.55 * Math.sin(Math.PI * (i + 0.6) / 9.6) + 0.15; addM(slug, new THREE.SphereGeometry(s, 14, 10), yel, -1.6 + i * 0.42, s * 0.7 + (i > 6 ? (i - 6) * 0.12 : 0), 0); }
     [-0.15, 0.15].forEach(zz => { const st = addM(slug, new THREE.CylinderGeometry(0.05, 0.06, 0.7, 6), yel, 2.1, 1.25, zz); st.rotation.z = -0.4; addM(slug, new THREE.SphereGeometry(0.1, 8, 6), mstd('#222'), 2.25, 1.6, zz); });
     slug.position.set(12, 1.95, -14); slug.rotation.y = 2.4; g.add(slug);
@@ -1514,9 +1653,74 @@ Object.assign(MAP_BUILD, {
   },
 });
 
-window.__look = { setMap, applySkin, LIDCTL, castVote, get goal() { return goal; }, get VOTE() { return VOTE; } };
+// ---------- photo map ----------
+MAPS.push({ id: 'face', name: 'Face World', emoji: '🤳' });
+GROUND_MORE.photo = () => facePhotoTex(5);
+MAP_BUILD.face = g => {
+  const pm = () => new THREE.MeshStandardMaterial({ map: facePhotoTex(), roughness: 0.8 });
+  const n = 16, R = 37; for (let i = 0; i < n; i++) { const a = i / n * Math.PI * 2; const m = pm(); addM(g, new THREE.BoxGeometry(14, 19, 1), m, Math.sin(a) * R, 9.5, Math.cos(a) * R, a); }
+  // a giant face looming behind, and photo cubes floating around
+  addM(g, new THREE.PlaneGeometry(36, 48), new THREE.MeshBasicMaterial({ map: facePhotoTex(), fog: false }), 0, 26, -34);
+  const cubes = [], rnd = mulberry32(77);
+  for (let i = 0; i < 12; i++) { const a = rnd() * Math.PI * 2, r = 14 + rnd() * 12; const c = addM(g, new THREE.BoxGeometry(2.4, 2.4, 2.4), pm(), Math.sin(a) * r, 5 + rnd() * 9, Math.cos(a) * r); c.userData = { y: c.position.y, p: rnd() * 6, s: 0.3 + rnd() * 0.6 }; cubes.push(c); }
+  mapTick = t => cubes.forEach(c => { const u = c.userData; c.rotation.set(t * u.s, t * u.s * 1.3, 0); c.position.y = u.y + Math.sin(t + u.p) * 0.8; });
+  return { bg: '#d9a87a', fog: [40, 120], hemi: ['#fff1e0', '#5a3a2a', 0.7], sun: ['#fff0dc', 0.95], pendant: 0, ground: 'photo', groundRough: 0.8 };
+};
+// ---------- Santa Cruz extras: weed plants + the banana slug smokes a joint ----------
+const LEAF_TEX = (() => { let t = null; return () => t || (t = canvasTex(256, 256, (g, w) => {
+  g.translate(128, 236); g.fillStyle = '#3f8f2f'; g.strokeStyle = '#2a6420'; g.lineWidth = 2;
+  [[0, 1], [-0.42, 0.85], [0.42, 0.85], [-0.85, 0.62], [0.85, 0.62], [-1.25, 0.4], [1.25, 0.4]].forEach(([a, l]) => {
+    g.save(); g.rotate(a); const L = 210 * l; g.beginPath(); g.moveTo(0, 0);
+    for (let k = 0; k <= 10; k++) { const y = -L * k / 10, wd = Math.sin(Math.PI * k / 10) * L * 0.13 * (k % 2 ? 1.15 : 0.9); g.lineTo(wd, y); }
+    for (let k = 10; k >= 0; k--) { const y = -L * k / 10, wd = Math.sin(Math.PI * k / 10) * L * 0.13 * (k % 2 ? 1.15 : 0.9); g.lineTo(-wd, y); }
+    g.fill(); g.beginPath(); g.moveTo(0, 0); g.lineTo(0, -L); g.stroke(); g.restore(); });
+})); })();
+function weedPlant(g, x, z, h, rnd) {
+  const lm = new THREE.MeshStandardMaterial({ map: LEAF_TEX(), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.8 });
+  const p = new THREE.Group(); addM(p, new THREE.CylinderGeometry(0.05, 0.08, h, 6), mstd('#4a7a2a'), 0, h / 2, 0);
+  for (let k = 0; k < 4; k++) for (let j = 0; j < 3; j++) {
+    const y = h * (0.3 + k * 0.2), s = 1.9 - k * 0.32, leaf = new THREE.Mesh(new THREE.PlaneGeometry(s, s), lm);
+    leaf.geometry.translate(0, s * 0.46, 0); leaf.position.set(0, y, 0); leaf.rotation.order = 'YXZ'; leaf.rotation.y = j * Math.PI * 2 / 3 + k * 1.05; leaf.rotation.x = 1.15 - k * 0.18; p.add(leaf);
+  }
+  const bud = mstd('#3a5a14', { roughness: 0.95 }), hair = mstd('#a8500c');
+  for (let k = 0; k < 6; k++) { const b = addM(p, new THREE.SphereGeometry(0.13 + rnd() * 0.06, 8, 6), bud, (rnd() - .5) * 0.15, h + 0.05 - k * 0.12, (rnd() - .5) * 0.15); for (let q = 0; q < 3; q++) addM(b, new THREE.SphereGeometry(0.03, 4, 3), hair, (rnd() - .5) * 0.25, (rnd() - .5) * 0.25, (rnd() - .5) * 0.25); }
+  p.position.set(x, 0, z); p.rotation.y = rnd() * 6; g.add(p); return p;
+}
+{
+  const base = MAP_BUILD.ucsc;
+  MAP_BUILD.ucsc = g => {
+    const env = base(g), slugTick = mapTick, rnd = mulberry32(420);
+    const plants = [];
+    ring(34, 10, 26, 420, a => Math.cos(a) > 0.9).forEach(([x, z, a, r]) => plants.push(weedPlant(g, x, z, 2.2 + r() * 2.4, r)));
+    for (let i = 0; i < 6; i++) { const a = -0.6 + i * 0.25; plants.push(weedPlant(g, 12 + Math.sin(a) * 4.2, -14 + Math.cos(a) * 3.2, 1.2 + rnd(), rnd)); }   // a little patch around the slug's rock
+    // the slug and its joint
+    const slug = g.children.find(o => o.isGroup && o.children.length > 10 && Math.abs(o.position.x - 12) < 0.1);
+    let tip = null;
+    if (slug) {
+      const j = new THREE.Group();
+      const paper = addM(j, new THREE.CylinderGeometry(0.035, 0.07, 0.55, 10), mstd('#f4efe4', { roughness: 0.9 }), 0, 0, 0); paper.rotation.z = Math.PI / 2;
+      tip = addM(j, new THREE.SphereGeometry(0.085, 10, 8), new THREE.MeshStandardMaterial({ color: '#ff4a10', emissive: '#ff3a00', emissiveIntensity: 2.5 }), 0.28, 0, 0);
+      j.position.set(2.15, 0.62, 0.05); j.rotation.set(0, 0.25, -0.25); slug.add(j);
+      // sleepy eyelids
+      slug.children.filter(o => o.geometry && o.geometry.type === 'SphereGeometry' && o.position.y > 1.5).forEach(e => { const lid = addM(slug, new THREE.SphereGeometry(0.11, 8, 6, 0, Math.PI * 2, 0, Math.PI / 2), mstd('#c08f00'), e.position.x, e.position.y + 0.01, e.position.z); lid.rotation.z = -0.5; });
+    }
+    const puffs = []; for (let i = 0; i < 14; i++) { const pf = addM(g, new THREE.SphereGeometry(0.3, 10, 8), new THREE.MeshStandardMaterial({ color: '#e8eef0', transparent: true, opacity: 0.3, depthWrite: false }), 0, -5, 0); pf.userData.k = i; puffs.push(pf); }
+    const tp = new THREE.Vector3();
+    mapTick = (t, dt) => {
+      if (slugTick) slugTick(t, dt);
+      plants.forEach((p, i) => { p.rotation.z = 0.04 * Math.sin(t * 1.1 + i); });
+      if (tip) { tip.material.emissiveIntensity = 1.6 + 2 * Math.max(0, Math.sin(t * 0.9)); tip.getWorldPosition(tp);
+        puffs.forEach(pf => { const u = (t * 0.18 + pf.userData.k / puffs.length) % 1; pf.position.set(tp.x + Math.sin(u * 7 + pf.userData.k) * u * 1.4, tp.y + u * 6, tp.z + Math.cos(u * 5 + pf.userData.k) * u * 1.2); pf.scale.setScalar(0.4 + u * 3.2); pf.material.opacity = 0.35 * (1 - u) * Math.min(1, u * 8); }); }
+    };
+    env.fog = [24, 75];
+    return env;
+  };
+}
+
+window.__look = { setMap, applySkin, LIDCTL, castVote, get goal() { return goal; }, get mapGroup() { return mapGroup; }, get VOTE() { return VOTE; } };
 LIDCTL.pos = LIDCTL.want = (CTRL || WATCH || state.started) ? 1 : 0; stepLid(0);
 if (!CTRL && state.map && state.map !== 'party') setMap(state.map);
+if (state.skin && curSkin().photo) faceImg();
 if (state.skin) { sideMat.map = sideTexture(21, curSkin().side); sideMat2.map = sideTexture(22, curSkin().side); plain.color.set(curSkin().side).multiplyScalar(0.85); }
 
 // coin
@@ -6627,7 +6831,7 @@ $('#startBtn').onclick = () => {
 };
 
 // ---------- installable app + automatic updates (website version only) ----------
-const BUILD = '1795611428';
+const BUILD = '1795611881';
 if (STANDALONE) {
   try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
   let deferredInstall = null;
