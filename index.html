@@ -7414,9 +7414,9 @@ function startJosh(coinPos, josh) {
     G.arms[1].rotation.x = -1.55; G.arms[1].rotation.z = 0.25 + 0.05 * Math.sin(u * 30); G.jaw.scale.y = u < 0.6 ? 0.32 + 0.7 * Math.abs(Math.sin(u * 36)) : 0.32;
     G.body.rotation.x = 0.1; G.arms[0].rotation.x = -0.2;
   }, () => {
-    bubble((josh ? josh.name : 'Sucky Ducky') + ' drinks two shots! 🥃🥃'); speak((josh ? josh.name : 'Sucky Ducky') + ' drinks two shots!', 0.6, 1);
-    showResult(`${josh ? josh.name : 'Sucky Ducky'} drinks 2 shots! 🥃🥃`, 'The cucumber goblin has spoken.', josh ? josh.color : null);
-    addLog(`🥒 Cucumber goblin: ${josh ? josh.name : 'Sucky Ducky'} drinks 2 shots`);
+    bubble((josh ? josh.name : 'Sucky Ducky') + ' takes a shot! 🥃'); speak((josh ? josh.name : 'Sucky Ducky') + ' takes a shot!', 0.6, 1);
+    showResult(`${josh ? josh.name : 'Sucky Ducky'} takes a shot! 🥃`, 'The cucumber goblin has spoken.', josh ? josh.color : null);
+    addLog(`🥒 Cucumber goblin: ${josh ? josh.name : 'Sucky Ducky'} took a shot`);
   });
   // cackle and blast off, cucumber and all
   S2(0.4, u => { const e = ease(u); G.body.position.y = 0.45 - 0.15 * e; G.legs.forEach(l => l.rotation.x = -0.5 * e); G.arms[0].rotation.x = -2.8 * e; G.arms[1].rotation.x = -2.8; G.body.rotation.x = 0; }, () => { $('#bubble').classList.remove('on'); });
@@ -8167,7 +8167,7 @@ $('#startBtn').onclick = () => {
 };
 
 // ---------- installable app + automatic updates (website version only) ----------
-const BUILD = '1795639162';
+const BUILD = '1795639247';
 if (STANDALONE) {
   try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
   let deferredInstall = null;
