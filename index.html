@@ -3117,7 +3117,10 @@ function startGoblin(coinPos, forceAct) {
     S2(0.6, u => fade(1 - u));
   } else if (plan.act === 'floss') {
     // ---- a goblin strolls in flossing his teeth… faster… FASTER… until the floss snaps ----
-    let fl = [], ph = 0, w = 7, lastHalf = 0, e0 = new THREE.Vector3(), whine = 0;
+    let fl = [], ph = 0, w = 7, lastHalf = 0, e0 = new THREE.Vector3(), whine = 0, mainL = [], under = null, dim = 0.32, flickT = 0, nextFlick = 1.2, gap = 0;
+    // lights: dimmed, with the odd brief dip (never more than ~2 a second — no strobing)
+    const flick = (dt = 1 / 60) => { gap += dt; flickT = Math.max(0, flickT - dt); if (flickT === 0 && gap > nextFlick) { flickT = 0.06 + Math.random() * 0.1; gap = 0; nextFlick = 0.5 + Math.random() * 1.6; }
+      const k = flickT > 0 ? 0.25 : 1; mainL.forEach(([l, v]) => l.intensity = v * dim * k); if (under) { G.root.updateMatrixWorld(true); under.position.copy(wpos(G.mouthPt)).add(new THREE.Vector3(Math.sin(G.root.rotation.y) * 0.5, -0.55, Math.cos(G.root.rotation.y) * 0.5)); under.intensity = 1.6 * (flickT > 0 ? 0.4 : 1); } };
     const camAt = (p, t) => { goblin.cam = goblin.cam || { pos: new THREE.Vector3(), tgt: new THREE.Vector3() }; goblin.cam.pos.copy(p); goblin.cam.tgt.copy(t); };
     const camFace = (d = 3.0) => { const hp = wpos(G.head); camAt(hp.clone().add(new THREE.Vector3(Math.sin(G.root.rotation.y) * d + 0.3, 0.2, Math.cos(G.root.rotation.y) * d)), hp.clone().add(new THREE.Vector3(0, -0.15, 0))); };
     const seg = (m, a, b) => { const d = b.clone().sub(a), L = d.length(); m.position.copy(a).addScaledVector(d, 0.5); m.scale.set(1, Math.max(0.001, L), 1); m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), d.normalize()); };
@@ -3125,24 +3128,25 @@ function startGoblin(coinPos, forceAct) {
     const pose = (amp, t) => { const s = Math.sin(ph); G.arms[0].rotation.set(-1.95, 0, -0.42 + amp * s); G.arms[1].rotation.set(-1.95, 0, 0.42 + amp * s); G.head.rotation.set(-0.1, -0.12 * s * Math.min(1, amp * 2), 0); G.jaw.scale.y = 0.75; };
     const drawFloss = () => { if (!fl.length) return; G.root.updateMatrixWorld(true); const a = wpos(G.arms[0].hand), b = wpos(G.arms[1].hand), m = wpos(G.mouthPt); seg(fl[0], a, m); seg(fl[1], m, b); };
     const stroke = dt => { ph += w * dt; const half = Math.floor(ph / Math.PI); if (half !== lastHalf) { lastHalf = half; if (w < 40) tone('sine', 2300 + Math.random() * 300, 2700, 0.04, 0.03); } };
-    S2(0.01, () => {}, () => { const mat = new THREE.MeshStandardMaterial({ color: '#f4fbff', emissive: '#bfe8ff', emissiveIntensity: 0.6 }); for (let i = 0; i < 2; i++) { const c = new THREE.Mesh(new THREE.CylinderGeometry(0.014, 0.014, 1, 6), mat); scene.add(c); fl.push(c); } cleanups.push(() => fl.forEach(kill)); neutral();
+    S2(0.01, () => {}, () => { const mat = new THREE.MeshStandardMaterial({ color: '#f4fbff', emissive: '#bfe8ff', emissiveIntensity: 0.6 }); for (let i = 0; i < 2; i++) { const c = new THREE.Mesh(new THREE.CylinderGeometry(0.014, 0.014, 1, 6), mat); scene.add(c); fl.push(c); } cleanups.push(() => { fl.forEach(kill); mainL.forEach(([l, v]) => l.intensity = v); mainL = []; kill(under); });
+      mainL = scene.children.filter(o => o.isLight && o.parent === scene).map(l => [l, l.intensity]); under = new THREE.PointLight('#8affc0', 1.6, 3.2, 1.6); scene.add(under); musicStyle('horror'); jazzDuck(false); neutral();
       const ang = Math.random() * Math.PI * 2; e0.set(stand.x + Math.cos(ang) * 4, TOP, stand.z + Math.sin(ang) * 4); G.root.position.copy(e0); G.root.rotation.y = yawTo(e0, stand); });
     // strolls in, casually flossing
-    S2(2.8, u => { G.root.position.lerpVectors(e0, new THREE.Vector3(stand.x, TOP, stand.z), ease(u)); G.root.rotation.y = yawTo(e0, stand); G.legs.forEach((l, i) => l.rotation.x = 0.5 * Math.sin(goblin.t * 9 + i * Math.PI) * (1 - Math.max(0, (u - 0.85) * 6))); stroke(1 / 60); pose(0.35); drawFloss(); camFace(3.4); },
-      () => { tone('sine', 520, 620, 0.2, 0.05); });
-    S2(0.6, u => { G.root.rotation.y = lerpAng(G.root.rotation.y, faceYaw, 0.12); stroke(1 / 60); pose(0.35); drawFloss(); camFace(3.0); });
+    S2(3.4, u => { flick(); G.root.position.lerpVectors(e0, new THREE.Vector3(stand.x, TOP, stand.z), ease(u)); G.root.rotation.y = yawTo(e0, stand); G.legs.forEach((l, i) => l.rotation.x = 0.5 * Math.sin(goblin.t * 9 + i * Math.PI) * (1 - Math.max(0, (u - 0.85) * 6))); stroke(1 / 60); pose(0.35); drawFloss(); camFace(3.4); },
+      () => { tone('sine', 120, 90, 1.2, 0.08); });
+    S2(2.6, u => { flick(); G.root.rotation.y = lerpAng(G.root.rotation.y, faceYaw, 0.12); stroke(1 / 60); pose(0.35); drawFloss(); camFace(3.0 - 0.6 * u); G.head.rotation.x = -0.05; }, () => setTimeout(() => speak('Do you… floss?', 0.35, 0.7), 500));
     // faster… faster… FASTER
-    S2(6.0, u => { w = 7 + 75 * u * u; stroke(1 / 60); pose(0.35 - 0.2 * u); drawFloss(); camFace(3.0 - 1.0 * u); G.root.position.x = stand.x + (Math.random() - 0.5) * 0.08 * u * u; G.root.position.z = stand.z + (Math.random() - 0.5) * 0.08 * u * u; G.body.position.y = 0.45 + 0.04 * u * Math.sin(goblin.t * 60);
+    S2(6.0, u => { flick(); dim = 0.32 - 0.12 * u; w = 7 + 75 * u * u; stroke(1 / 60); pose(0.35 - 0.2 * u); drawFloss(); camFace(3.0 - 1.0 * u); G.root.position.x = stand.x + (Math.random() - 0.5) * 0.08 * u * u; G.root.position.z = stand.z + (Math.random() - 0.5) * 0.08 * u * u; G.body.position.y = 0.45 + 0.04 * u * Math.sin(goblin.t * 60);
         if (u > 0.55 && Math.random() < 0.4 * u) { G.root.updateMatrixWorld(true); spawnParts(wpos(G.mouthPt), 2, { colors: u > 0.8 ? ['#ff9a3c', '#ffd84a', '#cccccc'] : ['#ffffff', '#dfefff'], size: 0.035, shape: 'box', speed: 1.5, up: 1, life: 0.5, gravity: 2 }); }
         if (u > 0.4 && !whine) { whine = 1; tone('sawtooth', 300, 2400, 3.4, 0.035); } shake = Math.max(shake, 0.04 * u * u); },
-      () => { speak('Gotta get the back ones.', 1.3, 1.1); });
+      () => { speak('Gotta get… the back ones.', 0.35, 0.75); });
     // *TWANG* — it snaps
-    S2(1.0, u => { w = 0; pose(0); G.arms[0].rotation.set(-1.95 + 0.8 * u, 0, -0.9); G.arms[1].rotation.set(-1.95 + 0.8 * u, 0, 0.9); G.root.position.x = stand.x; G.root.position.z = stand.z; G.jaw.scale.y = 1.1; camFace(2.0); },
+    S2(1.0, u => { mainL.forEach(([l]) => l.intensity = 0); if (under) under.intensity = 0; $('#fade').style.opacity = u < 0.15 ? u / 0.15 : 1; w = 0; pose(0); G.arms[0].rotation.set(-1.95 + 0.8 * u, 0, -0.9); G.arms[1].rotation.set(-1.95 + 0.8 * u, 0, 0.9); G.root.position.x = stand.x; G.root.position.z = stand.z; G.jaw.scale.y = 1.1; camFace(2.0); },
       () => { tone('square', 900, 120, 0.35, 0.12); noiseSfx('highpass', 5000, 2000, 0.15, 0.3, 2); fl.forEach(kill); fl = []; G.root.updateMatrixWorld(true); spawnParts(wpos(G.mouthPt), 16, { colors: ['#ffffff'], size: 0.03, shape: 'box', speed: 3, up: 1.5, life: 0.6, gravity: 4 }); shake = Math.max(shake, 0.25); });
     // …a dazzling grin
-    S2(1.8, u => { camFace(2.0); G.jaw.scale.y = 0.5; G.arms.forEach((a2, i) => a2.rotation.set(-0.4, 0, (i ? -1 : 1) * 0.3)); G.root.updateMatrixWorld(true); if (Math.random() < 0.4) spawnParts(wpos(G.mouthPt).add(new THREE.Vector3((Math.random() - 0.5) * 0.3, 0.05, 0.1)), 1, { colors: ['#ffffff', '#fff6c2'], size: 0.04, shape: 'box', speed: 0.4, up: 0.4, life: 0.5, gravity: 0 }); },
-      () => { tone('sine', 1760, 2640, 0.25, 0.08); setTimeout(() => tone('sine', 2640, 3520, 0.25, 0.06), 150); setTimeout(() => speak('Minty fresh.', 1.2, 0.95), 300); });
-    S2(0.01, () => {}, () => { goblin.cam = null; neutral(); });
+    S2(2.2, u => { $('#fade').style.opacity = 0; dim = 0.22; flick(); camFace(1.75 - 0.15 * u); G.jaw.scale.y = 0.6; G.head.rotation.set(0.1, 0, 0.12); G.arms.forEach((a2, i) => a2.rotation.set(-0.4, 0, (i ? -1 : 1) * 0.3)); G.root.updateMatrixWorld(true); if (Math.random() < 0.4) spawnParts(wpos(G.mouthPt).add(new THREE.Vector3((Math.random() - 0.5) * 0.3, 0.05, 0.1)), 1, { colors: ['#ffffff', '#fff6c2'], size: 0.04, shape: 'box', speed: 0.4, up: 0.4, life: 0.5, gravity: 0 }); },
+      () => { tone('sine', 1760, 2640, 0.25, 0.08); setTimeout(() => tone('sine', 2640, 3520, 0.25, 0.06), 150); setTimeout(() => speak('Minty… fresh.', 0.3, 0.7), 300); });
+    S2(0.01, () => {}, () => { goblin.cam = null; mainL.forEach(([l, v]) => l.intensity = v); mainL = []; kill(under); under = null; $('#fade').style.opacity = 0; neutral(); });
   } else if (plan.act === 'swipe') {
     S2(0.01, () => { G.root.position.copy(stand); G.root.visible = false; });
   } else if (plan.entr === 'walk') {
@@ -4068,8 +4072,8 @@ function grooveBeat(b, t) {
   if ((sec >= 4 && sec <= 7) || (sec >= 12 && sec <= 14)) { const ph = GROOVE.hook[sec % 4]; for (let k = 0; k < 4; k++) { const m = ph[beat * 4 + k]; if (m) leadNote(t + k * q, m, q * 1.6); } }
 }
 // ---------- extra music styles (jazz is the default; others follow what's happening) ----------
-const STYLE_BPM = { jazz: 124, metal: 176, boss: 150, gameshow: 134, tension: 112, sneaky: 126 };
-const STYLE_NAME = { jazz: '🎵 Groove', metal: '🤘 Metal', boss: '⚔️ Battle', gameshow: '🎉 Party', tension: '😰 Tension', sneaky: '👺 Sneaky' };
+const STYLE_BPM = { horror: 66, jazz: 124, metal: 176, boss: 150, gameshow: 134, tension: 112, sneaky: 126 };
+const STYLE_NAME = { horror: '👻 Horror', jazz: '🎵 Groove', metal: '🤘 Metal', boss: '⚔️ Battle', gameshow: '🎉 Party', tension: '😰 Tension', sneaky: '👺 Sneaky' };
 let distCurve = null;
 function getDist() { if (distCurve) return distCurve; const n = 2048, c = new Float32Array(n); for (let i = 0; i < n; i++) { const x = i / n * 2 - 1; c[i] = Math.tanh(x * 9) * 0.9; } return (distCurve = c); }
 function mBus() { if (!jazz.gtr) { jazz.gtr = actx.createGain(); jazz.gtr.connect(jazz.out); jazz.syn = actx.createGain(); jazz.syn.connect(jazz.out); } }
@@ -4093,6 +4097,14 @@ function clap(t) { [0, 0.012, 0.025].forEach(d => hitNoise(t + d, 'bandpass', 15
 function taiko(t, v = 1) { const o = actx.createOscillator(), g = actx.createGain(); o.frequency.setValueAtTime(95, t); o.frequency.exponentialRampToValueAtTime(55, t + 0.25); g.gain.setValueAtTime(0.55 * v, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.6); o.connect(g).connect(jazz.drum); o.start(t); o.stop(t + 0.65); hitNoise(t, 'lowpass', 400, 0.7, 0.2 * v, 0.25); }
 function block(t, m) { synNote(t, m, 0.08, 'sine', 0.12, 6000); }
 const STYLES = {
+  horror(b, t) {
+    mBus(); const bar = Math.floor(b / 4), beat = b % 4;
+    if (beat === 0) { bigKick(t, 0.6); bigKick(t + 0.22, 0.42); }                       // heartbeat: lub-dub
+    if (beat === 2 && bar % 2) { bigKick(t, 0.45); bigKick(t + 0.22, 0.32); }
+    if (beat === 0) { synNote(t, 26 + (bar % 4 === 3 ? 1 : 0), SPB * 4.2, 'sawtooth', 0.08, 240, jazz.bassBus); [74, 75].forEach(m => synNote(t + SPB, m + (bar % 2), SPB * 3, 'triangle', 0.02, 2200)); }   // drone + a dissonant cluster
+    if (beat === 3 && Math.random() < 0.45) synNote(t, 86 + Math.floor(Math.random() * 5), SPB * 0.9, 'sine', 0.025, 8000);   // music-box ping
+    if (bar % 4 === 2 && beat === 1) hitNoise(t, 'bandpass', 900, 6, 0.07, 1.6, 0.7);   // metallic scrape swell
+  },
   metal(b, t) {
     mBus(); const s = SPB / 2, bar = Math.floor(b / 4), beat = b % 4;
     const riffs = [[40, 40, 40, 43, 40, 40, 46, 45], [40, 40, 40, 43, 40, 40, 38, 39], [40, 52, 40, 50, 40, 48, 47, 46], [43, 43, 45, 45, 46, 46, 47, 47]];
@@ -5053,7 +5065,7 @@ const previewIntro = () => { ensureAudio(); if (toss || goblin || placing) retur
 $('#tryHot').onclick = () => { if (!canAim() && !mini) return toast('Start a game with 2+ players first (and wait for the turn to finish)'); startMini('hot'); };
 $('#cupRows').onclick = e => { const b = e.target.closest('[data-cp]'); if (!b) return; if (b.dataset.n === '0') { if (mini && mini.picks) { delete mini.picks[String(b.dataset.cp)]; renderCupPanel(); } return; } cupPick(b.dataset.cp, b.dataset.n); };
 $('#tryHolo').onclick = () => sayYugo(true);
-const JACK_ACTS = [['floss', '🦷 Flosses his teeth… faster and FASTER'], ['crash', '🚗 Late-night drive… hits a goblin, finds the coin'], ['love', '💕 A love story: the goblin & the coin'], ['acid2', '🌀 Acid trip #2: realises he\'s in a drinking game'], ['cold', '🚔 Steals the coin… arrested 47 years later'], ['stream', '🔴 Goes live: plays as a goblin and steals the coin on stream'], ['acid', '🌀 Takes an acid tab — trippy for a turn'], ['xmas', '🎄 Christmas: rip his present open — coin or coal?'], ['vip', '🪩 VIP room: does a line… so does the coin'], ['debate', '🎓 Campus debate: snipes the coin… ricochet!'], ['swipe', '💚 Dating app: swipes left on every goblin… until the coin'], ['duel', '⚔️ Pizza-cutter sword duel over the coin'], ['smite', '⚡ Dictator goblin steals it… and gets smitten'], ['sting', '📺 Dateline GBC: To Catch a Coin Thief'], ['neptune', '🔱 Steals Neptune\'s trident in Bologna'], ['plane', '✈️ Steals it in a plane… and crashes'], ['eat', '💩 Eats the coin, poops it out'], ['burp', '🤢 Swallows it, burps it up'], ['juggle', '🤹 Juggles the coin'], ['bite', '🦷 Bites it and chucks it'],
+const JACK_ACTS = [['floss', '🦷 The Flosser (horror)'], ['crash', '🚗 Late-night drive… hits a goblin, finds the coin'], ['love', '💕 A love story: the goblin & the coin'], ['acid2', '🌀 Acid trip #2: realises he\'s in a drinking game'], ['cold', '🚔 Steals the coin… arrested 47 years later'], ['stream', '🔴 Goes live: plays as a goblin and steals the coin on stream'], ['acid', '🌀 Takes an acid tab — trippy for a turn'], ['xmas', '🎄 Christmas: rip his present open — coin or coal?'], ['vip', '🪩 VIP room: does a line… so does the coin'], ['debate', '🎓 Campus debate: snipes the coin… ricochet!'], ['swipe', '💚 Dating app: swipes left on every goblin… until the coin'], ['duel', '⚔️ Pizza-cutter sword duel over the coin'], ['smite', '⚡ Dictator goblin steals it… and gets smitten'], ['sting', '📺 Dateline GBC: To Catch a Coin Thief'], ['neptune', '🔱 Steals Neptune\'s trident in Bologna'], ['plane', '✈️ Steals it in a plane… and crashes'], ['eat', '💩 Eats the coin, poops it out'], ['burp', '🤢 Swallows it, burps it up'], ['juggle', '🤹 Juggles the coin'], ['bite', '🦷 Bites it and chucks it'],
   ['hat', '🎩 Wears the coin as a hat'], ['polish', '✨ Polishes the coin'], ['casino', '🎰 Loses a coin flip, tantrum'], ['surf', '🏄 Surfs the coin around'], ['golf', '⛳ Golfs the coin'], ['wedding', '💍 Proposes to the coin'],
   ['summon', '🔮 Summons a demon'], ['sneeze', '🤧 Giant sneeze'], ['booger', '👃 Booger flick'], ['fartcannon', '💨 Fart cannon'], ['rockstar', '🎸 Rock star guitar solo'], ['ballet', '🩰 Ballet'], ['breakdance', '🕺 Breakdance'],
   ['opera', '🎭 Opera'], ['thief', '🦹 Steals it and hides'], ['insult', '🗯️ Roasts the players'], ['clones', '👯 Clones himself'], ['giant', '🗿 Turns giant']];
@@ -5838,7 +5850,7 @@ $('#startBtn').onclick = () => {
 };
 
 // ---------- installable app + automatic updates (website version only) ----------
-const BUILD = '1795558378';
+const BUILD = '1795586660';
 if (STANDALONE) {
   try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
   let deferredInstall = null;
