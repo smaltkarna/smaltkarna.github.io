@@ -682,7 +682,7 @@ const S = 2048;            // top texture resolution
 const HALF = 4.94;         // half-size of the inside floor (world units)
 const OUT = 5.0;           // outer half-size of the box
 const IN = 10.12 / 16;    // world units per inch (box is ~16" across)
-const ruleR = () => 0.3 + Math.random() * 0.3; // rule circles: small, random size every time
+const ruleR = () => 0.6 + Math.random() * 0.3; // rule circles: same size range for starting and added rules
 const TOP = 0.05;          // inside floor height
 const WALL_H = 0.95;       // wall height
 const COIN_R = 0.38, COIN_T = 0.07;
@@ -751,7 +751,7 @@ function seedRules() {
     let best = null, bd = -1;
     for (let k = 0; k < 500; k++) { const x = (Math.random() * 2 - 1) * (HALF - 0.4), z = (Math.random() * 2 - 1) * (HALF - 0.4), c = ruleCap(x, z, null); if (c > bd) { bd = c; best = { x, z }; } }
     if (!best || bd < 0.32) return;
-    const r = bd * (0.92 + Math.random() * 0.08);
+    const r = Math.min(bd * 0.95, ruleR());
     state.rules.push({ id: newId(), text, by: '🍕 the house', byId: null, color: cols[i % cols.length], r, x: clamp(best.x, -HALF + r, HALF - r), z: clamp(best.z, -HALF + r, HALF - r) }); n++;
   });
   if (n) { addLog(`🍕 ${n} house rules are already on the box`); drawTop(); state.rules.slice(-n).forEach(r => pulse(r)); toast(`🍕 ${n} random house rules are on the box — good luck`); }
@@ -8167,7 +8167,7 @@ $('#startBtn').onclick = () => {
 };
 
 // ---------- installable app + automatic updates (website version only) ----------
-const BUILD = '1795639065';
+const BUILD = '1795639162';
 if (STANDALONE) {
   try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
   let deferredInstall = null;
