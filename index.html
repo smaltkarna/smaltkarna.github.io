@@ -382,6 +382,16 @@
   .jm-list{overflow:auto;display:grid;gap:6px}
   .jm-list button{text-align:left;background:rgba(255,255,255,.06);color:#f6efe4;border:1px solid rgba(255,235,205,.12);border-radius:12px;padding:12px;font-size:15px}
   .jm-list button:active{background:rgba(255,216,74,.2)}
+  .jm-h{margin:12px 0 2px;font-weight:800;color:#ffd84a;font-size:14px}
+  .jm-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+  .jm-grid button{font-size:14px;padding:10px}
+  #lookUI{position:fixed;left:0;right:0;bottom:0;z-index:80;padding:10px 10px calc(10px + env(safe-area-inset-bottom));background:linear-gradient(0deg,rgba(10,6,3,.9),rgba(10,6,3,.6) 80%,transparent);color:#f6efe4;font-family:Inter,sans-serif;display:grid;gap:8px}
+  .lk-top{display:flex;align-items:center;gap:8px}.lk-top b{flex:1;font-size:14px;text-align:center}
+  .lk-top button,.lk-cin{background:rgba(255,255,255,.1);color:#f6efe4;border:1px solid rgba(255,235,205,.2);border-radius:10px;padding:8px 10px;font:700 13px Inter,sans-serif}
+  .lk-row{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .lk-row::-webkit-scrollbar{display:none}
+  .lk-row button{flex:none;background:rgba(255,255,255,.08);color:#f6efe4;border:2px solid rgba(255,235,205,.15);border-radius:12px;padding:9px 12px;font:700 13px Inter,sans-serif;white-space:nowrap}
+  .lk-row button.sel{border-color:#ffd84a;background:rgba(255,216,74,.18)}
   body.watching #panel,body.watching #hud,body.watching #help,body.watching #menuBtn,body.watching #jazzBtn,body.watching #inviteBtn,body.watching #installBtn,body.watching #lobby,body.watching #roomCode,body.watching #phones{display:none!important}
   #watchUI{position:fixed;inset:0;z-index:80;display:none;align-items:center;justify-content:center;background:rgba(10,6,3,.55);padding:16px}
   #watchUI.on{display:flex}
@@ -2826,24 +2836,51 @@ function buildRoad() {
 function openJackMenu() {
   let m = document.getElementById('jackMenu'); if (m) { m.classList.add('on'); return; }
   m = document.createElement('div'); m.id = 'jackMenu'; m.className = 'on';
-  m.innerHTML = `<div class="jm-card"><div class="jm-top"><b>👺 Jack's secret cinema</b><button class="jm-x" aria-label="Close">×</button></div><p class="jm-sub">Pick one to watch on this phone.</p><div class="jm-list">${JACK_ACTS.map(([k, l]) => `<button data-watch="${k}">${l}</button>`).join('')}</div></div>`;
+  m.innerHTML = `<div class="jm-card"><div class="jm-top"><b>👺 Jack's secret cinema</b><button class="jm-x" aria-label="Close">×</button></div><p class="jm-sub">Pick one to watch on this phone.</p><div class="jm-list">${JACK_ACTS.map(([k, l]) => `<button data-watch="${k}">${l}</button>`).join('')}<div class="jm-h">🗺️ Maps</div><div class="jm-grid">${MAPS.map(x => `<button data-look="map:${x.id}">${x.emoji} ${x.name}</button>`).join('')}</div><div class="jm-h">🍕 Box skins</div><div class="jm-grid">${BOX_SKINS.map(x => `<button data-look="skin:${x.id}">${x.emoji} ${x.name}</button>`).join('')}</div></div></div>`;
   document.body.appendChild(m);
   m.querySelector('.jm-x').onclick = () => m.classList.remove('on');
-  m.addEventListener('click', e => { const b = e.target.closest('[data-watch]'); if (!b) { if (e.target === m) m.classList.remove('on'); return; }
-    try { sessionStorage.setItem('pb-watch-back', location.hash && !/^#watch-/.test(location.hash) ? location.hash : '#controller'); } catch (er) {}
-    location.hash = '#watch-' + b.dataset.watch; location.reload(); });
+  m.addEventListener('click', e => { const b = e.target.closest('[data-watch],[data-look]'); if (!b) { if (e.target === m) m.classList.remove('on'); return; }
+    if (b.dataset.look && WATCH === 'look' && window.__lookPick) { window.__lookPick(b.dataset.look); m.classList.remove('on'); return; }
+    try { sessionStorage.setItem('pb-watch-back', location.hash && !/^#watch-/.test(location.hash) ? location.hash : '#controller'); if (b.dataset.look) sessionStorage.setItem('pb-look', b.dataset.look); } catch (er) {}
+    location.hash = '#watch-' + (b.dataset.look ? 'look' : b.dataset.watch); location.reload(); });
 }
 document.addEventListener('click', e => { if (e.target.closest && e.target.closest('.secret-main')) { e.preventDefault(); openJackMenu(); } });
 function watchBoot() {
   if (!WATCH) return;
   document.body.classList.add('watching'); document.body.classList.remove('lobby', 'intro', 'introvid'); const lb = document.getElementById('lobby'); if (lb) lb.style.display = 'none';
   const back = () => { let h = '#controller'; try { h = sessionStorage.getItem('pb-watch-back') || h; } catch (e) {} location.hash = h; location.reload(); };
+  if (WATCH === 'look') { lookBoot(back); return; }
   const ov = document.createElement('div'); ov.id = 'watchUI';
   const label = (JACK_ACTS.find(a => a[0] === WATCH) || [WATCH, WATCH])[1];
   const showStart = again => { ov.innerHTML = `<div class="wu-card"><div class="wu-t">${again ? '🍿 That was' : '🎬 Now showing'}</div><div class="wu-n">${label}</div><div class="wu-tip">📱↔️ Turn your phone sideways for the best view</div><button class="wu-play">${again ? '↻ Watch again' : '▶ Play'}</button><button class="wu-list">🎞️ Pick another</button><button class="wu-back">← Back to the game</button></div>`; ov.classList.add('on');
     ov.querySelector('.wu-play').onclick = () => { ensureAudio(); ov.classList.remove('on'); setTimeout(() => { watchJack(WATCH); const w = setInterval(() => { if (!goblin) { clearInterval(w); setTimeout(() => showStart(true), 900); } }, 300); }, 150); };
     ov.querySelector('.wu-list').onclick = () => openJackMenu(); ov.querySelector('.wu-back').onclick = back; };
   document.body.appendChild(ov); showStart(false);
+}
+// ---------- secret gallery: preview every map and box skin on the phone ----------
+function lookBoot(back) {
+  let pick = 'map:party'; try { pick = sessionStorage.getItem('pb-look') || pick; } catch (e) {}
+  const cur = { map: 'party', skin: 'classic' }, ui = document.createElement('div'); ui.id = 'lookUI';
+  const draw = () => {
+    ui.innerHTML = `<div class="lk-top"><button class="lk-back">←</button><b>${mapById(cur.map).emoji} ${mapById(cur.map).name} · ${skinById(cur.skin).emoji} ${skinById(cur.skin).name}</b><button class="lk-lid">${LIDCTL.want ? '📦 Close lid' : '📦 Open lid'}</button></div>`
+      + `<div class="lk-row">${MAPS.map(x => `<button class="${x.id === cur.map ? 'sel' : ''}" data-look="map:${x.id}">${x.emoji} ${x.name}</button>`).join('')}</div>`
+      + `<div class="lk-row">${BOX_SKINS.map(x => `<button class="${x.id === cur.skin ? 'sel' : ''}" data-look="skin:${x.id}">${x.emoji} ${x.name}</button>`).join('')}</div>`
+      + `<button class="lk-cin">🎞️ Jack's cinema</button>`;
+    ui.querySelector('.lk-back').onclick = back; ui.querySelector('.lk-cin').onclick = () => openJackMenu();
+    ui.querySelector('.lk-lid').onclick = () => { LIDCTL.want = LIDCTL.want ? 0 : 1; whooshSfx(0.6); draw(); };
+    ui.querySelectorAll('[data-look]').forEach(b => b.onclick = () => go(b.dataset.look));
+    const sel = ui.querySelectorAll('.lk-row .sel'); sel.forEach(b => b.scrollIntoView({ inline: 'center', block: 'nearest' }));
+  };
+  const go = v => {
+    const [k, id] = v.split(':');
+    if (k === 'map') { cur.map = mapById(id).id; setMap(cur.map); LIDCTL.want = 1; }
+    else { cur.skin = skinById(id).id; applySkin(cur.skin); LIDCTL.want = 0; }    // a new box starts closed so you see the lid print
+    draw();
+  };
+  window.__lookPick = go;
+  document.body.appendChild(ui); go(pick);
+  goal.phi = 0.9; goal.r = 34;
+  let last = performance.now(); (function spin(t) { const dt = Math.min(0.05, (t - last) / 1000); last = t; if (!ptrs.size) goal.theta += dt * 0.12; requestAnimationFrame(spin); })(last);
 }
 // ---------- joke: when someone joins, the goblin sends them a (fake) "GobPay" payment request ----------
 const GOBPAY_AMT = ['$4.20', '$13.37', '$6.66', '$0.69', '$1,000,000', '$7.77'], GOBPAY_FOR = ['coin rental 🪙', 'pizza box cleaning fee 📦', 'emotional damages 😤', 'goblin tax 👺', 'cardboard maintenance', 'flossing supplies 🦷', 'last night (you know what you did)'];
@@ -6565,7 +6602,7 @@ $('#startBtn').onclick = () => {
 };
 
 // ---------- installable app + automatic updates (website version only) ----------
-const BUILD = '1795598679';
+const BUILD = '1795610801';
 if (STANDALONE) {
   try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
   let deferredInstall = null;
