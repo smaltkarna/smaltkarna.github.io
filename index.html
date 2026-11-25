@@ -205,9 +205,13 @@
   #lbVote{margin-top:4px}
   #lbVote .vt-lab{font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:var(--muted);font-weight:700;margin:10px 0 6px}
   .c-vts{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:8px}
-  .c-vt{display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 4px;border-radius:14px;background:rgba(255,255,255,.08);border:2px solid rgba(255,255,255,.15);color:#fff;font:700 13px Inter,sans-serif}
+  .c-vt{display:flex;flex-direction:row;align-items:center;gap:6px;padding:7px 8px;text-align:left;line-height:1.15;min-width:0;border-radius:14px;background:rgba(255,255,255,.08);border:2px solid rgba(255,255,255,.15);color:#fff;font:700 13px Inter,sans-serif}
   .c-vt.sel{border-color:#ffd84a;background:rgba(255,216,74,.18)}
-  .c-vt b{color:#ffd84a;min-height:16px}
+  .c-vt b{color:#ffd84a;margin-left:auto}.c-vt>span:nth-child(2){flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis}
+  .c-vt>span:first-child{font-size:20px!important}
+  .sug-more{background:none!important;border:1px dashed var(--line)!important;color:var(--muted)!important}
+  body.ctrl{overflow-x:hidden}
+  body.ctrl #ctrl{transform-origin:top center}
   .c-cd{text-align:center;border-color:#ffd84a}
   body.resume #lbVote,body.resume #startBtn,body.resume .lb-note{display:none!important}
   .lb-res{text-align:center;margin:6px 0 14px}.lb-res h2{margin:0 0 6px}.lb-res p{opacity:.8;margin:0 0 14px}
@@ -3185,9 +3189,12 @@ $('#saveRule').onclick = () => {
   const { x, z, tosser } = pendingRule;
   const gap = Math.min(...state.players.map(p => Math.hypot(p.x - x, p.z - z) - p.r), ...state.rules.map(r => Math.hypot(r.x - x, r.z - z) - r.r), 9);
   // never bigger than the name circles, never overlapping another circle, never through the wall
-  const maxR = ruleCap(x, z, null);
-  const r = maxR * (0.92 + Math.random() * 0.08);
-  const rule = { id: newId(), text, by: tosser.name, byId: tosser.id, color: tosser.color, r, x: clamp(x, -HALF + r, HALF - r), z: clamp(z, -HALF + r, HALF - r) };
+  // same size as the starting rules: if the landing spot is cramped, slide to the nearest place a proper-size circle fits
+  const want = ruleR(); let sx = x, sz = z, cap = ruleCap(x, z, null);
+  if (cap < want) { let bd = 1e9, bc = cap; for (let i = 0; i < 1500; i++) { const a = Math.random() * Math.PI * 2, d = Math.random() * HALF * 1.6, nx = clamp(x + Math.cos(a) * d, -HALF + 0.5, HALF - 0.5), nz = clamp(z + Math.sin(a) * d, -HALF + 0.5, HALF - 0.5), c = ruleCap(nx, nz, null), dd = Math.hypot(nx - x, nz - z);
+      if (c >= want ? (bc < want || dd < bd) : (bc < want && c > bc)) { bd = dd; bc = c; sx = nx; sz = nz; } } cap = bc; }
+  const r = Math.min(want, cap * 0.97);
+  const rule = { id: newId(), text, by: tosser.name, byId: tosser.id, color: tosser.color, r, x: clamp(sx, -HALF + r, HALF - r), z: clamp(sz, -HALF + r, HALF - r) };
   state.rules.push(rule); drawTop(); pulse(rule);
   showResult(`✍️ ${text}`, `New rule by ${tosser.name} — whoever lands here has to do it!`, tosser.color, 'big');
   addLog(`✍️ ${tosser.name} wrote: "${text}"`);
@@ -7857,6 +7864,7 @@ function updateMiniCtrl(M) {
 
 // ----- the phone side -----
 const me = { pid: null, n: 0, cmd: null, joining: null, cid: null, taps: 0, myHits: 0 };
+window.__ctrlTest = (h, pid, a) => { roomState = 'ok'; hostGone = null; H = h; A = a || null; me.pid = pid; window.__gobPaid = true; renderCtrl(); };
 try { me.cid = localStorage.getItem('pizzabox-cid'); if (!me.cid) { me.cid = Math.random().toString(36).slice(2, 12); localStorage.setItem('pizzabox-cid', me.cid); } } catch (e) { me.cid = Math.random().toString(36).slice(2, 12); }
 try { me.pid = localStorage.getItem('pizzabox-pid'); } catch (e) {}
 let Arecv = 0, hostPeer = null, hostGone = null, cErr = '', lastGJ = null, H = null, A = null, cDraft = '', cWasMine = false, cName = '', cPlace = null;
@@ -7973,7 +7981,14 @@ function onCtrlPeers(peers) {
   renderCtrl();
 }
 let SUGS_C = [], sugsKey = null;
-function renderCtrl() {
+function fitCtrl() {
+  if (!CTRL) return; const c = $('#ctrl'); if (!c) return;
+  c.style.zoom = ''; const need = Math.max(c.scrollHeight, c.getBoundingClientRect().height), avail = window.innerHeight;
+  if (need > avail + 1) c.style.zoom = Math.max(0.55, (avail - 2) / need).toFixed(3);
+}
+addEventListener('resize', () => fitCtrl());
+function renderCtrl() { renderCtrl0(); fitCtrl(); }
+function renderCtrl0() {
   if (!CTRL) return;
   if (cPlace && cPlace.lobbyId && H && !(H.lobby || []).some(p => String(p.id) === String(cPlace.lobbyId))) cPlace = null; // got drawn already
   if (cPlace && document.getElementById('cMap') && H) return;
@@ -8009,9 +8024,9 @@ function renderCtrl() {
       $('#cLive').classList.remove('on');
       const all = [...lobbyL, ...players];
       const V = H.vote, myV = window.__myVote || (window.__myVote = {}), vrow = (k, list) => list.map(([id, nm, em, n]) => `<button class="c-vt ${myV[k] === id ? 'sel' : ''}" data-k="${k}" data-id="${esc(id)}"><span style="font-size:26px">${em}</span><span>${esc(nm)}</span><b>${n || ''}</b></button>`).join('');
-      body.innerHTML = (V && V.cd != null ? `<div class="c-card c-cd"><h3>Starting in ${V.cd}…</h3><p>Last chance to vote!</p></div>` : `<div class="c-card" style="text-align:center"><h3>You're in! 🎉</h3><p>Waiting for the host to start the game…</p></div>`)
-        + (V ? `<div class="c-card"><h3>🗺️ Vote the map</h3><div class="c-vts">${vrow('map', V.m)}</div><h3 style="margin-top:14px">🍕 Vote the box</h3><div class="c-vts">${vrow('skin', V.s)}</div></div>` : '') + `
-        <div class="c-card"><h3>Who's playing</h3><div style="display:flex;flex-wrap:wrap;gap:8px">${all.map(p => `<span style="background:${p.color};color:#fff;border-radius:999px;padding:6px 14px;font-family:'Permanent Marker',cursive;font-size:18px">${esc(p.name)}</span>`).join('')}</div></div>`;
+      body.innerHTML = (V && V.cd != null ? `<div class="c-card c-cd"><h3>Starting in ${V.cd}…</h3><p>Last chance to vote!</p></div>` : `<div class="c-card" style="text-align:center;padding:10px 14px"><h3>You're in! 🎉</h3><p>Waiting for the host to start the game…</p></div>`)
+        + (V ? `<div class="c-card"><h3>🗺️ Vote the map</h3><div class="c-vts">${vrow('map', V.m)}</div><h3 style="margin-top:10px">🍕 Vote the box</h3><div class="c-vts">${vrow('skin', V.s)}</div></div>` : '') + `
+        <div class="c-card"><h3>Who's playing</h3><div style="display:flex;flex-wrap:wrap;gap:6px">${all.map(p => `<span style="background:${p.color};color:#fff;border-radius:999px;padding:3px 11px;font-family:'Permanent Marker',cursive;font-size:15px">${esc(p.name)}</span>`).join('')}</div></div>`;
       body.querySelectorAll('.c-vt').forEach(b => b.onclick = () => { myV[b.dataset.k] = b.dataset.id; cSend('mvote', { k: b.dataset.k, v: b.dataset.id }); body.querySelectorAll(`.c-vt[data-k="${b.dataset.k}"]`).forEach(x => x.classList.toggle('sel', x === b)); });
       return;
     }
@@ -8080,10 +8095,10 @@ function renderCtrl() {
   else tEl.innerHTML = turnP ? `<span style="color:${lighten(turnP.color)}">🍕 ${esc(turnP.name)}'s turn</span><small>Watch the big screen — your phone buzzes when you're up.</small>` : 'Waiting for players…';
   if (H.phase === 'over') html += `<div class="c-card c-result" style="border-color:#d7263d"><div class="t" style="color:#ff3b4f">GAME OVER 💀</div><p>The goblin ate the coin and exploded. Check the main screen.</p></div>`;
   else if (H.phase === 'rule' && String(H.ruleFor) === String(mine.id)) {
-    const sk = H.ruleFor + '|' + (H.rules || []).length + '|' + (H.turn || ''); if (sk !== sugsKey) { sugsKey = sk; SUGS_C = pickSugs(8, (H.rules || []).map(r => Array.isArray(r) ? r[1] : r.text)); }
+    const sk = H.ruleFor + '|' + (H.rules || []).length + '|' + (H.turn || ''); if (sk !== sugsKey) { sugsKey = sk; SUGS_C = pickSugs(4, (H.rules || []).map(r => Array.isArray(r) ? r[1] : r.text)); }
     html += `<div class="c-card"><h3>Empty spot! ✍️</h3><p>Write a rule — whoever lands on it next has to do it.</p></div>
       <textarea id="cRule" maxlength="70" placeholder="e.g. Drink with your left hand"></textarea>
-      <div class="sugs">${SUGS_C.map(t => `<button type="button" data-sug="${esc(t)}">${esc(t)}</button>`).join('')}</div>
+      <div class="sugs">${SUGS_C.map(t => `<button type="button" data-sug="${esc(t)}">${esc(t)}</button>`).join('')}<button type="button" id="cSugMore" class="sug-more">🔀 More ideas</button></div>
       <div class="c-row"><button class="c-btn c-ghost" id="cNoRule">No rule</button><button class="c-btn" id="cWrite" style="flex:1">Write it on the box</button></div>`;
   } else if (H.obey) {
     html += `<div class="c-card c-result" style="border-color:#ffd84a"><div class="t" style="color:#ffd84a">📜 ${esc(H.obey.text)}</div><p>${String(H.obey.pid) === String(mine.id) ? 'Your turn is paused until you do it.' : esc(H.obey.name) + ' has to do it — the game waits.'}</p></div>`
@@ -8095,7 +8110,8 @@ function renderCtrl() {
   }
   const focusTurn = myTurn && H.phase !== 'over' && !(H.phase === 'rule' && String(H.ruleFor) === String(mine.id));
   if (H.result && !focusTurn) html += `<div class="c-card c-result" style="border-color:${H.result.c || 'var(--line)'}"><div class="t" style="color:${H.result.c ? lighten(H.result.c) : 'var(--ink)'}">${esc(H.result.t)}</div><p>${esc(H.result.s || '')}</p></div>`;
-  if (H.rules && H.rules.length && !focusTurn) html += `<div class="c-card"><h3>Rules on the box</h3><ol class="c-rules">${H.rules.map(r => `<li value="${r[0]}">${esc(r[1])} <span style="color:var(--muted)">— ${esc(r[2] || '')}</span></li>`).join('')}</ol></div>`;
+  const writingRule = H.phase === 'rule' && String(H.ruleFor) === String(mine.id), RL = (H.rules || []).slice(-5), more = (H.rules || []).length - RL.length;
+  if (H.rules && H.rules.length && !focusTurn && !writingRule) html += `<div class="c-card"><h3>Rules on the box${more > 0 ? ` <small style="font-family:Inter,sans-serif;font-size:12px;color:var(--muted)">(latest 5)</small>` : ''}</h3><ol class="c-rules">${RL.map(r => `<li value="${r[0]}">${esc(r[1])} <span style="color:var(--muted)">— ${esc(r[2] || '')}</span></li>`).join('')}</ol></div>`;
   body.innerHTML = html;
   const ob = $('#cObey'); if (ob) ob.addEventListener('click', () => { cSend('obeyDone'); ob.disabled = true; });
   const fl = $('#cFlip'); if (fl) fl.addEventListener('pointerdown', e => { e.preventDefault(); if (!fl.disabled) { cSend('flip'); fl.style.transform = 'scale(.96)'; setTimeout(() => fl.style.transform = '', 120); } });
@@ -8104,6 +8120,7 @@ function renderCtrl() {
     rt.value = cDraft; if (focusedRule) rt.focus();
     rt.oninput = () => cDraft = rt.value;
     body.querySelectorAll('[data-sug]').forEach(b => b.onclick = () => { rt.value = cDraft = b.dataset.sug; });
+    $('#cSugMore').onclick = () => { cDraft = rt.value; SUGS_C = pickSugs(4, [...(H.rules || []).map(r => Array.isArray(r) ? r[1] : r.text), ...SUGS_C]); const box = body.querySelector('.sugs'); box.querySelectorAll('[data-sug]').forEach((b, i) => { const t = SUGS_C[i]; if (t) { b.dataset.sug = t; b.textContent = t; } }); fitCtrl(); };
     $('#cWrite').onclick = () => { const t = rt.value.trim(); if (!t) return rt.focus(); cSend('rule', { text: t }); cDraft = ''; };
     $('#cNoRule').onclick = () => { cSend('norule'); cDraft = ''; };
   }
@@ -8167,7 +8184,7 @@ $('#startBtn').onclick = () => {
 };
 
 // ---------- installable app + automatic updates (website version only) ----------
-const BUILD = '1795639454';
+const BUILD = '1795640705';
 if (STANDALONE) {
   try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
   let deferredInstall = null;
