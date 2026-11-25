@@ -2766,8 +2766,8 @@ function updateCamera() {
 }
 function fitCam() { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); goal.r = Math.max(goal.r, camera.aspect < 0.8 ? 28 : 21); }
 fitCam();
-let topView = false;
-$('#viewBtn').onclick = () => { topView = !topView; goal.phi = topView ? 0.03 : 0.95; if (topView) goal.theta = Math.round(goal.theta / (Math.PI * 2)) * Math.PI * 2; $('#viewBtn').textContent = topView ? '3D view' : 'Top view'; const eb = $('#ebView'); if (eb) eb.classList.toggle('on', topView); };
+let topView = false, cupsWasTop = false;
+$('#viewBtn').onclick = () => { if (!topView && mini && mini.type === 'cups') return toast('Bird\'s-eye view is off for the cup game 🥤'); topView = !topView; goal.phi = topView ? 0.03 : 0.95; if (topView) goal.theta = Math.round(goal.theta / (Math.PI * 2)) * Math.PI * 2; $('#viewBtn').textContent = topView ? '3D view' : 'Top view'; const eb = $('#ebView'); if (eb) eb.classList.toggle('on', topView); };
 
 // ---------- pointer ----------
 const el = renderer.domElement, ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
@@ -6990,6 +6990,8 @@ function startMini(type) {
   if (mini || goblin || toss) return;
   type = type || bagPick('mini', ['hot', 'boss', 'roulette', 'cups', 'hilo', 'tos']);
   musicStyle({ fieldgoal: 'metal', boss: 'boss', roulette: 'tension' }[type] || 'gameshow'); state.lastMini = type;
+  // the cups can't be read from straight above: tilt to the normal view for this game, then go back after
+  if (type === 'cups' && topView) { cupsWasTop = true; $('#viewBtn').click(); }
   hideResult(); clearPoop(); clearBurgers(); coin.visible = false; ensureAudio();
   mini = { type, stage: 'intro', t: 0, holder: null, hp: 0, max: 0, left: 10, G: null, hits: {}, flinch: 0, hitSnd: 0 };
   jazzDuck(true);
@@ -7075,6 +7077,7 @@ function bossEnd(won) {
 }
 function endMini() {
   if (!mini) return; musicStyle('jazz');
+  if (cupsWasTop) { cupsWasTop = false; if (!topView) setTimeout(() => { if (!topView && !mini) $('#viewBtn').click(); }, 600); }
   $('#slot').classList.remove('on');
   if (mini.type === 'cups') cupsCleanup();
   if (mini.type === 'fieldgoal') fgCleanup();
@@ -8184,7 +8187,7 @@ $('#startBtn').onclick = () => {
 };
 
 // ---------- installable app + automatic updates (website version only) ----------
-const BUILD = '1795640705';
+const BUILD = '1795641393';
 if (STANDALONE) {
   try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
   let deferredInstall = null;
