@@ -198,10 +198,10 @@
   @keyframes cdPulse{50%{transform:scale(1.04)}}
   #lbVote h2{margin:16px 0 8px}
   .vt-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
-  .vt{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:150px;padding:10px 14px;border-radius:14px;background:rgba(255,255,255,.07);border:2px solid var(--line);color:var(--ink);font-weight:700;cursor:pointer}
+  .vt{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:140px;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.07);border:2px solid var(--line);color:var(--ink);font-weight:700;cursor:pointer}
   .vt.sel{border-color:#ffd84a;background:rgba(255,216,74,.14)}
   .vt-e{font-size:30px}.vt-n{font-size:15px}.vt-c{font-size:13px;color:#ffd84a;letter-spacing:1px}
-  .c-vts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}
+  .c-vts{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:8px}
   .c-vt{display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 4px;border-radius:14px;background:rgba(255,255,255,.08);border:2px solid rgba(255,255,255,.15);color:#fff;font:700 13px Inter,sans-serif}
   .c-vt.sel{border-color:#ffd84a;background:rgba(255,216,74,.18)}
   .c-vt b{color:#ffd84a;min-height:16px}
@@ -215,6 +215,24 @@
   #slugSay::after{content:'';position:absolute;left:50%;bottom:-14px;margin-left:-10px;border:10px solid transparent;border-top-color:#2a1a05;border-bottom:0}
   .c-cd h3{font-size:30px;color:#ffd84a}
   .lb-note{color:var(--muted);font-size:13px;margin-top:10px}
+  /* wide screens: two columns so the whole lobby fits without scrolling */
+  @media (min-width:900px) and (min-aspect-ratio:4/3){
+    .lb-card{width:min(1240px,96vw);display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);column-gap:clamp(24px,3vw,56px);align-items:center}
+    .lb-card>h1,.lb-card>.lb-note{grid-column:1/-1}
+    .lb-card h1{font-size:clamp(40px,6.5vh,72px);margin-bottom:1vh}
+    .lb-l,.lb-r{min-width:0}
+    .lb-r{background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:22px;padding:clamp(10px,1.8vh,22px) clamp(12px,1.5vw,24px)}
+    .lb-qr img,.lb-qr canvas{width:clamp(110px,19vh,180px);height:clamp(110px,19vh,180px)}
+    #lbJoin{font-size:clamp(14px,1.9vh,18px);margin:0 0 1.2vh}
+    .lb-card h2{margin:1.6vh 0 1vh}
+    #lbVote h2{margin:1.2vh 0 .8vh}
+    #lbVote h2:first-child{margin-top:0}
+    .vt-row{display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(6px,.8vw,12px)}
+    .vt{min-width:0;padding:clamp(6px,1.1vh,12px) 6px}
+    .vt-e{font-size:clamp(22px,3.4vh,32px)}.vt-n{font-size:clamp(12px,1.6vh,15px)}
+    #startBtn{margin-top:1.8vh;padding:clamp(10px,1.6vh,16px) 40px}
+    .lb-r .lb-note{margin:1vh 0 0}
+  }
   #subs{position:fixed;left:50%;bottom:34px;transform:translateX(-50%);z-index:30;display:none;flex-direction:column;align-items:center;gap:10px;width:min(920px,92vw);pointer-events:none}
   #subs.on{display:flex}
   #subsText{background:rgba(8,5,3,.82);color:#fff;font-size:clamp(20px,2.6vw,32px);font-weight:800;line-height:1.3;text-align:center;padding:14px 24px;border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.5);border:2px solid rgba(155,225,93,.55)}
@@ -600,16 +618,20 @@
 </div>
 <div id="lobby"><div class="lb-card">
   <h1>🍕 Pizza Box</h1>
+  <div class="lb-l">
   <div id="lbJoin"></div>
   <div class="lb-qr" id="lbQr"></div>
   <h2>Who's playing <span id="lbCount"></span></h2>
   <div id="lbList"></div>
   <form id="lbAdd" autocomplete="off"><input id="lbName" maxlength="16" placeholder="No phone? Add a name here"><button type="submit">Add</button></form>
+  </div>
+  <div class="lb-r">
   <div id="lbResume"></div>
   <div id="lbVote"></div>
   <button id="startBtn">Start game ▶</button>
   <div style="display:none"><button id="introBtn" class="c-link">▶ Watch the rules intro</button></div>
   <p class="lb-note">After you start, everyone draws their circle — on their phone, or right here.</p>
+  </div>
 </div></div>
 <div id="subs"><div id="subsText"></div><button id="skipIntro">Skip intro ⏭</button></div>
 <div id="splat"></div>
@@ -1619,7 +1641,10 @@ function stepMap(dt) { mapT += dt; if (mapTick) mapTick(mapT, dt); }
 // ---------- lobby voting + 10 second countdown ----------
 let VOTE = null, CD = null, RESUME = !CTRL && !WATCH && !!state.started;
 function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
-function newVote() { VOTE = { maps: shuffle(MAPS.map(m => m.id)).slice(0, 3), skins: shuffle(BOX_SKINS.map(s => s.id)).slice(0, 3), mv: {}, sv: {} }; }
+function newVote() { VOTE = { maps: [...shuffle(MAPS.map(m => m.id)).slice(0, 3), 'random'], skins: [...shuffle(BOX_SKINS.map(s => s.id)).slice(0, 3), 'random'], mv: {}, sv: {} }; }
+const RANDOM_PICK = { id: 'random', name: 'Random', emoji: '🎲' };
+const vMap = id => id === 'random' ? RANDOM_PICK : mapById(id), vSkin = id => id === 'random' ? RANDOM_PICK : skinById(id);
+function resolveRandom(k, id) { if (id !== 'random') return id; const all = (k === 'map' ? MAPS : BOX_SKINS).map(x => x.id), rest = all.filter(x => !(k === 'map' ? VOTE.maps : VOTE.skins).includes(x)); const pool = rest.length ? rest : all; return pool[Math.floor(Math.random() * pool.length)]; }
 const vName = it => it.mystery ? '?' : it.name, vEmoji = it => it.mystery ? '❓' : it.emoji;
 function voteCounts(k) { const ids = k === 'map' ? VOTE.maps : VOTE.skins, v = k === 'map' ? VOTE.mv : VOTE.sv; return ids.map(id => [id, Object.values(v).filter(x => x === id).length]); }
 function castVote(who, k, id) {
@@ -1630,11 +1655,11 @@ function castVote(who, k, id) {
 function voteWinner(k) { const c = voteCounts(k), max = Math.max(...c.map(x => x[1])); const top = c.filter(x => x[1] === max); return top[Math.floor(Math.random() * top.length)][0]; }
 function votePublic() {
   if (!VOTE) return null;
-  return { m: voteCounts('map').map(([id, n]) => [id, vName(mapById(id)), vEmoji(mapById(id)), n]), s: voteCounts('skin').map(([id, n]) => [id, vName(skinById(id)), vEmoji(skinById(id)), n]), cd: CD ? Math.max(0, Math.ceil((CD.end - Date.now()) / 1000)) : null };
+  return { m: voteCounts('map').map(([id, n]) => [id, vName(vMap(id)), vEmoji(vMap(id)), n]), s: voteCounts('skin').map(([id, n]) => [id, vName(vSkin(id)), vEmoji(vSkin(id)), n]), cd: CD ? Math.max(0, Math.ceil((CD.end - Date.now()) / 1000)) : null };
 }
 function renderVote() {
   const el = $('#lbVote'); if (!el || !VOTE) return;
-  const host = 'host', row = (k, list) => voteCounts(k).map(([id, n]) => { const it = k === 'map' ? mapById(id) : skinById(id), mine = (k === 'map' ? VOTE.mv : VOTE.sv)[host] === id; return `<button class="vt ${mine ? 'sel' : ''}" data-k="${k}" data-id="${id}"><span class="vt-e">${vEmoji(it)}</span><span class="vt-n">${esc(vName(it))}</span><span class="vt-c">${n ? '★'.repeat(Math.min(n, 8)) : '—'}</span></button>`; }).join('');
+  const host = 'host', row = (k, list) => voteCounts(k).map(([id, n]) => { const it = k === 'map' ? vMap(id) : vSkin(id), mine = (k === 'map' ? VOTE.mv : VOTE.sv)[host] === id; return `<button class="vt ${mine ? 'sel' : ''}" data-k="${k}" data-id="${id}"><span class="vt-e">${vEmoji(it)}</span><span class="vt-n">${esc(vName(it))}</span><span class="vt-c">${n ? '★'.repeat(Math.min(n, 8)) : '—'}</span></button>`; }).join('');
   el.innerHTML = `<h2>Vote the map 🗺️</h2><div class="vt-row">${row('map')}</div><h2>Vote the box 🍕</h2><div class="vt-row">${row('skin')}</div>`;
   el.querySelectorAll('.vt').forEach(b => b.onclick = () => castVote(host, b.dataset.k, b.dataset.id));
   const sb = $('#startBtn');
@@ -1654,7 +1679,7 @@ function startCountdown() {
 }
 function finishCountdown() {
   if ([...state.lobby, ...state.players].length < 2) { renderVote(); return; }
-  const mapId = voteWinner('map'), skinId = voteWinner('skin');
+  const mapId = resolveRandom('map', voteWinner('map')), skinId = resolveRandom('skin', voteWinner('skin'));
   setMap(mapId); applySkin(skinId); if (window.__fillLook) window.__fillLook();
   tone('triangle', 520, 1040, 0.35, 0.12);
   state.started = true; state.seeded = false; state.gobPid = null; save(); goblinTargetId(); renderUI(); renderLobby(); ensureAudio();
@@ -8111,7 +8136,7 @@ $('#startBtn').onclick = () => {
 };
 
 // ---------- installable app + automatic updates (website version only) ----------
-const BUILD = '1795636430';
+const BUILD = '1795636712';
 if (STANDALONE) {
   try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
   let deferredInstall = null;
