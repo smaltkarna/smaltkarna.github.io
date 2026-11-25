@@ -3117,7 +3117,7 @@ function startGoblin(coinPos, forceAct) {
     S2(0.6, u => fade(1 - u));
   } else if (plan.act === 'floss') {
     // ---- a goblin strolls in flossing his teeth… faster… FASTER… until the floss snaps ----
-    let fl = [], ph = 0, w = 7, lastHalf = 0, e0 = new THREE.Vector3(), whine = 0, mainL = [], under = null, dim = 0.32, flickT = 0, nextFlick = 1.2, gap = 0;
+    let jersey = null, fl = [], ph = 0, w = 7, lastHalf = 0, e0 = new THREE.Vector3(), whine = 0, mainL = [], under = null, dim = 0.32, flickT = 0, nextFlick = 1.2, gap = 0;
     // lights: dimmed, with the odd brief dip (never more than ~2 a second — no strobing)
     const flick = (dt = 1 / 60) => { gap += dt; flickT = Math.max(0, flickT - dt); if (flickT === 0 && gap > nextFlick) { flickT = 0.06 + Math.random() * 0.1; gap = 0; nextFlick = 0.5 + Math.random() * 1.6; }
       const k = flickT > 0 ? 0.25 : 1; mainL.forEach(([l, v]) => l.intensity = v * dim * k); if (under) { G.root.updateMatrixWorld(true); under.position.copy(wpos(G.mouthPt)).add(new THREE.Vector3(Math.sin(G.root.rotation.y) * 0.5, -0.55, Math.cos(G.root.rotation.y) * 0.5)); under.intensity = 1.6 * (flickT > 0 ? 0.4 : 1); } };
@@ -3128,7 +3128,14 @@ function startGoblin(coinPos, forceAct) {
     const pose = (amp, t) => { const s = Math.sin(ph); G.arms[0].rotation.set(-1.95, 0, -0.42 + amp * s); G.arms[1].rotation.set(-1.95, 0, 0.42 + amp * s); G.head.rotation.set(-0.1, -0.12 * s * Math.min(1, amp * 2), 0); G.jaw.scale.y = 0.75; };
     const drawFloss = () => { if (!fl.length) return; G.root.updateMatrixWorld(true); const a = wpos(G.arms[0].hand), b = wpos(G.arms[1].hand), m = wpos(G.mouthPt); seg(fl[0], a, m); seg(fl[1], m, b); };
     const stroke = dt => { ph += w * dt; const half = Math.floor(ph / Math.PI); if (half !== lastHalf) { lastHalf = half; if (w < 40) tone('sine', 2300 + Math.random() * 300, 2700, 0.04, 0.03); } };
-    S2(0.01, () => {}, () => { const mat = new THREE.MeshStandardMaterial({ color: '#f4fbff', emissive: '#bfe8ff', emissiveIntensity: 0.6 }); for (let i = 0; i < 2; i++) { const c = new THREE.Mesh(new THREE.CylinderGeometry(0.014, 0.014, 1, 6), mat); scene.add(c); fl.push(c); } cleanups.push(() => { fl.forEach(kill); mainL.forEach(([l, v]) => l.intensity = v); mainL = []; kill(under); });
+    S2(0.01, () => {}, () => { const mat = new THREE.MeshStandardMaterial({ color: '#f4fbff', emissive: '#bfe8ff', emissiveIntensity: 0.6 }); for (let i = 0; i < 2; i++) { const c = new THREE.Mesh(new THREE.CylinderGeometry(0.014, 0.014, 1, 6), mat); scene.add(c); fl.push(c); } cleanups.push(() => { fl.forEach(kill); mainL.forEach(([l, v]) => l.intensity = v); mainL = []; kill(under); kill(jersey); });
+      // a Morocco football shirt: red, green star, MOROCCO across the chest (front and back)
+      G.root.updateMatrixWorld(true); { const bb = new THREE.Box3().setFromObject(G.belly), sz = bb.getSize(new THREE.Vector3()), ctr = bb.getCenter(new THREE.Vector3()), r = Math.max(sz.x, sz.z) * 0.56;
+        const tex = textTex(1024, 512, (x, W, H) => { x.fillStyle = '#c1272d'; x.fillRect(0, 0, W, H); x.fillStyle = '#9e1b22'; x.fillRect(0, 0, W, 26); x.fillRect(0, H - 26, W, 26);
+          [0.25, 0.75].forEach(cx => { const X = cx * W, Y = H * 0.36, R = 70; x.strokeStyle = '#006233'; x.lineWidth = 16; x.lineJoin = 'miter'; x.beginPath(); for (let k = 0; k <= 5; k++) { const a = -Math.PI / 2 + k * 4 * Math.PI / 5; k ? x.lineTo(X + Math.cos(a) * R, Y + Math.sin(a) * R) : x.moveTo(X + Math.cos(a) * R, Y + Math.sin(a) * R); } x.closePath(); x.stroke();
+            x.fillStyle = '#ffffff'; x.font = '900 52px Inter, sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText('MOROCCO', X, H * 0.72); }); });
+        jersey = new THREE.Mesh(new THREE.CylinderGeometry(r * 0.97, r * 1.04, sz.y * 0.62, 32, 1, true), new THREE.MeshStandardMaterial({ map: tex, roughness: 0.75, side: THREE.DoubleSide }));
+        jersey.position.copy(ctr).add(new THREE.Vector3(0, sz.y * 0.12, 0)); jersey.rotation.y = G.root.rotation.y - Math.PI / 2; scene.add(jersey); G.body.attach(jersey); }
       mainL = scene.children.filter(o => o.isLight && o.parent === scene).map(l => [l, l.intensity]); under = new THREE.PointLight('#8affc0', 1.6, 3.2, 1.6); scene.add(under); musicStyle('horror'); jazzDuck(false); neutral();
       const ang = Math.random() * Math.PI * 2; e0.set(stand.x + Math.cos(ang) * 4, TOP, stand.z + Math.sin(ang) * 4); G.root.position.copy(e0); G.root.rotation.y = yawTo(e0, stand); });
     // strolls in, casually flossing
@@ -5850,7 +5857,7 @@ $('#startBtn').onclick = () => {
 };
 
 // ---------- installable app + automatic updates (website version only) ----------
-const BUILD = '1795586660';
+const BUILD = '1795587144';
 if (STANDALONE) {
   try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
   let deferredInstall = null;
