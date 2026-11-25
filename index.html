@@ -407,6 +407,42 @@
   .wu-list,.wu-back{background:rgba(255,255,255,.08);color:#f6efe4}
   #gobPay{position:fixed;left:50%;top:12px;z-index:95;width:min(380px,92vw);transform:translate(-50%,-140%);transition:transform .45s cubic-bezier(.2,1.3,.4,1);background:rgba(250,250,252,.97);color:#111;border-radius:22px;padding:12px 14px 14px;box-shadow:0 14px 40px rgba(0,0,0,.45);font-family:Inter,system-ui,sans-serif}
   #gobPay.on{transform:translate(-50%,0)}
+  /* ---- main-screen HUD (concept E1): order ticket, rules card, turn sign at the bottom ---- */
+  #eTicket,#eRules,#eTurn,#eBtns{display:none}
+  body.hudE #hud,body.hudE #help,body.hudE #menuBtn,body.hudE #jazzBtn,body.hudE #inviteBtn,body.hudE #installBtn{display:none!important}
+  body.hudE #eTicket,body.hudE #eRules,body.hudE #eTurn,body.hudE #eBtns{display:block}
+  body.hudE #eBtns{display:flex}
+  body.hudE.lobby #eTicket,body.hudE.lobby #eRules,body.hudE.lobby #eTurn,body.hudE.lobby #eBtns,body.hudE.intro #eTicket,body.hudE.intro #eRules,body.hudE.intro #eTurn,body.hudE.intro #eBtns,body.watching #eTicket,body.watching #eRules,body.watching #eTurn,body.watching #eBtns{display:none!important}
+  body.hudE.fgmode #eTicket,body.hudE.fgmode #eRules,body.hudE.fgmode #eTurn{opacity:0}
+  body.hudE:not(.panel-closed) #eTicket{display:none}
+  #eTicket{position:fixed;top:0;left:clamp(10px,1.4vw,22px);width:clamp(240px,23vw,350px);z-index:6;background:#fffaf0;color:#1a120c;padding:clamp(12px,1.3vw,20px) clamp(14px,1.4vw,22px) clamp(24px,2.4vw,34px);font-family:'Courier New',ui-monospace,monospace;box-shadow:0 12px 30px rgba(0,0,0,.45);clip-path:polygon(0 0,100% 0,100% 96%,94% 100%,88% 96%,82% 100%,76% 96%,70% 100%,64% 96%,58% 100%,52% 96%,46% 100%,40% 96%,34% 100%,28% 96%,22% 100%,16% 96%,10% 100%,4% 96%,0 100%)}
+  .et-h{text-align:center;font-weight:900;font-size:clamp(16px,1.5vw,23px)}
+  .et-sub{text-align:center;font-size:clamp(11px,.95vw,14px);opacity:.7;margin:2px 0 10px;text-transform:uppercase}
+  .et-row{display:flex;align-items:center;gap:10px;font-size:clamp(17px,1.75vw,26px);font-weight:900;padding:5px 8px;margin:2px -8px;border-radius:6px}
+  .et-row.up{background:#1a120c;color:#ffd84a}
+  .et-bar{width:clamp(10px,.9vw,14px);height:1.15em;border-radius:3px;flex:none}
+  .et-nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-transform:uppercase}
+  .et-n{white-space:nowrap}
+  .et-foot{border-top:2px dashed rgba(26,18,12,.5);margin-top:10px;padding-top:8px;font-size:clamp(12px,1vw,15px);font-weight:700}
+  .et-foot b{font-size:1.25em;letter-spacing:.12em}
+  #eRules{position:fixed;top:clamp(12px,1.4vw,22px);right:clamp(12px,1.4vw,22px);width:clamp(220px,21vw,320px);z-index:6;background:#c9a271;color:#2a1808;padding:clamp(12px,1.1vw,18px) clamp(14px,1.2vw,20px);border-radius:6px;transform:rotate(-1.5deg);box-shadow:0 10px 24px rgba(0,0,0,.45);background-image:repeating-linear-gradient(90deg,rgba(0,0,0,.03) 0 2px,transparent 2px 6px)}
+  .er-h{font-weight:900;font-size:clamp(14px,1.3vw,20px);letter-spacing:.02em}
+  #erText{margin:8px 0 4px;font-family:"Permanent Marker",cursive;font-size:clamp(18px,1.9vw,29px);line-height:1.25}
+  .er-by{font-size:clamp(12px,1vw,15px);font-weight:800;opacity:.75}
+  #eRules.live{outline:5px solid #ffd84a;outline-offset:3px}
+  #eRules.none{opacity:.85}
+  #eRules.none #erText{font-family:inherit;font-size:clamp(14px,1.2vw,18px);font-weight:700}
+  #eTurn{position:fixed;left:50%;bottom:clamp(14px,2vw,28px);transform:translateX(-50%);z-index:6;text-align:center;pointer-events:none;max-width:70vw}
+  #etSign{display:inline-flex;align-items:center;gap:.4em;background:#c8202a;color:#fff;padding:.28em .9em;border-radius:14px;border:4px solid #fffaf0;box-shadow:0 10px 26px rgba(0,0,0,.45);font-weight:900;font-size:clamp(22px,2.7vw,40px);letter-spacing:.02em;white-space:nowrap}
+  #etSign .dot{width:.55em;height:.55em;border-radius:50%;border:3px solid #fffaf0;display:inline-block}
+  #etSign small{font-size:.42em;font-weight:800;opacity:.85;letter-spacing:.06em}
+  #etLast{margin-top:10px;display:inline-block;background:#fffaf0;color:#1a120c;padding:.35em 1em;border-radius:999px;font-weight:800;font-size:clamp(13px,1.25vw,19px);box-shadow:0 6px 16px rgba(0,0,0,.35);max-width:70vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  #etLast:empty{display:none}
+  #eBtns{position:fixed;right:clamp(12px,1.4vw,22px);bottom:clamp(12px,1.4vw,22px);z-index:8;gap:10px}
+  #eBtns button{width:clamp(44px,3.8vw,58px);height:clamp(44px,3.8vw,58px);border-radius:50%;background:#fffaf0;border:0;font-size:clamp(18px,1.6vw,24px);box-shadow:0 6px 16px rgba(0,0,0,.4);cursor:pointer;display:grid;place-items:center;padding:0}
+  #eBtns button.off{opacity:.5}
+  body.hudE #hint,body.hudE #result{--off:0px}
+
   .gp-head{display:flex;align-items:center;gap:8px;font-size:13px;color:#555}
   .gp-head b{color:#111;font-size:14px}
   .gp-ic{width:26px;height:26px;border-radius:7px;background:#14a845;display:inline-flex;align-items:center;justify-content:center;font-size:16px}
@@ -528,6 +564,10 @@
   <button id="tossBtn">🎯 Flip the coin <kbd>Space</kbd></button>
   <button id="viewBtn">Top view</button>
 </div>
+<div id="eTicket"><div class="et-h">🍕 ORDER #<span id="etNo">001</span></div><div class="et-sub" id="etSub"></div><div id="etList"></div><div class="et-foot" id="etFoot"></div></div>
+<div id="eRules"><div class="er-h" id="erHead">📜 RULE IN PLAY</div><div id="erText"></div><div class="er-by" id="erBy"></div></div>
+<div id="eTurn"><div id="etSign"></div><div id="etLast"></div></div>
+<div id="eBtns"><button id="ebMusic" title="Music">🎵</button><button id="ebPhones" title="Invite phones">📱</button><button id="ebMenu" title="Menu">☰</button></div>
 <button id="jazzBtn">🎵 Groove</button>
 <button id="inviteBtn">📱 Invite phones</button>
 <button id="installBtn">⬇️ Install app</button>
@@ -2613,7 +2653,7 @@ function stepEvents(dt) {
   try { const e = list[Math.floor(Math.random() * list.length)](); e.t = 0; EV = e; } catch (er) { console.warn(er); evClear(); }
 }
 
-window.__look = { testMusic: () => { ensureAudio(); if (!jazz.out) jazzGraph(); mBus(); const errs = []; Object.entries(MAP_MUSIC).forEach(([k, tr]) => { try { for (let b = 0; b < 72; b++) tr.fn(b, actx.currentTime + 1 + b * 0.01); } catch (e) { errs.push(k + ': ' + e.message); } }); return errs.join(' | ') || 'all ok ' + Object.keys(MAP_MUSIC).length; }, testModels: () => { const K = ['pigeon', 'gull', 'dove', 'jay', 'vulture', 'stork']; K.forEach((k, i) => { const b = mkBirdPro(k, 1.6); b.position.set(-5 + i * 2, 2.5, 2); b.userData.wings.forEach(w => w.rotation.x = w.userData.s * 0.5); scene.add(b); }); const bt = mkBat(1.6); bt.position.set(7, 2.5, 2); scene.add(bt); const pg2 = mkPigeon(); pg2.position.set(-3, 1, 4.5); pg2.scale.setScalar(2); scene.add(pg2); const d = MAP_EVENTS.ucsc[0](); d.t = 0; d.tick(0.5, 1); return evGroup.children.length; }, fireEvent: (k) => { evClear(); const l = MAP_EVENTS[state.map || 'party']; const e = l[k % l.length](); e.t = 0; EV = e; }, setMap, applySkin, LIDCTL, castVote, get goal() { return goal; }, get mapGroup() { return mapGroup; }, buildGoblin: o => buildGoblin(o), scene, get VOTE() { return VOTE; } };
+window.__look = { landAt: (kind) => { const R0 = Math.random; Math.random = () => 0.95; try { let x, z; if (kind === 'person') { const p = state.players[1]; x = p.x + 0.1; z = p.z; } else { const r = state.rules.find(r => !state.players.some(p => Math.hypot(p.x - r.x, p.z - r.z) < p.r + r.r + 0.4)) || state.rules[0]; x = r.x; z = r.z; } coin.visible = true; coin.position.set(x, TOP + 0.03, z); coin.rotation.set(0, 0.4, 0); evaluate(x, z); renderUI(); } finally { Math.random = R0; } }, testObey: () => startObey(state.players[0], state.rules[2]), testMusic: () => { ensureAudio(); if (!jazz.out) jazzGraph(); mBus(); const errs = []; Object.entries(MAP_MUSIC).forEach(([k, tr]) => { try { for (let b = 0; b < 72; b++) tr.fn(b, actx.currentTime + 1 + b * 0.01); } catch (e) { errs.push(k + ': ' + e.message); } }); return errs.join(' | ') || 'all ok ' + Object.keys(MAP_MUSIC).length; }, testModels: () => { const K = ['pigeon', 'gull', 'dove', 'jay', 'vulture', 'stork']; K.forEach((k, i) => { const b = mkBirdPro(k, 1.6); b.position.set(-5 + i * 2, 2.5, 2); b.userData.wings.forEach(w => w.rotation.x = w.userData.s * 0.5); scene.add(b); }); const bt = mkBat(1.6); bt.position.set(7, 2.5, 2); scene.add(bt); const pg2 = mkPigeon(); pg2.position.set(-3, 1, 4.5); pg2.scale.setScalar(2); scene.add(pg2); const d = MAP_EVENTS.ucsc[0](); d.t = 0; d.tick(0.5, 1); return evGroup.children.length; }, fireEvent: (k) => { evClear(); const l = MAP_EVENTS[state.map || 'party']; const e = l[k % l.length](); e.t = 0; EV = e; }, setMap, applySkin, LIDCTL, castVote, get goal() { return goal; }, get mapGroup() { return mapGroup; }, buildGoblin: o => buildGoblin(o), scene, get VOTE() { return VOTE; } };
 LIDCTL.pos = LIDCTL.want = (CTRL || WATCH || state.started) ? 1 : 0; stepLid(0);
 if (!CTRL && state.map && state.map !== 'party') setTimeout(() => setMap(state.map), 0);
 if (state.skin && curSkin().photo) faceImg();
@@ -2809,6 +2849,7 @@ function renderUI() {
   if (mini) $('#tossBtn').disabled = mini.stage !== 'play' || mini.type === 'roulette' || mini.type === 'cups';
   if (obey && !mini) { $('#tossBtn').disabled = false; $('#tossBtn').innerHTML = `✅ Rule done — next turn <kbd>Space</kbd>`; }
   const rr = $('#roundRule'); if (rr) { if (state.roundRule && !mini) { rr.innerHTML = `🎰 This round, everyone: <b>${esc(state.roundRule.text)}</b> · ${state.roundRule.left} turn${state.roundRule.left === 1 ? '' : 's'} left`; rr.classList.add('on'); } else rr.classList.remove('on'); }
+  try { renderE(); } catch (e) {}
   hostPublish(); if (typeof renderLobby === 'function') renderLobby();
 }
 $('#playerList').onclick = e => {
@@ -2828,6 +2869,38 @@ document.querySelectorAll('.foldBtn').forEach(b => {
 });
 $('#menuBtn').onclick = () => { if (mobile()) $('#panel').classList.toggle('open'); else setPanel(true); };
 $('#panelClose').onclick = () => { if (mobile()) $('#panel').classList.remove('open'); else setPanel(false); };
+
+function renderE() {
+  if (!document.body.classList.contains('hudE')) return;
+  const cur = current(), ok = state.players.length >= 2;
+  $('#etNo').textContent = String((state.rounds || 0) + 1).padStart(3, '0');
+  $('#etSub').textContent = `Table 1 · ${(typeof mapById === 'function' ? mapById(state.map).name : '')}`;
+  $('#etList').innerHTML = state.players.map(p => `<div class="et-row ${ok && cur && p.id === cur.id ? 'up' : ''}"><span class="et-bar" style="background:${p.color}"></span><span class="et-nm">${esc(p.name)}</span><span class="et-n">${state.drinks[p.id] || 0} 🍺</span></div>`).join('') || '<div class="et-row" style="opacity:.6">No players yet</div>';
+  const code = ($('#roomCode') && $('#roomCode').textContent || '').trim(), ph = ($('#phones') && $('#phones').textContent || '').trim();
+  $('#etFoot').innerHTML = code ? `📱 JOIN: <b>${esc(code.replace(/^[^A-Z0-9]*/i, ''))}</b>${ph ? ` · ${esc(ph)}` : ''}` : (ph ? esc(ph) : '📱 Flip from your phones');
+  const LR = obey ? { text: obey.text, who: obey.name, n: (state.lastRule || {}).n, by: (state.lastRule || {}).by } : state.lastRule, er = $('#eRules');
+  er.classList.toggle('live', !!obey); er.classList.toggle('none', !LR);
+  $('#erHead').textContent = obey ? `📜 ${obey.name.toUpperCase()} MUST DO` : LR ? '📜 LAST RULE LANDED ON' : '📜 RULE IN PLAY';
+  $('#erText').textContent = LR ? LR.text : 'No one has landed on a rule yet';
+  $('#erBy').textContent = LR ? [LR.n ? `Rule #${LR.n}` : '', LR.by ? `written by ${LR.by}` : '', !obey && LR.who ? `landed by ${LR.who}` : ''].filter(Boolean).join(' · ') : `${state.rules.length} rule${state.rules.length === 1 ? '' : 's'} on the box`;
+  let sign;
+  if (!ok) sign = 'ADD AT LEAST 2 PLAYERS';
+  else if (mini) sign = $('#tossBtn').textContent.replace(/Space$/i, '').trim().toUpperCase();
+  else if (goblin) sign = '👺 GOBLIN TIME!';
+  else if (obey) sign = `📜 ${esc(cur.name.toUpperCase())}: DO THE RULE`;
+  else if (toss) sign = `🪙 ${esc(cur.name.toUpperCase())} IS FLIPPING…`;
+  else sign = `🎯 ${esc(cur.name.toUpperCase())}'S TURN <small>FLIP ON YOUR PHONE</small>`;
+  $('#etSign').innerHTML = sign; $('#etSign').style.background = ok && cur ? `linear-gradient(90deg, ${cur.color} 0 14px, #c8202a 14px)` : '#c8202a';
+  $('#etLast').textContent = state.log[0] ? 'Last: ' + state.log[0] : '';
+  const mb = $('#ebMusic'); if (mb) mb.classList.toggle('off', !jazz.on);
+}
+if (!CTRL && !WATCH) {
+  document.body.classList.add('hudE');
+  try { if (localStorage.getItem('pizzabox-hudE') !== '1') { localStorage.setItem('pizzabox-hudE', '1'); setPanel(false); } } catch (e) {}
+  $('#ebMusic').onclick = () => { $('#jazzBtn').click(); renderE(); };
+  $('#ebPhones').onclick = () => $('#inviteBtn').click();
+  $('#ebMenu').onclick = () => { if (mobile()) $('#panel').classList.toggle('open'); else setPanel(document.body.classList.contains('panel-closed')); };
+}
 $('#clearRules').onclick = () => { state.rules = []; addLog('🧽 Rules wiped'); drawTop(); save(); renderUI(); };
 let armed = 0;
 $('#newGame').onclick = e => {
@@ -3013,6 +3086,7 @@ function evaluate(x, z) {
 var obey = null;
 function startObey(p, r) {
   obey = { pid: p.id, name: p.name, text: r.text, color: r.color, t0: Date.now() };
+  state.lastRule = { text: r.text, by: r.by || '', n: state.rules.indexOf(r) + 1, who: p.name, color: p.color };
   $('#result').classList.add('hold'); $('#obeyBtn').innerHTML = `✅ ${esc(p.name)} did it — next turn <kbd>Space</kbd>`; $('#obeyBtn').style.display = '';
   clearTimeout(obey.timer); obey.timer = setTimeout(() => finishObey(), 180000);
   renderUI(); hostPublish();
@@ -6415,7 +6489,7 @@ function showGameOverCard() {
 function resetAfterDoom(full) {
   $('#gameover').classList.remove('on', 'card'); clearGuts(); gameOver = false; shake = 0; musicStyle('jazz'); jazzDuck(false);
   if (full) state = { players: [], rules: [], turn: 0, log: [], playTime: 0, rounds: 0, drinks: {}, clockV2: true, lobby: [], started: false };
-  else Object.assign(state, { rules: [], turn: 0, log: [], playTime: 0, rounds: 0, drinks: {}, clockV2: true });
+  else Object.assign(state, { rules: [], turn: 0, log: [], playTime: 0, rounds: 0, drinks: {}, clockV2: true, lastRule: null });
   coin.visible = false; coin.scale.set(1, 1, 1); state.yugoWelcomed = false; state.seeded = false; if (!full) seedRules(); drawTop(); save(); renderUI();
 }
 $('#goAgain').onclick = () => resetAfterDoom(false);
@@ -7999,7 +8073,7 @@ $('#startBtn').onclick = () => {
 };
 
 // ---------- installable app + automatic updates (website version only) ----------
-const BUILD = '1795634134';
+const BUILD = '1795635655';
 if (STANDALONE) {
   try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
   let deferredInstall = null;
