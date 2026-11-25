@@ -218,18 +218,31 @@
   #slugSay::after{content:'';position:absolute;left:50%;bottom:-14px;margin-left:-10px;border:10px solid transparent;border-top-color:#2a1a05;border-bottom:0}
   .c-cd h3{font-size:30px;color:#ffd84a}
   .lb-note{color:var(--muted);font-size:13px;margin-top:10px}
-  /* keep the whole lobby on one screen */
-  @media (min-width:900px){
-    .lb-card{width:min(980px,96vw)}
-    .lb-card h1{font-size:clamp(40px,6.5vh,72px);margin-bottom:1vh}
-    .lb-l{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-areas:"j h" "q l" "q a";column-gap:clamp(24px,3vw,48px);align-items:center}
-    #lbJoin{grid-area:j}.lb-qr{grid-area:q;justify-self:center;align-self:start}
-    .lb-l>h2{grid-area:h;align-self:end}#lbList{grid-area:l}#lbAdd{grid-area:a;margin-top:10px;width:100%}
-    .lb-qr img,.lb-qr canvas{width:clamp(110px,18vh,170px);height:clamp(110px,18vh,170px)}
-    #lbJoin{font-size:clamp(14px,1.9vh,18px);margin:0 0 1vh}
-    .lb-card h2{margin:1.2vh 0 .8vh}
-    #startBtn{margin-top:1.6vh;padding:clamp(10px,1.5vh,16px) 40px}
-  }
+  /* lobby: one centred column, scaled to the screen height so it never needs scrolling */
+  .lb-card h1{font-size:clamp(38px,7vh,80px)}
+  #lbJoin{margin:.4vh 0 1vh;font-size:clamp(14px,2vh,18px);line-height:1.4}
+  #lbJoin b.code{font-size:clamp(24px,3.8vh,34px);margin:.6vh 0}
+  .lb-qr{padding:clamp(6px,1vh,10px)}
+  .lb-qr img,.lb-qr canvas{width:clamp(100px,20vh,170px);height:clamp(100px,20vh,170px)}
+  .lb-card h2{margin:clamp(8px,1.8vh,18px) 0 clamp(6px,1vh,10px)}
+  #lbVote{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:clamp(10px,2vh,18px) auto 0;max-width:760px}
+  .vgrp{background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:16px;padding:10px}
+  .vgrp h4{margin:0 0 8px;font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:var(--muted)}
+  .vgrp .vt-row{display:grid;grid-template-columns:repeat(4,1fr);gap:6px!important}
+  .vgrp .vt{flex-direction:column;border-radius:12px;padding:clamp(5px,1vh,8px) 4px;gap:3px;justify-content:center}
+  .vgrp .vt-e{font-size:clamp(18px,2.8vh,24px)}.vgrp .vt-n{font-size:11px;white-space:normal;text-align:center;line-height:1.15;max-width:none}
+  #startBtn{margin-top:clamp(10px,2vh,18px);padding:clamp(10px,1.6vh,16px) 40px}
+  .lb-note{margin-top:clamp(4px,1vh,10px)}
+  @media (max-width:620px){#lbVote{grid-template-columns:1fr}}
+  /* add-a-player pop-up from the corner */
+  #lbAddBtn{position:fixed;left:22px;bottom:22px;z-index:16;width:58px;height:58px;border-radius:50%;background:#fffaf0;border:0;font-size:26px;display:grid;place-items:center;padding:0;box-shadow:0 6px 16px rgba(0,0,0,.5);cursor:pointer}
+  #lbAddBtn.on{background:#ffd84a}
+  #lbAddPop{position:fixed;left:22px;bottom:92px;z-index:16;background:#fffaf0;color:#2a1606;border-radius:18px;padding:14px;width:300px;box-shadow:0 14px 40px rgba(0,0,0,.6);font:700 14px Inter,sans-serif;display:none;text-align:left}
+  #lbAddPop.open{display:block;animation:pop .25s cubic-bezier(.2,1.6,.4,1)}
+  #lbAddPop #lbAdd{display:block;max-width:none;margin:0}
+  #lbAddPop #lbAdd input{width:100%;box-sizing:border-box;background:#fff;border:2px solid #e2d6c2;color:#2a1606;border-radius:10px;padding:10px;margin:8px 0}
+  #lbAddPop #lbAdd button{width:100%;padding:10px;border:0;border-radius:10px;background:#9be15d;color:#10230a;font:900 15px Inter,sans-serif;cursor:pointer}
+  body.resume #lbAddBtn,body.resume #lbAddPop{display:none!important}
   #subs{position:fixed;left:50%;bottom:34px;transform:translateX(-50%);z-index:30;display:none;flex-direction:column;align-items:center;gap:10px;width:min(920px,92vw);pointer-events:none}
   #subs.on{display:flex}
   #subsText{background:rgba(8,5,3,.82);color:#fff;font-size:clamp(20px,2.6vw,32px);font-weight:800;line-height:1.3;text-align:center;padding:14px 24px;border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.5);border:2px solid rgba(155,225,93,.55)}
@@ -613,14 +626,13 @@
     <div class="go-btns"><button id="goAgain">Play again — same crew</button><button id="goNew">New game</button></div>
   </div>
 </div>
-<div id="lobby"><div class="lb-card">
+<div id="lobby"><button id="lbAddBtn" title="Add a player without a phone">➕</button><div id="lbAddPop">➕ Add a player without a phone<form id="lbAdd" autocomplete="off"><input id="lbName" maxlength="16" placeholder="Their name"><button type="submit">Add to game</button></form></div><div class="lb-card">
   <h1>🍕 Pizza Box</h1>
   <div class="lb-l">
   <div id="lbJoin"></div>
   <div class="lb-qr" id="lbQr"></div>
   <h2>Who's playing <span id="lbCount"></span></h2>
   <div id="lbList"></div>
-  <form id="lbAdd" autocomplete="off"><input id="lbName" maxlength="16" placeholder="No phone? Add a name here"><button type="submit">Add</button></form>
   </div>
   <div class="lb-r">
   <div id="lbResume"></div>
@@ -1657,7 +1669,7 @@ function votePublic() {
 function renderVote() {
   const el = $('#lbVote'); if (!el || !VOTE) return;
   const host = 'host', row = (k, list) => voteCounts(k).map(([id, n]) => { const it = k === 'map' ? vMap(id) : vSkin(id), mine = (k === 'map' ? VOTE.mv : VOTE.sv)[host] === id; return `<button class="vt ${mine ? 'sel' : ''}" data-k="${k}" data-id="${id}"><span class="vt-e">${vEmoji(it)}</span><span class="vt-n">${esc(vName(it))}</span><span class="vt-c">${n ? '★' + n : ''}</span></button>`; }).join('');
-  el.innerHTML = `<div class="vt-lab">Vote map 🗺️</div><div class="vt-row">${row('map')}</div><div class="vt-lab">Vote box 🍕</div><div class="vt-row">${row('skin')}</div>`;
+  el.innerHTML = `<div class="vgrp"><h4>Vote map 🗺️</h4><div class="vt-row">${row('map')}</div></div><div class="vgrp"><h4>Vote box 🍕</h4><div class="vt-row">${row('skin')}</div></div>`;
   el.querySelectorAll('.vt').forEach(b => b.onclick = () => castVote(host, b.dataset.k, b.dataset.id));
   const sb = $('#startBtn');
   if (CD) { sb.textContent = `Starting in ${Math.max(0, Math.ceil((CD.end - Date.now()) / 1000))}…  (tap to cancel)`; sb.classList.add('counting'); }
@@ -8121,6 +8133,10 @@ function renderLobby() {
   else $('#lbJoin').innerHTML = 'Open this same page on your phone to join (it must be shared with you on claude.ai), or scan:';
   if (lbQrFor !== url && window.QRCode && (!STANDALONE || ROOM_CODE)) { lbQrFor = url; $('#lbQr').innerHTML = ''; try { new QRCode($('#lbQr'), { text: url, width: 340, height: 340, colorDark: '#1b1410', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M }); } catch (e) {} }
 }
+{ const pop = $('#lbAddPop'), btn = $('#lbAddBtn'); const setPop = o => { pop.classList.toggle('open', o); btn.classList.toggle('on', o); btn.textContent = o ? '✕' : '➕'; if (o) setTimeout(() => $('#lbName').focus(), 30); };
+  btn.onclick = e => { e.stopPropagation(); setPop(!pop.classList.contains('open')); };
+  document.addEventListener('pointerdown', e => { if (pop.classList.contains('open') && !pop.contains(e.target) && e.target !== btn) setPop(false); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && pop.classList.contains('open')) setPop(false); }); }
 $('#lbAdd').addEventListener('submit', e => { e.preventDefault(); const n = $('#lbName').value.trim(); if (!n) return; if (nameTaken(n)) return toast('That name is already in the game'); addToLobby(n); $('#lbName').value = ''; });
 { const ms = $('#mapSel'), ss = $('#skinSel');
   const fill = () => { ms.innerHTML = MAPS.map(m => `<option value="${m.id}" ${m.id === (state.map || 'party') ? 'selected' : ''}>${m.emoji} ${m.name}</option>`).join(''); ss.innerHTML = BOX_SKINS.map(k => `<option value="${k.id}" ${k.id === curSkin().id ? 'selected' : ''}>${k.emoji} ${k.name}</option>`).join(''); };
@@ -8133,7 +8149,7 @@ $('#startBtn').onclick = () => {
 };
 
 // ---------- installable app + automatic updates (website version only) ----------
-const BUILD = '1795637011';
+const BUILD = '1795637583';
 if (STANDALONE) {
   try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
   let deferredInstall = null;
