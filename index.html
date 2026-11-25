@@ -2306,16 +2306,23 @@ function buildBathHall() {
   const M = (c, o = {}) => new THREE.MeshStandardMaterial(Object.assign({ color: c, roughness: 0.8 }, o));
   const E = (c, i = 1.3) => new THREE.MeshStandardMaterial({ color: c, emissive: c, emissiveIntensity: i });
   const box = (w, h, d, mat, x, y, z, par = g) => { const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat); m.position.set(x, y, z); m.castShadow = m.receiveShadow = true; par.add(m); return m; };
-  const tiles = new THREE.MeshStandardMaterial({ roughness: 0.5, map: textTex(256, 256, (x, W, H) => { for (let i = 0; i < 8; i++) for (let j = 0; j < 8; j++) { x.fillStyle = (i + j) % 2 ? '#e8e2d6' : '#3a3a40'; x.fillRect(i * 32, j * 32, 32, 32); } }) });
+  // zellige floor tiles: little eight-point stars in blue, green and white
+  const tiles = new THREE.MeshStandardMaterial({ roughness: 0.35, map: textTex(256, 256, (x, W, H) => { x.fillStyle = '#f3ead8'; x.fillRect(0, 0, W, H);
+    for (let i = 0; i < 4; i++) for (let j = 0; j < 4; j++) { const cx = i * 64 + 32, cy = j * 64 + 32; x.fillStyle = ['#1f5fa8', '#2a8a5a', '#1f5fa8', '#c9a24a'][(i + j) % 4]; x.beginPath(); for (let k = 0; k < 16; k++) { const a = k * Math.PI / 8, r = k % 2 ? 13 : 28; x.lineTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r); } x.fill(); x.fillStyle = '#f3ead8'; x.beginPath(); x.arc(cx, cy, 7, 0, 7); x.fill(); }
+    x.strokeStyle = 'rgba(0,0,0,.18)'; x.lineWidth = 2; for (let i = 0; i <= 4; i++) { x.beginPath(); x.moveTo(i * 64, 0); x.lineTo(i * 64, H); x.stroke(); x.beginPath(); x.moveTo(0, i * 64); x.lineTo(W, i * 64); x.stroke(); } }) });
   tiles.map.wrapS = tiles.map.wrapT = THREE.RepeatWrapping; tiles.map.repeat.set(4, 4);
   const floor = new THREE.Mesh(new THREE.PlaneGeometry(10, 8), tiles); floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true; g.add(floor);
-  const wall = M('#b8c4a0', { roughness: 0.95 });
-  box(10, 3.2, 0.2, wall, 0, 1.6, -1.5); box(0.2, 3.2, 8, wall, -4, 1.6, 1.5); box(10, 0.15, 0.25, M('#6b5a44'), 0, 0.08, -1.38);
+  const wall = M('#d08a5c', { roughness: 0.95 });   // warm terracotta plaster
+  box(10, 3.2, 0.2, wall, 0, 1.6, -1.5); box(0.2, 3.2, 8, wall, -4, 1.6, 1.5);
+  const zband = new THREE.MeshStandardMaterial({ roughness: 0.4, map: textTex(512, 64, (x, W, H) => { x.fillStyle = '#e9dcc0'; x.fillRect(0, 0, W, H); for (let i = 0; i < 16; i++) { x.fillStyle = ['#1f5fa8', '#f3ead8', '#2a8a5a', '#f3ead8'][i % 4]; x.beginPath(); x.moveTo(i * 32, H); x.lineTo(i * 32 + 16, 0); x.lineTo(i * 32 + 32, H); x.fill(); } }) });
+  box(10, 0.6, 0.06, zband, 0, 0.3, -1.4);   // zellige band along the bottom of the wall
   // the door (shakes), its frame, signs, and the warm light leaking from under it
   const trim = M('#f2efe8');
-  box(0.12, 2.3, 0.25, trim, -0.62, 1.15, -1.38); box(0.12, 2.3, 0.25, trim, 0.62, 1.15, -1.38); box(1.36, 0.12, 0.25, trim, 0, 2.3, -1.38);
+  box(0.12, 2.3, 0.25, trim, -0.62, 1.15, -1.38); box(0.12, 2.3, 0.25, trim, 0.62, 1.15, -1.38);
+  const arch = new THREE.Mesh(new THREE.TorusGeometry(0.68, 0.07, 10, 32, Math.PI * 1.25), trim); arch.position.set(0, 2.3, -1.36); arch.rotation.z = -Math.PI * 0.125; g.add(arch);   // horseshoe arch
+  const archFill = new THREE.Mesh(new THREE.CircleGeometry(0.62, 32, 0, Math.PI), new THREE.MeshStandardMaterial({ roughness: 0.4, map: textTex(256, 128, (x, W, H) => { x.fillStyle = '#1f5fa8'; x.fillRect(0, 0, W, H); x.strokeStyle = '#c9a24a'; x.lineWidth = 4; for (let i = 0; i < 7; i++) { x.beginPath(); x.arc(W / 2, H, 18 + i * 18, Math.PI, 0); x.stroke(); } }) })); archFill.position.set(0, 2.3, -1.39); g.add(archFill);
   const door = new THREE.Group(); door.position.set(0, 0, -1.4); g.add(door);
-  box(1.1, 2.2, 0.08, M('#8a5a3a', { roughness: 0.6 }), 0, 1.13, 0, door);
+  box(1.1, 2.2, 0.08, M('#1f5fa8', { roughness: 0.5 }), 0, 1.13, 0, door); for (let i = 0; i < 4; i++) for (let j = 0; j < 6; j++) { const st = new THREE.Mesh(new THREE.SphereGeometry(0.025, 8, 6), M('#c9a24a', { metalness: 0.8, roughness: 0.3 })); st.position.set(-0.4 + i * 0.27, 0.25 + j * 0.36, 0.05); door.add(st); }   // painted riad door with brass studs
   const knob = new THREE.Mesh(new THREE.SphereGeometry(0.05, 12, 10), M('#c9a24a', { metalness: 0.8, roughness: 0.3 })); knob.position.set(0.4, 1.05, 0.07); door.add(knob);
   const sign = new THREE.Mesh(new THREE.PlaneGeometry(0.46, 0.46), new THREE.MeshStandardMaterial({ map: textTex(128, 128, (x, W, H) => { x.fillStyle = '#1f5fbf'; x.fillRect(0, 0, W, H); x.font = '80px serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText('🚽', W / 2, H / 2 + 6); }) })); sign.position.set(0, 1.75, 0.05); door.add(sign);
   const note = new THREE.Mesh(new THREE.PlaneGeometry(0.5, 0.36), new THREE.MeshStandardMaterial({ map: textTex(200, 144, (x, W, H) => { x.fillStyle = '#fff8b0'; x.fillRect(0, 0, W, H); x.fillStyle = '#c8102e'; x.font = '400 30px "Permanent Marker", cursive'; x.textAlign = 'center'; x.fillText('DO NOT', W / 2, 52); x.fillText('ENTER!!!', W / 2, 96); }) })); note.position.set(0.02, 1.25, 0.05); note.rotation.z = 0.08; door.add(note);
@@ -2325,10 +2332,14 @@ function buildBathHall() {
   const plant = new THREE.Group(); plant.position.set(1.2, 0.35, -1.0); g.add(plant);
   for (let i = 0; i < 6; i++) { const lf = new THREE.Mesh(new THREE.ConeGeometry(0.06, 0.6, 6), M('#3f8a3a')); lf.position.y = 0.28; const piv = new THREE.Group(); piv.rotation.set(0.35 * Math.cos(i), i, 0.35 * Math.sin(i)); piv.add(lf); plant.add(piv); }
   const pic = new THREE.Group(); pic.position.set(-2.0, 1.9, -1.38); g.add(pic);
-  box(0.7, 0.55, 0.04, M('#c9a24a', { metalness: 0.5 }), 0, -0.28, 0, pic); const art = new THREE.Mesh(new THREE.PlaneGeometry(0.6, 0.45), new THREE.MeshStandardMaterial({ map: textTex(160, 120, (x, W, H) => { x.fillStyle = '#9fd0ff'; x.fillRect(0, 0, W, H); x.fillStyle = '#3f8a3a'; x.fillRect(0, 80, W, 40); x.fillStyle = '#ffd84a'; x.beginPath(); x.arc(120, 30, 16, 0, 7); x.fill(); }) })); art.position.set(0, -0.28, 0.025); pic.add(art);
+  box(0.7, 0.55, 0.04, M('#c9a24a', { metalness: 0.5 }), 0, -0.28, 0, pic); const art = new THREE.Mesh(new THREE.PlaneGeometry(0.6, 0.45), new THREE.MeshStandardMaterial({ map: textTex(160, 120, (x, W, H) => { x.fillStyle = '#9b2a2a'; x.fillRect(0, 0, W, H); for (let k = 0; k < 4; k++) { x.strokeStyle = ['#f3ead8', '#1f1f1f', '#e0a040', '#f3ead8'][k]; x.lineWidth = 5; x.beginPath(); x.moveTo(80, 12 + k * 10); x.lineTo(140 - k * 10, 60); x.lineTo(80, 108 - k * 10); x.lineTo(20 + k * 10, 60); x.closePath(); x.stroke(); } }) })); art.position.set(0, -0.28, 0.025); pic.add(art);
   // lights
   const hemi = new THREE.HemisphereLight('#fff0d8', '#3a3020', 0.35); g.add(hemi);
-  const lamp = new THREE.PointLight('#ffdca0', 1.3, 8, 1.4); lamp.position.set(-1.2, 2.6, 0.5); g.add(lamp); box(0.3, 0.12, 0.3, E('#fff0c8', 1.2), -1.2, 3.0, 0.5);
+  const lamp = new THREE.PointLight('#ffb860', 1.4, 8, 1.4); lamp.position.set(-1.2, 2.4, 0.5); g.add(lamp);
+  // brass lantern + a tagine on a little table
+  const brass = M('#c9a24a', { metalness: 0.8, roughness: 0.3 }); box(0.02, 0.5, 0.02, brass, -1.2, 2.95, 0.5); const lan = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.2, 0.4, 8), new THREE.MeshStandardMaterial({ color: '#c9a24a', metalness: 0.6, roughness: 0.4, emissive: '#ff9a30', emissiveIntensity: 0.6 })); lan.position.set(-1.2, 2.55, 0.5); g.add(lan); const cap = new THREE.Mesh(new THREE.ConeGeometry(0.16, 0.22, 8), brass); cap.position.set(-1.2, 2.86, 0.5); g.add(cap);
+  const tbl = M('#6b3a22'); box(0.6, 0.05, 0.6, tbl, -2.4, 0.55, -0.9); box(0.08, 0.55, 0.08, tbl, -2.4, 0.27, -0.9);
+  const plate = new THREE.Mesh(new THREE.CylinderGeometry(0.26, 0.22, 0.04, 24), M('#b5603a')); plate.position.set(-2.4, 0.6, -0.9); g.add(plate); const lid = new THREE.Mesh(new THREE.ConeGeometry(0.22, 0.34, 24), M('#c96f4a', { roughness: 0.6 })); lid.position.set(-2.4, 0.79, -0.9); g.add(lid);
   const leak = new THREE.PointLight('#ffd070', 0.7, 2.2, 1.6); leak.position.set(0, 0.12, -1.1); g.add(leak);
   return { g, door, plant, pic, gap };
 }
@@ -3244,7 +3255,7 @@ function startGoblin(coinPos, forceAct) {
         () => { a0.copy(coin.position); a1.copy(hops[h]); if (!q) q = mkQ(); tone('sine', 500 + h * 120, 900 + h * 120, 0.15, 0.06); if (h === 2) speak('Hello?', 2.0, 1.2); });
     }
     S2(0.6, u => { fade(u); coinCam(); if (q) q.position.copy(coin.position).add(new THREE.Vector3(0, 0.75, 0)); });
-    S2(1.6, () => {}, () => { kill(q); q = null; coin.visible = false; $('#cutCap').innerHTML = 'Meanwhile… 🚽'; $('#cutCap').classList.add('on'); rumble(); });
+    S2(1.6, () => {}, () => { kill(q); q = null; coin.visible = false; $('#cutCap').innerHTML = 'Meanwhile… in a riad in Marrakesh 🇲🇦'; $('#cutCap').classList.add('on'); [0, 0.25, 0.5, 0.62, 0.75, 1.0, 1.25].forEach((d, i) => i % 3 === 0 ? tone('sine', 110, 70, 0.25, 0.14, d) : noiseSfx('highpass', 3500, 5000, 0.06, 0.12, 1)); setTimeout(rumble, 1300); });
     // ---- part 2: outside the bathroom ----
     S2(0.01, () => {}, () => {
       $('#cutCap').classList.remove('on'); SET = buildBathHall(); scene.add(SET.g);
@@ -3255,9 +3266,9 @@ function startGoblin(coinPos, forceAct) {
       bathCam(0);
     });
     S2(0.7, u => { fade(1 - u); bathCam(0); });
-    S2(2.6, u => { bathCam(0.2 * u); shakeDoor(u < 0.6 ? 1 : 0.2); stink(); }, () => { rumble(); setTimeout(() => say('Goblin (in the bathroom)', 'Ohhhhh nooo… not again…', 0.5, 0.7), 300); });
+    S2(2.6, u => { bathCam(0.2 * u); shakeDoor(u < 0.6 ? 1 : 0.2); stink(); }, () => { rumble(); setTimeout(() => say('Goblin (in the bathroom)', 'Ohhhhh nooo… that street food in Marrakesh…', 0.5, 0.7), 300); });
     S2(3.0, u => { bathCam(0.2 + 0.2 * u); shakeDoor(1); stink(); stink(); wilt = Math.min(1, wilt + 0.006); SET.pic.rotation.z = 0.25 * Math.sin(Math.PI * Math.min(1, u * 1.5)); },
-      () => { subsOff(); [0, 450, 800, 1300].forEach(splash); setTimeout(rumble, 900); setTimeout(() => say('Goblin (in the bathroom)', 'WHO PUT DAIRY ON THE PIZZA?!', 1.2, 1.0), 1500); });
+      () => { subsOff(); [0, 450, 800, 1300].forEach(splash); setTimeout(rumble, 900); setTimeout(() => say('Goblin (in the bathroom)', 'I KNEW I shouldn\'t have had that third bowl of snail soup!', 1.2, 1.0), 1500); });
     // the coin hops in and knocks
     let k0 = new THREE.Vector3(), k1 = new THREE.Vector3();
     S2(2.2, u => { bathCam(0.4); stink(); const hop = Math.abs(Math.sin(u * Math.PI * 4)); c2.visible = true; c2.position.lerpVectors(k0, k1, u); c2.position.y = 0.22 + 0.35 * hop; c2.rotation.set(Math.PI / 2, 0.4, 0); SET.door.rotation.z = 0; },
@@ -3278,7 +3289,7 @@ function startGoblin(coinPos, forceAct) {
     // he comes back… pale, clutching his stomach
     S2(1.1, u => { G.root.position.set(stand.x, THREE.MathUtils.lerp(16, TOP, u * u), stand.z); G.root.rotation.y = faceYaw + (1 - u) * 8; G.arms.forEach(a2 => a2.rotation.x = -2.6); }, wheeSfx);
     S2(0.01, () => neutral()); squash();
-    S2(2.2, u => { G.body.rotation.x = 0.35; G.arms.forEach((a2, i) => a2.rotation.set(-0.7, 0, (i ? -1 : 1) * 0.6)); G.root.rotation.z = 0.06 * Math.sin(u * 20); G.jaw.scale.y = 0.4; }, () => { rumble(); setTimeout(() => speak('…I\'m fine.', 0.7, 0.8), 500); });
+    S2(2.2, u => { G.body.rotation.x = 0.35; G.arms.forEach((a2, i) => a2.rotation.set(-0.7, 0, (i ? -1 : 1) * 0.6)); G.root.rotation.z = 0.06 * Math.sin(u * 20); G.jaw.scale.y = 0.4; }, () => { rumble(); setTimeout(() => speak('…I\'m fine. Somebody bring me mint tea.', 0.7, 0.8), 500); });
     S2(0.01, () => {}, () => { G.root.rotation.z = 0; neutral(); });
   } else if (plan.act === 'swipe') {
     S2(0.01, () => { G.root.position.copy(stand); G.root.visible = false; });
@@ -4037,7 +4048,7 @@ function startGoblin(coinPos, forceAct) {
     S2(1.3, u => { G.root.position.lerpVectors(p1, p2, u); G.root.rotation.y = yawTo(p1, p2); pose(u * 60, 1.4); G.body.rotation.x = 0.35; });
   }
   goblin = { G, steps, i: 0, t: 0, started: false, hold: false, plan, after: () => cleanups.forEach(f => { try { f(); } catch (e) {} }) }; jazzDuck(true);
-  addLog('👺 Goblin ' + ({ eat: 'ate the coin and pooped it out', burp: 'swallowed the coin and burped it back up', juggle: 'juggled the coin', bite: 'bit the coin and chucked it', hat: 'wore the coin as a hat', polish: 'polished the coin', casino: 'lost a coin flip and threw a tantrum', surf: 'surfed the coin around the box', sick: 'got food poisoning (the coin came looking)', floss: 'flossed his teeth way too fast', crash: 'hit another goblin on a night drive and found the coin in his pocket', love: 'lived a whole love story with the coin', acid2: 'took another tab and realised he is in a drinking game', cold: 'stole the coin… and got arrested 47 years later', stream: 'went live and stole the coin on stream', acid: 'took an acid tab… everything went trippy', xmas: 'opened a Christmas present', vip: 'did a line in the VIP room… right next to the coin', debate: 'tried to snipe the coin at its campus debate booth', sting: 'got caught on Dateline GBC: To Catch a Coin Thief', neptune: 'stole Neptune\'s trident in Bologna and stabbed the coin in half', plane: 'stole the coin in a plane… and crash-landed it right back', golf: 'played goblin golf', wedding: 'proposed to the coin (it said no)', summon: 'summoned his cousin', sneeze: 'sneezed on the coin', booger: 'flicked a booger at the screen', fartcannon: 'fart-cannoned the coin', rockstar: 'shredded a guitar solo', ballet: 'did ballet and faceplanted', breakdance: 'breakdanced', opera: 'sang opera and broke a cup', thief: 'pretended to steal the coin', insult: 'roasted somebody', clones: 'split into tiny clones', giant: 'turned into a giant' }[plan.act] || 'showed up')); renderUI();
+  addLog('👺 Goblin ' + ({ eat: 'ate the coin and pooped it out', burp: 'swallowed the coin and burped it back up', juggle: 'juggled the coin', bite: 'bit the coin and chucked it', hat: 'wore the coin as a hat', polish: 'polished the coin', casino: 'lost a coin flip and threw a tantrum', surf: 'surfed the coin around the box', sick: 'got food poisoning in Marrakesh', floss: 'flossed his teeth way too fast', crash: 'hit another goblin on a night drive and found the coin in his pocket', love: 'lived a whole love story with the coin', acid2: 'took another tab and realised he is in a drinking game', cold: 'stole the coin… and got arrested 47 years later', stream: 'went live and stole the coin on stream', acid: 'took an acid tab… everything went trippy', xmas: 'opened a Christmas present', vip: 'did a line in the VIP room… right next to the coin', debate: 'tried to snipe the coin at its campus debate booth', sting: 'got caught on Dateline GBC: To Catch a Coin Thief', neptune: 'stole Neptune\'s trident in Bologna and stabbed the coin in half', plane: 'stole the coin in a plane… and crash-landed it right back', golf: 'played goblin golf', wedding: 'proposed to the coin (it said no)', summon: 'summoned his cousin', sneeze: 'sneezed on the coin', booger: 'flicked a booger at the screen', fartcannon: 'fart-cannoned the coin', rockstar: 'shredded a guitar solo', ballet: 'did ballet and faceplanted', breakdance: 'breakdanced', opera: 'sang opera and broke a cup', thief: 'pretended to steal the coin', insult: 'roasted somebody', clones: 'split into tiny clones', giant: 'turned into a giant' }[plan.act] || 'showed up')); renderUI();
 }
 // missed coin: a goblin fetches it and throws it into the box (that's where it counts)
 function startRescue(coinPos) {
@@ -5198,7 +5209,7 @@ const previewIntro = () => { ensureAudio(); if (toss || goblin || placing) retur
 $('#tryHot').onclick = () => { if (!canAim() && !mini) return toast('Start a game with 2+ players first (and wait for the turn to finish)'); startMini('hot'); };
 $('#cupRows').onclick = e => { const b = e.target.closest('[data-cp]'); if (!b) return; if (b.dataset.n === '0') { if (mini && mini.picks) { delete mini.picks[String(b.dataset.cp)]; renderCupPanel(); } return; } cupPick(b.dataset.cp, b.dataset.n); };
 $('#tryHolo').onclick = () => sayYugo(true);
-const JACK_ACTS = [['sick', '🚽 The coin looks for him… he has food poisoning'], ['floss', '🦷 The Flosser (horror)'], ['crash', '🚗 Late-night drive… hits a goblin, finds the coin'], ['love', '💕 A love story: the goblin & the coin'], ['acid2', '🌀 Acid trip #2: realises he\'s in a drinking game'], ['cold', '🚔 Steals the coin… arrested 47 years later'], ['stream', '🔴 Goes live: plays as a goblin and steals the coin on stream'], ['acid', '🌀 Takes an acid tab — trippy for a turn'], ['xmas', '🎄 Christmas: rip his present open — coin or coal?'], ['vip', '🪩 VIP room: does a line… so does the coin'], ['debate', '🎓 Campus debate: snipes the coin… ricochet!'], ['swipe', '💚 Dating app: swipes left on every goblin… until the coin'], ['duel', '⚔️ Pizza-cutter sword duel over the coin'], ['smite', '⚡ Dictator goblin steals it… and gets smitten'], ['sting', '📺 Dateline GBC: To Catch a Coin Thief'], ['neptune', '🔱 Steals Neptune\'s trident in Bologna'], ['plane', '✈️ Steals it in a plane… and crashes'], ['eat', '💩 Eats the coin, poops it out'], ['burp', '🤢 Swallows it, burps it up'], ['juggle', '🤹 Juggles the coin'], ['bite', '🦷 Bites it and chucks it'],
+const JACK_ACTS = [['sick', '🚽 Food poisoning in Marrakesh (the coin comes looking)'], ['floss', '🦷 The Flosser (horror)'], ['crash', '🚗 Late-night drive… hits a goblin, finds the coin'], ['love', '💕 A love story: the goblin & the coin'], ['acid2', '🌀 Acid trip #2: realises he\'s in a drinking game'], ['cold', '🚔 Steals the coin… arrested 47 years later'], ['stream', '🔴 Goes live: plays as a goblin and steals the coin on stream'], ['acid', '🌀 Takes an acid tab — trippy for a turn'], ['xmas', '🎄 Christmas: rip his present open — coin or coal?'], ['vip', '🪩 VIP room: does a line… so does the coin'], ['debate', '🎓 Campus debate: snipes the coin… ricochet!'], ['swipe', '💚 Dating app: swipes left on every goblin… until the coin'], ['duel', '⚔️ Pizza-cutter sword duel over the coin'], ['smite', '⚡ Dictator goblin steals it… and gets smitten'], ['sting', '📺 Dateline GBC: To Catch a Coin Thief'], ['neptune', '🔱 Steals Neptune\'s trident in Bologna'], ['plane', '✈️ Steals it in a plane… and crashes'], ['eat', '💩 Eats the coin, poops it out'], ['burp', '🤢 Swallows it, burps it up'], ['juggle', '🤹 Juggles the coin'], ['bite', '🦷 Bites it and chucks it'],
   ['hat', '🎩 Wears the coin as a hat'], ['polish', '✨ Polishes the coin'], ['casino', '🎰 Loses a coin flip, tantrum'], ['surf', '🏄 Surfs the coin around'], ['golf', '⛳ Golfs the coin'], ['wedding', '💍 Proposes to the coin'],
   ['summon', '🔮 Summons a demon'], ['sneeze', '🤧 Giant sneeze'], ['booger', '👃 Booger flick'], ['fartcannon', '💨 Fart cannon'], ['rockstar', '🎸 Rock star guitar solo'], ['ballet', '🩰 Ballet'], ['breakdance', '🕺 Breakdance'],
   ['opera', '🎭 Opera'], ['thief', '🦹 Steals it and hides'], ['insult', '🗯️ Roasts the players'], ['clones', '👯 Clones himself'], ['giant', '🗿 Turns giant']];
@@ -5984,7 +5995,7 @@ $('#startBtn').onclick = () => {
 };
 
 // ---------- installable app + automatic updates (website version only) ----------
-const BUILD = '1795587839';
+const BUILD = '1795588504';
 if (STANDALONE) {
   try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
   let deferredInstall = null;
