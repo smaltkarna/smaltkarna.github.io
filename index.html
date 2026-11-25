@@ -1543,6 +1543,7 @@ function setMap(id) {
   const m = mapById(id); state.map = m.id;
   if (!MAPENV.party) MAPENV.party = { bg: scene.background.clone(), fog: [scene.fog.near, scene.fog.far], fc: scene.fog.color.clone(), hemi: [hemiMain.color.clone(), hemiMain.groundColor.clone(), hemiMain.intensity], sun: [sun.color.clone(), sun.intensity], pendant: pendant.intensity };
   { const sb = document.getElementById('slugSay'); if (sb) sb.remove(); }
+  setTimeout(() => { try { applyMapMusic(); } catch (e) {} }, 0);
   if (typeof evClear === 'function') { evClear(); evNext = 20 + Math.random() * 20; }
   if (mapGroup) { scene.remove(mapGroup); mapGroup.traverse(o => { if (o.geometry) o.geometry.dispose(); }); mapGroup = null; }
   mapTick = null;
@@ -2612,7 +2613,7 @@ function stepEvents(dt) {
   try { const e = list[Math.floor(Math.random() * list.length)](); e.t = 0; EV = e; } catch (er) { console.warn(er); evClear(); }
 }
 
-window.__look = { testModels: () => { const K = ['pigeon', 'gull', 'dove', 'jay', 'vulture', 'stork']; K.forEach((k, i) => { const b = mkBirdPro(k, 1.6); b.position.set(-5 + i * 2, 2.5, 2); b.userData.wings.forEach(w => w.rotation.x = w.userData.s * 0.5); scene.add(b); }); const bt = mkBat(1.6); bt.position.set(7, 2.5, 2); scene.add(bt); const pg2 = mkPigeon(); pg2.position.set(-3, 1, 4.5); pg2.scale.setScalar(2); scene.add(pg2); const d = MAP_EVENTS.ucsc[0](); d.t = 0; d.tick(0.5, 1); return evGroup.children.length; }, fireEvent: (k) => { evClear(); const l = MAP_EVENTS[state.map || 'party']; const e = l[k % l.length](); e.t = 0; EV = e; }, setMap, applySkin, LIDCTL, castVote, get goal() { return goal; }, get mapGroup() { return mapGroup; }, buildGoblin: o => buildGoblin(o), scene, get VOTE() { return VOTE; } };
+window.__look = { testMusic: () => { ensureAudio(); if (!jazz.out) jazzGraph(); mBus(); const errs = []; Object.entries(MAP_MUSIC).forEach(([k, tr]) => { try { for (let b = 0; b < 72; b++) tr.fn(b, actx.currentTime + 1 + b * 0.01); } catch (e) { errs.push(k + ': ' + e.message); } }); return errs.join(' | ') || 'all ok ' + Object.keys(MAP_MUSIC).length; }, testModels: () => { const K = ['pigeon', 'gull', 'dove', 'jay', 'vulture', 'stork']; K.forEach((k, i) => { const b = mkBirdPro(k, 1.6); b.position.set(-5 + i * 2, 2.5, 2); b.userData.wings.forEach(w => w.rotation.x = w.userData.s * 0.5); scene.add(b); }); const bt = mkBat(1.6); bt.position.set(7, 2.5, 2); scene.add(bt); const pg2 = mkPigeon(); pg2.position.set(-3, 1, 4.5); pg2.scale.setScalar(2); scene.add(pg2); const d = MAP_EVENTS.ucsc[0](); d.t = 0; d.tick(0.5, 1); return evGroup.children.length; }, fireEvent: (k) => { evClear(); const l = MAP_EVENTS[state.map || 'party']; const e = l[k % l.length](); e.t = 0; EV = e; }, setMap, applySkin, LIDCTL, castVote, get goal() { return goal; }, get mapGroup() { return mapGroup; }, buildGoblin: o => buildGoblin(o), scene, get VOTE() { return VOTE; } };
 LIDCTL.pos = LIDCTL.want = (CTRL || WATCH || state.started) ? 1 : 0; stepLid(0);
 if (!CTRL && state.map && state.map !== 'party') setTimeout(() => setMap(state.map), 0);
 if (state.skin && curSkin().photo) faceImg();
@@ -5975,7 +5976,7 @@ function ride(t, vel) {
 }
 function kick(t) { const o = actx.createOscillator(), g = actx.createGain(); o.frequency.setValueAtTime(70, t); o.frequency.exponentialRampToValueAtTime(42, t + 0.12); g.gain.setValueAtTime(0.18, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.18); o.connect(g).connect(jazz.drum); o.start(t); o.stop(t + 0.2); }
 function nearest(pc, prev, lo = 31, hi = 50) { let best = null; for (let m = lo; m <= hi; m++) if (((m % 12) + 12) % 12 === ((pc % 12) + 12) % 12 && (best === null || Math.abs(m - prev) < Math.abs(best - prev))) best = m; return best; }
-function scheduleBeat(b, t) { if (jazz.style === 'jazz') return grooveBeat(b, t); if (STYLES[jazz.style]) return STYLES[jazz.style](b, t); return jazzBeat(b, t); }
+function scheduleBeat(b, t) { if (jazz.style === 'jazz') { const tr = typeof MAP_MUSIC !== 'undefined' && MAP_MUSIC[state.map]; if (tr) { mBus(); return tr.fn(b, t); } return grooveBeat(b, t); } if (STYLES[jazz.style]) return STYLES[jazz.style](b, t); return jazzBeat(b, t); }
 function jazzBeat(b, t) {
   const beat = b % 4, c = chordAt(b), nx = chordAt(b + 1), changes = nx !== c;
   const firstOfChord = chordAt(b - 1) !== c || b === 0;
@@ -6111,12 +6112,183 @@ const STYLES = {
 function musicStyle(s) {
   if (!STYLE_BPM[s] || jazz.style === s) return; jazz.style = s; SPB = 60 / STYLE_BPM[s]; jazz.beat = 0;
   if (actx && jazz.timer) jazz.next = actx.currentTime + 0.12;
-  $('#jazzBtn').textContent = (jazz.on ? STYLE_NAME[s] : '🔇 Music off');
+  $('#jazzBtn').textContent = (jazz.on ? (s === 'jazz' ? trackName() : STYLE_NAME[s]) : '🔇 Music off');
+  if (s === 'jazz') applyMapMusic();
 }
+// ---------- a soundtrack for every map (the default "jazz" slot plays the current map's track) ----------
+function pluck(t, m, dur, vol = 0.1, bright = 3200, bus) { const A = actx, o = A.createOscillator(), o2 = A.createOscillator(), lp = A.createBiquadFilter(), g = A.createGain(); o.type = 'sawtooth'; o2.type = 'triangle'; o.frequency.value = mtof(m); o2.frequency.value = mtof(m) * 1.002; lp.type = 'lowpass'; lp.frequency.setValueAtTime(bright, t); lp.frequency.exponentialRampToValueAtTime(300, t + dur); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.004); g.gain.exponentialRampToValueAtTime(0.0001, t + dur); o.connect(lp); o2.connect(lp); lp.connect(g).connect(bus || jazz.syn); o.start(t); o2.start(t); o.stop(t + dur + 0.02); o2.stop(t + dur + 0.02); }
+function pad(t, m, dur, vol = 0.025, type = 'sawtooth', cut = 1600, att = 0.3, bus) { const A = actx, g = A.createGain(), lp = A.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = cut; [-9, 9].forEach(d => { const o = A.createOscillator(); o.type = type; o.frequency.value = mtof(m); o.detune.value = d; o.connect(lp); o.start(t); o.stop(t + dur + 0.6); }); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + att); g.gain.setValueAtTime(vol, t + Math.max(att, dur - 0.1)); g.gain.exponentialRampToValueAtTime(0.0001, t + dur + 0.5); lp.connect(g).connect(bus || jazz.syn); }
+function accord(t, m, dur, vol = 0.035) { const A = actx, g = A.createGain(), lp = A.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 2600; [-7, 7].forEach(d => { const o = A.createOscillator(); o.type = 'square'; o.frequency.value = mtof(m); o.detune.value = d; o.connect(lp); o.start(t); o.stop(t + dur + 0.1); }); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.025); g.gain.setValueAtTime(vol * 0.85, t + dur * 0.8); g.gain.exponentialRampToValueAtTime(0.0001, t + dur + 0.06); lp.connect(g).connect(jazz.syn); }
+function flute(t, m, dur, vol = 0.05) { const A = actx, o = A.createOscillator(), l = A.createOscillator(), lg = A.createGain(), g = A.createGain(); o.frequency.value = mtof(m); l.frequency.value = 5.2; lg.gain.value = mtof(m) * 0.006; l.connect(lg).connect(o.frequency); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.06); g.gain.setValueAtTime(vol, t + dur * 0.85); g.gain.exponentialRampToValueAtTime(0.0001, t + dur + 0.08); o.connect(g).connect(jazz.syn); o.start(t); l.start(t); o.stop(t + dur + 0.1); l.stop(t + dur + 0.1); }
+function bell(t, m, vol = 0.04, len = 1.6) { const A = actx, g = A.createGain(); [[1, 1], [2.76, 0.35], [5.4, 0.12]].forEach(([r, a]) => { const o = A.createOscillator(), og = A.createGain(); o.frequency.value = mtof(m) * r; og.gain.value = a; o.connect(og).connect(g); o.start(t); o.stop(t + len); }); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.004); g.gain.exponentialRampToValueAtTime(0.0001, t + len); g.connect(jazz.vib || jazz.syn); }
+function brass(t, m, dur, vol = 0.05) { const A = actx, g = A.createGain(), lp = A.createBiquadFilter(); lp.type = 'lowpass'; lp.Q.value = 2; lp.frequency.setValueAtTime(500, t); lp.frequency.exponentialRampToValueAtTime(2800, t + 0.06); lp.frequency.exponentialRampToValueAtTime(1300, t + dur); [-5, 5].forEach(d => { const o = A.createOscillator(); o.type = 'sawtooth'; o.frequency.value = mtof(m); o.detune.value = d; o.connect(lp); o.start(t); o.stop(t + dur + 0.1); }); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.03); g.gain.setValueAtTime(vol * 0.8, t + dur * 0.8); g.gain.exponentialRampToValueAtTime(0.0001, t + dur + 0.05); lp.connect(g).connect(jazz.syn); }
+function doum(t, v = 1) { const o = actx.createOscillator(), g = actx.createGain(); o.frequency.setValueAtTime(110, t); o.frequency.exponentialRampToValueAtTime(62, t + 0.18); g.gain.setValueAtTime(0.45 * v, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.35); o.connect(g).connect(jazz.drum); o.start(t); o.stop(t + 0.4); }
+function tek(t, v = 1) { hitNoise(t, 'bandpass', 3200, 1.5, 0.16 * v, 0.06); const o = actx.createOscillator(), g = actx.createGain(); o.frequency.value = 780; g.gain.setValueAtTime(0.06 * v, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.05); o.connect(g).connect(jazz.drum); o.start(t); o.stop(t + 0.06); }
+function shaker(t, v = 1) { hitNoise(t, 'highpass', 6000, 0.8, 0.05 * v, 0.07, 0.02); }
+function rim(t, v = 1) { hitNoise(t, 'bandpass', 1800, 4, 0.12 * v, 0.04); }
+function tamb(t, v = 1) { hitNoise(t, 'highpass', 7000, 2, 0.08 * v, 0.14); }
+function crackle(t) { for (let i = 0; i < 3; i++) if (Math.random() < 0.6) hitNoise(t + Math.random() * SPB, 'highpass', 3000, 0.5, 0.02 + Math.random() * 0.03, 0.01); }
+function bass(t, m, dur, vol = 0.14, type = 'sawtooth', cut = 700) { synNote(t, m, dur, type, vol, cut, jazz.bassBus); }
+const each8 = (t, beat, arr, fn) => { for (let k = 0; k < 2; k++) { const m = arr[(beat * 2 + k) % arr.length]; if (m) fn(t + k * SPB / 2, m); } };
+const each16 = (t, beat, arr, fn) => { for (let k = 0; k < 4; k++) { const m = arr[(beat * 4 + k) % arr.length]; if (m) fn(t + k * SPB / 4, m); } };
+const MAP_MUSIC = {
+  bologna: { bpm: 140, name: '🇮🇹 Tarantella', fn(b, t) {   // mandolin tremolo + accordion oom-pah
+    const bar = Math.floor(b / 4), beat = b % 4, A = [45, [57, 60, 64]], E = [40, [56, 59, 62, 64]], D = [38, [57, 62, 65]], prog = [A, E, A, E, D, A, E, A], c = prog[bar % 8];
+    const mel = [[69, 72, 76, 72, 69, 72, 76, 81], [80, 76, 74, 71, 68, 71, 74, 76], [81, 79, 77, 76, 74, 72, 71, 69], [71, 74, 76, 74, 71, 68, 64, 0], [74, 77, 81, 77, 74, 77, 81, 77], [76, 72, 69, 72, 76, 81, 84, 81], [80, 81, 83, 81, 80, 76, 74, 71], [69, 0, 76, 0, 69, 0, 0, 0]][bar % 8];
+    if (beat % 2 === 0) bass(t, c[0], SPB * 0.6, 0.15, 'triangle', 900); else c[1].forEach(m => accord(t, m, SPB * 0.4, 0.022));
+    tamb(t + SPB / 2, 0.8); if (beat % 2) tamb(t, 0.5); kick(t);
+    each8(t, beat, mel, (tt, m) => { for (let r = 0; r < 3; r++) pluck(tt + r * SPB / 6, m, SPB / 6, 0.05, 3800); });
+  } },
+  morocco: { bpm: 100, name: '🇲🇦 Gnawa Nights', fn(b, t) {   // darbuka, qraqeb, oud in the Hijaz mode
+    const bar = Math.floor(b / 4), beat = b % 4, q = SPB / 4;
+    const dr = ['D', 0, 't', 't', 'D', 0, 't', 0, 'D', 'D', 't', 0, 't', 0, 't', 't']; for (let k = 0; k < 4; k++) { const s = dr[beat * 4 + k]; if (s === 'D') doum(t + k * q); else if (s === 't') tek(t + k * q, 0.8); }
+    [0, 0.33, 0.5].forEach(o => hitNoise(t + o * SPB, 'bandpass', 5200, 3, 0.05, 0.05));   // qraqeb clatter
+    if (beat === 0) { bass(t, 38, SPB * 3.8, 0.09, 'triangle', 400); pad(t, 50, SPB * 4, 0.012, 'sawtooth', 900, 0.5); }
+    const hij = [62, 63, 66, 67, 69, 70, 72, 74], ph = [[74, 72, 70, 69, 70, 69, 67, 66], [67, 66, 63, 62, 63, 66, 67, 0], [62, 63, 66, 67, 69, 0, 69, 70], [69, 67, 66, 63, 62, 0, 0, 0]][bar % 4];
+    if (bar % 8 >= 2) each8(t, beat, ph, (tt, m) => { pluck(tt, m, SPB * 0.7, 0.08, 2400); if (Math.random() < 0.3) pluck(tt + SPB / 4, m + (Math.random() < .5 ? 1 : -1), SPB * 0.3, 0.04, 2000); });
+  } },
+  london: { bpm: 128, name: '🇬🇧 Britpop Rain', fn(b, t) {   // jangly guitars, driving bass, steady rock beat
+    const bar = Math.floor(b / 4), beat = b % 4, prog = [[43, [55, 59, 62, 67]], [38, [54, 57, 62, 66]], [40, [52, 55, 59, 64]], [36, [52, 55, 60, 64]]], c = prog[bar % 4];
+    bigKick(t, 0.7); if (beat === 2) bigKick(t + SPB / 2, 0.5); if (beat % 2) snare(t, 0.7); hat(t, 0.6); hat(t + SPB / 2, 0.5); if (beat === 0 && bar % 8 === 0) crash(t);
+    each8(t, beat, [c[0], c[0], c[0], c[0] + 12, c[0], c[0], c[0] + 7, c[0]], (tt, m) => bass(tt, m, SPB * 0.45, 0.13, 'sawtooth', 600));
+    [0, 0.5].forEach(o => c[1].forEach((m, i) => pluck(t + o * SPB + i * 0.012, m + 12, SPB * 0.6, 0.026, 4200)));
+    const hook = [[79, 0, 78, 79, 81, 0, 79, 0], [78, 0, 74, 0, 74, 76, 78, 0], [76, 0, 74, 76, 79, 0, 76, 0], [72, 0, 74, 0, 76, 0, 0, 0]][bar % 4];
+    if (bar % 16 >= 4) each8(t, beat, hook, (tt, m) => synNote(tt, m, SPB * 0.45, 'square', 0.03, 2600));
+  } },
+  ucsc: { bpm: 76, name: '🌲 Redwood Reggae', fn(b, t) {   // one-drop, skank chords, melodica
+    const bar = Math.floor(b / 4), beat = b % 4, prog = [[43, [59, 62, 67]], [36, [60, 64, 67]], [38, [57, 62, 66]], [43, [59, 62, 67]]], c = prog[bar % 4];
+    if (beat === 2) { bigKick(t, 0.8); rim(t, 1); } hat(t, 0.35); hat(t + SPB / 2, 0.5); shaker(t + SPB / 4, 0.6); shaker(t + SPB * 3 / 4, 0.6);
+    c[1].forEach(m => ep(t + SPB / 2, m, SPB * 0.22, 0.65));
+    const bl = [[43, 0, 0, 43, 47, 50, 0, 47], [36, 0, 0, 36, 40, 43, 0, 40], [38, 0, 0, 38, 42, 45, 0, 42], [43, 0, 47, 0, 50, 0, 47, 45]][bar % 4]; each8(t, beat, bl, (tt, m) => bass(tt, m, SPB * 0.42, 0.18, 'triangle', 500));
+    const mel = [[74, 0, 0, 71, 0, 74, 76, 0], [79, 0, 76, 0, 74, 0, 0, 0], [74, 0, 72, 71, 69, 0, 0, 66], [67, 0, 0, 0, 0, 0, 0, 0]][bar % 4];
+    if (bar % 8 >= 4) each8(t, beat, mel, (tt, m) => accord(tt, m, SPB * 0.9, 0.03));
+  } },
+  airport: { bpm: 124, name: '✈️ Departure Lounge', fn(b, t) {   // bossa nova
+    const bar = Math.floor(b / 4), beat = b % 4, prog = [[41, [57, 60, 64, 67]], [43, [58, 62, 65, 69]], [36, [58, 62, 64, 67]], [41, [57, 60, 64, 69]]], c = prog[bar % 4];
+    const cl = [1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0]; for (let k = 0; k < 4; k++) { if (cl[beat * 4 + k]) rim(t + k * SPB / 4, 0.8); shaker(t + k * SPB / 4, k % 2 ? 0.5 : 0.9); }
+    if (beat % 2 === 0) bass(t, c[0], SPB * 0.9, 0.13, 'triangle', 500); else bass(t + SPB / 2, c[0] + 7, SPB * 0.4, 0.1, 'triangle', 500); kick(t);
+    if (beat === 0 || beat === 2) c[1].forEach((m, i) => pluck(t + SPB * (beat ? 0.5 : 0) + i * 0.02, m, SPB * 1.2, 0.03, 2000));
+    const mel = [[76, 0, 76, 74, 76, 0, 79, 0], [77, 0, 0, 74, 72, 0, 0, 0], [76, 0, 74, 0, 72, 0, 70, 0], [69, 0, 0, 0, 0, 0, 0, 0]][bar % 4];
+    if (bar % 8 >= 2) each8(t, beat, mel, (tt, m) => vibes(tt, m, 0.8));
+  } },
+  dumpster: { bpm: 88, name: '🗑️ Alley Boom-Bap', fn(b, t) {   // dusty hip hop
+    const bar = Math.floor(b / 4), beat = b % 4, sw = SPB * 0.58;
+    if (beat === 0) bigKick(t, 1); if (beat === 1 || beat === 3) { snare(t, 0.85); clap(t); } if (beat === 2) { bigKick(t + sw, 0.8); } if (beat === 0 && bar % 2) bigKick(t + sw, 0.6);
+    hat(t, 0.6); hat(t + sw, 0.4); crackle(t);
+    const ch = [[57, 60, 64, 67], [53, 57, 60, 64], [55, 58, 62, 65], [52, 55, 59, 62]][bar % 4], rt = [45, 41, 43, 40][bar % 4];
+    if (beat === 0) { ch.forEach(m => ep(t, m, SPB * 1.8, 0.6)); bass(t, rt, SPB * 1.6, 0.2, 'sine', 300); } if (beat === 2) bass(t + sw, rt + 3, SPB * 0.6, 0.16, 'sine', 300);
+    if (bar % 8 === 7 && beat === 3) { const A = actx, n = A.createBufferSource(), f = A.createBiquadFilter(), g = A.createGain(); n.buffer = noiseBuf(); f.type = 'bandpass'; f.Q.value = 4; f.frequency.setValueAtTime(600, t); f.frequency.exponentialRampToValueAtTime(3000, t + 0.12); f.frequency.exponentialRampToValueAtTime(500, t + 0.25); g.gain.setValueAtTime(0.25, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.3); n.connect(f).connect(g).connect(jazz.drum); n.start(t); n.stop(t + 0.32); }   // record scratch
+  } },
+  feet: { bpm: 120, name: '🦶 Stinky Polka', fn(b, t) {   // oom-pah tuba + squeaky clarinet
+    const bar = Math.floor(b / 4), beat = b % 4, prog = [[41, [57, 60, 65]], [36, [55, 60, 64]], [36, [55, 58, 64]], [41, [57, 60, 65]]], c = prog[bar % 4];
+    if (beat % 2 === 0) bass(t, c[0] + (beat === 2 ? 7 : 0), SPB * 0.5, 0.2, 'square', 450); else c[1].forEach(m => accord(t, m, SPB * 0.3, 0.02)); kick(t); if (beat % 2) snare(t, 0.35);
+    const mel = [[77, 76, 77, 81, 84, 0, 81, 0], [79, 0, 76, 0, 72, 0, 0, 0], [70, 72, 74, 76, 79, 0, 76, 0], [77, 0, 72, 0, 65, 0, 0, 0]][bar % 4];
+    each8(t, beat, mel, (tt, m) => synNote(tt, m, SPB * 0.42, 'square', 0.035, 1800));
+    if (bar % 8 === 7 && beat === 2) { const o = actx.createOscillator(), g = actx.createGain(); o.frequency.setValueAtTime(600, t); o.frequency.exponentialRampToValueAtTime(1800, t + SPB * 1.5); g.gain.setValueAtTime(0.05, t); g.gain.exponentialRampToValueAtTime(0.0001, t + SPB * 1.6); o.connect(g).connect(jazz.syn); o.start(t); o.stop(t + SPB * 1.7); }   // slide whistle
+  } },
+  dungeon: { bpm: 80, name: '🏰 Dungeon Crawl', fn(b, t) {   // drone, war drums, harpsichord arps, choir
+    const bar = Math.floor(b / 4), beat = b % 4, roots = [38, 38, 34, 36], r = roots[bar % 4];
+    if (beat === 0) { taiko(t, 0.9); pad(t, r + 12, SPB * 4, 0.02, 'sawtooth', 700, 0.8); pad(t, r + 19, SPB * 4, 0.012, 'triangle', 1400, 0.8); bass(t, r, SPB * 3.9, 0.08, 'sawtooth', 220); } if (beat === 2) { taiko(t, 0.6); taiko(t + SPB / 2, 0.45); }
+    const arp = [r + 24, r + 27, r + 31, r + 36, r + 31, r + 27]; each8(t, beat, [arp[(beat * 2) % 6], arp[(beat * 2 + 1) % 6]], (tt, m) => pluck(tt, m, SPB * 0.5, 0.045, 5000));
+    if (bar % 8 === 6 && beat === 0) [74, 72, 70, 69].forEach((m, k) => flute(t + k * SPB, m, SPB * 0.9, 0.03));
+  } },
+  venice: { bpm: 120, beats: 3, name: '🛶 Barcarolle', fn(b, t) {   // waltz: accordion + mandolin
+    const bar = Math.floor(b / 3), beat = b % 3, prog = [[41, [57, 60, 65]], [41, [57, 60, 65]], [36, [55, 58, 64]], [36, [55, 58, 64]], [38, [57, 62, 65]], [34, [58, 62, 65]], [36, [55, 60, 64]], [41, [57, 60, 65]]], c = prog[bar % 8];
+    if (beat === 0) { bass(t, c[0], SPB * 0.9, 0.16, 'triangle', 700); kick(t); } else c[1].forEach(m => accord(t, m, SPB * 0.5, 0.02));
+    const mel = [[72, 0, 74, 76, 77, 0], [81, 0, 0, 0, 79, 77], [76, 0, 77, 79, 76, 0], [72, 0, 0, 0, 0, 0], [74, 0, 77, 0, 81, 0], [79, 0, 77, 0, 74, 0], [76, 0, 74, 0, 72, 0], [69, 0, 0, 0, 0, 0]][bar % 8];
+    for (let k = 0; k < 2; k++) { const m = mel[beat * 2 + k]; if (m) { flute(t + k * SPB / 2, m, SPB * 0.8, 0.035); pluck(t + k * SPB / 2, m - 12, SPB * 0.5, 0.03, 3000); } }
+  } },
+  hollywood: { bpm: 152, name: '🎬 Red Carpet Swing', fn(b, t) {   // big band: walking bass, ride, brass stabs
+    const bar = Math.floor(b / 4), beat = b % 4, prog = [[36, [64, 67, 70]], [36, [64, 67, 70]], [41, [65, 69, 72]], [36, [64, 67, 70]], [43, [62, 65, 71]], [41, [65, 69, 72]], [36, [64, 67, 70]], [43, [62, 65, 71]]], c = prog[bar % 8];
+    const walk = [c[0], c[0] + 4, c[0] + 7, c[0] + 9]; bass(t, walk[beat], SPB * 0.9, 0.15, 'triangle', 800);
+    ride(t, beat % 2 ? 1 : 0.7); if (beat % 2) { ride(t + SPB * 0.66, 0.5); hat(t, 0.6); } kick(t);
+    if ((beat === 1 && bar % 2 === 0) || (beat === 3 && Math.random() < 0.5)) c[1].forEach(m => brass(t + SPB * 0.66, m, SPB * 0.4, 0.04));
+    if (bar % 8 === 7 && beat === 0) [72, 74, 76, 79].forEach((m, k) => brass(t + k * SPB * 0.5, m, SPB * 0.45, 0.05));
+    if (bar % 16 >= 8) { const mel = [[76, 0, 79, 0, 76, 74, 72, 0], [70, 0, 72, 0, 74, 0, 0, 0]][bar % 2]; each8(t, beat, mel, (tt, m) => brass(tt + (tt > t ? SPB * 0.16 : 0), m, SPB * 0.4, 0.04)); }
+  } },
+  face: { bpm: 72, name: '🤳 Vaporwave Feelings', fn(b, t) {   // slowed-down mall music
+    const bar = Math.floor(b / 4), beat = b % 4, ch = [[53, 57, 60, 64, 67], [50, 53, 57, 60, 64], [55, 58, 62, 65, 69], [52, 55, 59, 62, 67]][bar % 4];
+    if (beat === 0) { ch.forEach(m => ep(t, m - 2, SPB * 3.5, 0.55)); ch.forEach(m => pad(t, m + 10, SPB * 4, 0.008, 'triangle', 2000, 1)); bass(t, ch[0] - 14, SPB * 3.5, 0.14, 'sine', 300); }
+    bigKick(t, beat % 2 ? 0 : 0.5); if (beat % 2) { snare(t, 0.4); hitNoise(t, 'bandpass', 1200, 0.5, 0.06, 0.9, 0.05); } hat(t + SPB / 2, 0.3);
+    if (bar % 4 === 2 && beat === 1) [79, 77, 74, 72].forEach((m, k) => bell(t + k * SPB / 2, m, 0.03, 2.2));
+  } },
+  thanksgiving: { bpm: 140, name: '🦃 Turkey Trot Bluegrass', fn(b, t) {   // banjo rolls, boom-chick, fiddle
+    const bar = Math.floor(b / 4), beat = b % 4, prog = [[43, [55, 59, 62, 67]], [43, [55, 59, 62, 67]], [36, [55, 60, 64, 67]], [38, [54, 57, 62, 66]]], c = prog[bar % 4];
+    if (beat % 2 === 0) bass(t, c[0] + (beat === 2 ? 7 : 0), SPB * 0.5, 0.16, 'triangle', 700); else { snare(t, 0.25); c[1].forEach(m => pluck(t, m, SPB * 0.25, 0.02, 2600)); } kick(t);
+    const roll = [c[1][3] + 12, c[1][1] + 12, c[1][0] + 12, c[1][3] + 12, c[1][1] + 12, c[1][0] + 12, c[1][3] + 12, c[1][2] + 12]; for (let k = 0; k < 2; k++) pluck(t + k * SPB / 2, roll[(beat * 2 + k) % 8], SPB * 0.4, 0.04, 5000);
+    if (bar % 8 >= 4) { const mel = [[74, 76, 79, 0, 76, 74, 71, 0], [72, 74, 76, 79, 76, 74, 72, 71], [74, 0, 79, 0, 81, 79, 76, 74], [74, 0, 0, 0, 67, 0, 0, 0]][bar % 4]; each8(t, beat, mel, (tt, m) => brass(tt, m, SPB * 0.45, 0.025)); }
+  } },
+  amsterdam: { bpm: 126, name: '🇳🇱 Canal House', fn(b, t) {   // Dutch house: four-on-the-floor, squeaky lead, offbeat bass
+    const bar = Math.floor(b / 4), beat = b % 4, sec = bar % 16, rt = [41, 41, 43, 39][bar % 4];
+    bigKick(t, 0.9); pump(t); if (beat % 2) clap(t); hat(t + SPB / 2, 0.9, true); [1, 3].forEach(k => hat(t + k * SPB / 4, 0.3));
+    bass(t + SPB / 2, rt, SPB * 0.4, 0.16, 'sawtooth', 900);
+    if (sec >= 4 && sec < 12) { const ld = [[84, 0, 84, 87, 0, 84, 82, 0], [80, 0, 80, 82, 84, 0, 0, 0], [84, 0, 87, 0, 89, 87, 84, 0], [82, 0, 80, 0, 79, 0, 0, 0]][bar % 4]; each8(t, beat, ld, (tt, m) => { synNote(tt, m, SPB * 0.35, 'square', 0.035, 5200); synNote(tt, m + 7, SPB * 0.2, 'sawtooth', 0.01, 6000); }); }
+    if (sec === 15 && beat === 0) riser(t, SPB * 4); if (beat === 0 && bar % 8 === 0) crash(t);
+  } },
+  rimini: { bpm: 118, name: '🏖️ Italo Disco Riviera', fn(b, t) {   // octave bass, arps, claps
+    const bar = Math.floor(b / 4), beat = b % 4, prog = [[45, [57, 60, 64]], [41, [57, 60, 65]], [43, [55, 59, 62]], [40, [55, 59, 64]]], c = prog[bar % 4];
+    bigKick(t, 0.85); pump(t); if (beat % 2) { clap(t); snare(t, 0.3); } hat(t + SPB / 2, 0.8, true);
+    each16(t, beat, [c[0], c[0] + 12, c[0], c[0] + 12], (tt, m) => bass(tt, m, SPB / 4 * 0.9, 0.12, 'sawtooth', 900));
+    const ar = [...c[1], c[1][0] + 12]; for (let k = 0; k < 4; k++) synNote(t + k * SPB / 4, ar[(beat * 4 + k) % 4] + 12, SPB / 4 * 0.8, 'square', 0.02, 4000);
+    if (bar % 16 >= 8) { const mel = [[76, 0, 79, 0, 81, 0, 79, 76], [77, 0, 76, 0, 72, 0, 0, 0], [74, 0, 76, 0, 79, 0, 74, 0], [76, 0, 0, 0, 0, 0, 0, 0]][bar % 4]; each8(t, beat, mel, (tt, m) => { synNote(tt, m, SPB * 0.45, 'sawtooth', 0.03, 3000); synNote(tt, m + 12, SPB * 0.3, 'square', 0.012, 4000); }); }
+  } },
+  paris: { bpm: 168, beats: 3, name: '🇫🇷 Valse Musette', fn(b, t) {   // accordion waltz
+    const bar = Math.floor(b / 3), beat = b % 3, prog = [[45, [57, 60, 64]], [45, [57, 60, 64]], [40, [56, 59, 62]], [40, [56, 59, 62]], [40, [56, 59, 62]], [40, [56, 59, 62]], [45, [57, 60, 64]], [45, [57, 60, 64]], [38, [57, 62, 65]], [38, [57, 62, 65]], [45, [57, 60, 64]], [45, [57, 60, 64]], [40, [56, 59, 62]], [40, [56, 59, 62]], [45, [57, 60, 64]], [45, [57, 60, 64]]], c = prog[bar % 16];
+    if (beat === 0) bass(t, c[0] + (bar % 2 ? 7 : 0), SPB * 0.8, 0.15, 'triangle', 700); else c[1].forEach(m => accord(t, m + 12, SPB * 0.4, 0.016)); if (beat === 0) kick(t);
+    const mel = [[76, 75, 76], [81, 0, 76], [74, 73, 74], [80, 0, 74], [71, 72, 74], [76, 74, 71], [72, 0, 69], [0, 0, 0], [77, 76, 77], [81, 0, 77], [76, 75, 76], [72, 0, 76], [74, 72, 71], [68, 71, 74], [69, 0, 0], [0, 0, 0]][bar % 16];
+    if (mel[beat]) accord(t, mel[beat], SPB * 0.9, 0.04);
+  } },
+  sahara: { bpm: 92, name: '🐪 Desert Blues', fn(b, t) {   // hypnotic guitar riff, hand drums, drone
+    const bar = Math.floor(b / 4), beat = b % 4;
+    const dr = ['D', 0, 't', 0, 't', 'D', 't', 0, 'D', 0, 't', 't', 'D', 0, 't', 0]; for (let k = 0; k < 4; k++) { const s = dr[beat * 4 + k]; if (s === 'D') doum(t + k * SPB / 4, 0.9); else if (s === 't') tek(t + k * SPB / 4, 0.6); } clap(t + (beat % 2 ? 0 : SPB / 2));
+    if (beat === 0) { bass(t, 40, SPB * 3.8, 0.1, 'triangle', 300); pad(t, 52, SPB * 4, 0.01, 'sawtooth', 800, 0.6); }
+    const riff = [[64, 0, 67, 64, 69, 0, 67, 64], [62, 64, 0, 62, 59, 0, 0, 0], [64, 0, 67, 69, 71, 0, 69, 67], [64, 62, 59, 0, 57, 0, 59, 0]][bar % 4];
+    each8(t, beat, riff, (tt, m) => { pluck(tt, m, SPB * 0.6, 0.06, 2200); pluck(tt + 0.01, m + 12, SPB * 0.3, 0.02, 2600); });
+  } },
+  debate: { bpm: 116, name: '🎤 Coin Debate March', fn(b, t) {   // marching band
+    const bar = Math.floor(b / 4), beat = b % 4, prog = [[46, [58, 62, 65]], [46, [58, 62, 65]], [41, [57, 60, 65]], [46, [58, 62, 65]]], c = prog[bar % 4];
+    bigKick(t, beat % 2 ? 0.4 : 0.8); snare(t + SPB / 2, 0.3); if (beat === 3) [0, 1, 2].forEach(k => snare(t + k * SPB / 6, 0.25)); if (beat === 0 && bar % 4 === 0) crash(t);
+    bass(t, c[0] + (beat % 2 ? 7 : 0), SPB * 0.5, 0.17, 'triangle', 600);
+    const mel = [[70, 0, 70, 72, 74, 0, 70, 0], [77, 0, 77, 75, 74, 0, 72, 0], [72, 0, 74, 72, 69, 0, 65, 0], [70, 0, 0, 0, 70, 72, 74, 77]][bar % 4];
+    each8(t, beat, mel, (tt, m) => { brass(tt, m, SPB * 0.42, 0.04); if (bar % 2) bell(tt, m + 12, 0.025, 0.6); });
+  } },
+  moon: { bpm: 66, name: '🌕 Lunar Drift', fn(b, t) {   // ambient space
+    const bar = Math.floor(b / 4), beat = b % 4, ch = [[50, 57, 62, 64, 69], [48, 55, 60, 64, 67], [45, 52, 57, 60, 67], [47, 54, 59, 62, 66]][bar % 4];
+    if (beat === 0) { ch.forEach((m, i) => pad(t + i * 0.05, m + 12, SPB * 4.2, 0.012, i % 2 ? 'triangle' : 'sawtooth', 1200, 1.4)); bass(t, ch[0] - 12, SPB * 4, 0.12, 'sine', 200); }
+    if (Math.random() < 0.5) bell(t + Math.random() * SPB, ch[1 + Math.floor(Math.random() * 4)] + 24, 0.025, 2.5);
+    if (beat === 2) hitNoise(t, 'lowpass', 400, 0.5, 0.05, 1.2, 0.4);
+  } },
+  microwave: { bpm: 100, name: '♨️ Elevator Muzak', fn(b, t) {   // easy listening
+    const bar = Math.floor(b / 4), beat = b % 4, prog = [[48, [64, 67, 71]], [45, [64, 67, 72]], [50, [65, 69, 72]], [43, [65, 67, 71]]], c = prog[bar % 4];
+    bass(t, c[0] + [0, 7, 12, 7][beat], SPB * 0.8, 0.12, 'triangle', 600); rim(t + (beat % 2 ? 0 : SPB / 2), 0.6); shaker(t, 0.5); shaker(t + SPB / 2, 0.8);
+    if (beat === 0 || beat === 2) c[1].forEach(m => ep(t, m, SPB * 1.6, 0.5));
+    const mel = [[76, 0, 79, 0, 83, 0, 81, 79], [76, 0, 0, 0, 0, 0, 0, 0], [77, 0, 81, 0, 84, 0, 83, 81], [79, 0, 0, 0, 0, 0, 0, 0]][bar % 4]; each8(t, beat, mel, (tt, m) => vibes(tt, m, 0.7));
+    if (bar % 8 === 7 && beat === 3) bell(t + SPB / 2, 96, 0.05, 1.2);   // ding!
+  } },
+  plate: { bpm: 108, beats: 3, name: "🍽️ Dinner Minuet", fn(b, t) {   // harpsichord minuet
+    const bar = Math.floor(b / 3), beat = b % 3, prog = [[43, [55, 59, 62]], [38, [54, 57, 62]], [43, [55, 59, 62]], [36, [52, 55, 60]], [38, [54, 57, 62]], [43, [55, 59, 62]], [38, [54, 57, 62]], [43, [55, 59, 62]]], c = prog[bar % 8];
+    if (beat === 0) pluck(t, c[0], SPB * 1.4, 0.07, 3000); else c[1].forEach(m => pluck(t, m, SPB * 0.6, 0.025, 5000));
+    const mel = [[74, 67, 69, 71, 72, 74], [74, 0, 67, 0, 67, 0], [76, 72, 74, 76, 78, 79], [79, 0, 67, 0, 67, 0], [72, 74, 72, 71, 69, 71], [72, 71, 69, 67, 66, 67], [69, 71, 69, 67, 66, 64], [67, 0, 0, 0, 0, 0]][bar % 8];
+    for (let k = 0; k < 2; k++) { const m = mel[beat * 2 + k]; if (m) pluck(t + k * SPB / 2, m + 12, SPB * 0.5, 0.05, 6000); }
+  } },
+  cyber: { bpm: 112, name: '🌆 Neon Overdrive', fn(b, t) {   // synthwave / darksynth
+    const bar = Math.floor(b / 4), beat = b % 4, rt = [38, 38, 34, 36][bar % 4], sec = bar % 16;
+    bigKick(t, 0.95); if (beat % 2) { snare(t, 1); hitNoise(t, 'lowpass', 2500, 0.5, 0.2, 0.6, 0.002); } hat(t + SPB / 2, 0.7); hat(t + SPB / 4, 0.3); hat(t + SPB * 3 / 4, 0.3);
+    each16(t, beat, [rt, rt, rt + 12, rt], (tt, m) => bass(tt, m, SPB / 4 * 0.85, 0.13, 'sawtooth', 1100));
+    const ar = [rt + 36, rt + 39, rt + 43, rt + 46, rt + 43, rt + 39, rt + 36, rt + 31]; for (let k = 0; k < 4; k++) synNote(t + k * SPB / 4, ar[(beat * 4 + k) % 8], SPB / 4 * 0.7, 'square', 0.018, 3500);
+    if (beat === 0) pad(t, rt + 24, SPB * 4, 0.014, 'sawtooth', 1400, 0.4);
+    if (sec >= 8) { const ld = [[74, 0, 0, 72, 74, 0, 77, 0], [76, 0, 74, 0, 72, 0, 0, 0], [70, 0, 0, 69, 70, 0, 74, 0], [72, 0, 0, 0, 69, 0, 0, 0]][bar % 4]; each8(t, beat, ld, (tt, m) => { synNote(tt, m, SPB * 0.8, 'sawtooth', 0.035, 2800); synNote(tt + 0.01, m + 12, SPB * 0.6, 'square', 0.01, 3600); }); }
+    if (beat === 0 && bar % 8 === 0) crash(t);
+  } },
+};
+function mapTrack() { return MAP_MUSIC[state.map]; }
+function trackName() { const tr = mapTrack(); return tr ? tr.name : STYLE_NAME.jazz; }
+function applyMapMusic() { if (jazz.style !== 'jazz') return; const tr = mapTrack(); SPB = 60 / (tr ? tr.bpm : STYLE_BPM.jazz); jazz.beat = 0; if (actx && jazz.timer) jazz.next = actx.currentTime + 0.12; const btn = $('#jazzBtn'); if (btn && jazz.on) btn.textContent = trackName(); }
+
 const JAZZ_VOL = 0.55;
 function jazzSet(on) {
   jazz.on = on; try { localStorage.setItem('pizzabox-jazz', on ? '1' : '0'); } catch (e) {}
-  $('#jazzBtn').textContent = on ? STYLE_NAME[jazz.style || 'jazz'] : '🔇 Music off'; $('#jazzBtn').classList.toggle('off', !on);
+  $('#jazzBtn').textContent = on ? (jazz.style === 'jazz' ? trackName() : STYLE_NAME[jazz.style]) : '🔇 Music off'; $('#jazzBtn').classList.toggle('off', !on);
   if (!actx) return;
   if (on) {
     if (!jazz.out) jazzGraph();
@@ -7827,7 +7999,7 @@ $('#startBtn').onclick = () => {
 };
 
 // ---------- installable app + automatic updates (website version only) ----------
-const BUILD = '1795622823';
+const BUILD = '1795623353';
 if (STANDALONE) {
   try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
   let deferredInstall = null;
