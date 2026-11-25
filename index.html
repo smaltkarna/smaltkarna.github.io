@@ -1147,7 +1147,7 @@ BOX_SKINS.push(
   { id: 'cursed', name: 'Do Not Open', emoji: '👻', lid: '#1b1720', lidIn: '#d9d2c8', base: '#d8d0c4', side: '#1b1720', dark: true, joke: true },
   { id: 'tax', name: 'Form 1040-PZA', emoji: '🧾', lid: '#f4f6f2', lidIn: '#f2f2ec', base: '#efefe8', side: '#e8ebe6', joke: true },
   { id: 'notpizza', name: 'Definitely Not Pizza', emoji: '📦', lid: '#c49a68', lidIn: '#c9a271', base: '#c9a271', side: '#b98d5b', joke: true },
-  { id: 'face', name: 'Face Box', emoji: '🤳', lid: '#c98f6a', lidIn: '#c98f6a', base: '#e9d6c4', side: '#c98f6a', photo: true, joke: true },
+  { id: 'face', name: 'Face Box', emoji: '🤳', mystery: true, lid: '#c98f6a', lidIn: '#c98f6a', base: '#e9d6c4', side: '#c98f6a', photo: true, joke: true },
 );
 Object.assign(SKIN_DRAW, {
   deepdish: {
@@ -1450,6 +1450,7 @@ function stepMap(dt) { mapT += dt; if (mapTick) mapTick(mapT, dt); }
 let VOTE = null, CD = null;
 function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
 function newVote() { VOTE = { maps: shuffle(MAPS.map(m => m.id)).slice(0, 3), skins: shuffle(BOX_SKINS.map(s => s.id)).slice(0, 3), mv: {}, sv: {} }; }
+const vName = it => it.mystery ? '?' : it.name, vEmoji = it => it.mystery ? '❓' : it.emoji;
 function voteCounts(k) { const ids = k === 'map' ? VOTE.maps : VOTE.skins, v = k === 'map' ? VOTE.mv : VOTE.sv; return ids.map(id => [id, Object.values(v).filter(x => x === id).length]); }
 function castVote(who, k, id) {
   if (!VOTE || state.started) return;
@@ -1459,11 +1460,11 @@ function castVote(who, k, id) {
 function voteWinner(k) { const c = voteCounts(k), max = Math.max(...c.map(x => x[1])); const top = c.filter(x => x[1] === max); return top[Math.floor(Math.random() * top.length)][0]; }
 function votePublic() {
   if (!VOTE) return null;
-  return { m: voteCounts('map').map(([id, n]) => [id, mapById(id).name, mapById(id).emoji, n]), s: voteCounts('skin').map(([id, n]) => [id, skinById(id).name, skinById(id).emoji, n]), cd: CD ? Math.max(0, Math.ceil((CD.end - Date.now()) / 1000)) : null };
+  return { m: voteCounts('map').map(([id, n]) => [id, vName(mapById(id)), vEmoji(mapById(id)), n]), s: voteCounts('skin').map(([id, n]) => [id, vName(skinById(id)), vEmoji(skinById(id)), n]), cd: CD ? Math.max(0, Math.ceil((CD.end - Date.now()) / 1000)) : null };
 }
 function renderVote() {
   const el = $('#lbVote'); if (!el || !VOTE) return;
-  const host = 'host', row = (k, list) => voteCounts(k).map(([id, n]) => { const it = k === 'map' ? mapById(id) : skinById(id), mine = (k === 'map' ? VOTE.mv : VOTE.sv)[host] === id; return `<button class="vt ${mine ? 'sel' : ''}" data-k="${k}" data-id="${id}"><span class="vt-e">${it.emoji}</span><span class="vt-n">${esc(it.name)}</span><span class="vt-c">${n ? '★'.repeat(Math.min(n, 8)) : '—'}</span></button>`; }).join('');
+  const host = 'host', row = (k, list) => voteCounts(k).map(([id, n]) => { const it = k === 'map' ? mapById(id) : skinById(id), mine = (k === 'map' ? VOTE.mv : VOTE.sv)[host] === id; return `<button class="vt ${mine ? 'sel' : ''}" data-k="${k}" data-id="${id}"><span class="vt-e">${vEmoji(it)}</span><span class="vt-n">${esc(vName(it))}</span><span class="vt-c">${n ? '★'.repeat(Math.min(n, 8)) : '—'}</span></button>`; }).join('');
   el.innerHTML = `<h2>Vote the map 🗺️</h2><div class="vt-row">${row('map')}</div><h2>Vote the box 🍕</h2><div class="vt-row">${row('skin')}</div>`;
   el.querySelectorAll('.vt').forEach(b => b.onclick = () => castVote(host, b.dataset.k, b.dataset.id));
   const sb = $('#startBtn');
@@ -1487,7 +1488,7 @@ function finishCountdown() {
   setMap(mapId); applySkin(skinId); if (window.__fillLook) window.__fillLook();
   tone('triangle', 520, 1040, 0.35, 0.12);
   state.started = true; state.seeded = false; state.gobPid = null; save(); goblinTargetId(); renderUI(); renderLobby(); ensureAudio();
-  showResult(`${mapById(mapId).emoji} ${mapById(mapId).name}`, `${skinById(skinId).emoji} ${skinById(skinId).name} box — let's go!`);
+  showResult(`${vEmoji(mapById(mapId))} ${vName(mapById(mapId))}`, `${vEmoji(skinById(skinId))} ${vName(skinById(skinId))} box — let's go!`);
   LIDCTL.hold = true; LIDCTL.want = 0; setTimeout(() => { LIDCTL.hold = false; LIDCTL.want = 1; whooshSfx(0.8); setTimeout(() => thudSfx(0.6), 1000); }, 1500);
   setTimeout(() => startIntro(() => showResult('Game on! 🍕', state.lobby.length ? 'Everyone draw your circle — on your phone, or ✏️ / 🎲 next to your name here.' : 'Flip the coin!')), 3600);
 }
@@ -1654,7 +1655,7 @@ Object.assign(MAP_BUILD, {
 });
 
 // ---------- photo map ----------
-MAPS.push({ id: 'face', name: 'Face World', emoji: '🤳' });
+MAPS.push({ id: 'face', name: 'Face World', emoji: '🤳', mystery: true });
 GROUND_MORE.photo = () => facePhotoTex(5);
 MAP_BUILD.face = g => {
   const pm = () => new THREE.MeshStandardMaterial({ map: facePhotoTex(), roughness: 0.8 });
@@ -6831,7 +6832,7 @@ $('#startBtn').onclick = () => {
 };
 
 // ---------- installable app + automatic updates (website version only) ----------
-const BUILD = '1795611881';
+const BUILD = '1795612086';
 if (STANDALONE) {
   try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
   let deferredInstall = null;
