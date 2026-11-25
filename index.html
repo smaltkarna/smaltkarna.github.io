@@ -1888,15 +1888,43 @@ function mkCamel(g) {
   g.add(c); return { c, legs, head };
 }
 function mkEiffel(g, x, z, H) {
-  const lm = new THREE.MeshStandardMaterial({ map: lattice('#5e4c3a'), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.8 }), solid = mstd('#5e4c3a');
-  const t = new THREE.Group(); t.position.set(x, 0, z); g.add(t);
-  const seg = (r0, r1, h, y) => { const c = addM(t, new THREE.CylinderGeometry(r1, r0, h, 4, Math.max(1, Math.round(h / 3)), true), lm, 0, y + h / 2, 0); c.rotation.y = Math.PI / 4; c.material.map.repeat.set(2, Math.max(1, Math.round(h / 3))); return c; };
-  const k = H / 60;
-  seg(14 * k, 7 * k, 12 * k, 0); addM(t, new THREE.BoxGeometry(11 * k, 1.2 * k, 11 * k), solid, 0, 12 * k, 0);
-  seg(6.5 * k, 3.6 * k, 14 * k, 12.6 * k); addM(t, new THREE.BoxGeometry(5.5 * k, 1 * k, 5.5 * k), solid, 0, 26.8 * k, 0);
-  seg(3.2 * k, 0.6 * k, 28 * k, 27.3 * k); addM(t, new THREE.BoxGeometry(1.6 * k, 1.4 * k, 1.6 * k), solid, 0, 55.6 * k, 0); addM(t, new THREE.CylinderGeometry(0.08 * k, 0.15 * k, 4 * k, 6), solid, 0, 58.3 * k, 0);
-  // arches between the legs
-  for (let i = 0; i < 4; i++) { const a = i * Math.PI / 2; const ar = addM(t, new THREE.TorusGeometry(5 * k, 0.5 * k, 6, 16, Math.PI), solid, Math.sin(a) * 8.6 * k, 4.2 * k, Math.cos(a) * 8.6 * k); ar.rotation.y = a; }
+  // a real 3D tower: four hollow lattice legs that curve inward, join above the 2nd platform, and rise as one shaft
+  const k = H / 60, t = new THREE.Group(); t.position.set(x, 0, z); t.scale.setScalar(k); g.add(t);
+  const iron = mstd('#6b5640', { roughness: 0.6, metalness: 0.3 });
+  const latTex = canvasTex(128, 128, (q, w) => { q.strokeStyle = '#5e4c3a'; q.lineWidth = 9; q.strokeRect(4, 4, w - 8, w - 8); q.lineWidth = 5; q.beginPath(); q.moveTo(0, 0); q.lineTo(w, w); q.moveTo(w, 0); q.lineTo(0, w); q.stroke(); });
+  const ribbonMat = new THREE.MeshStandardMaterial({ map: latTex, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.7, color: '#8a7058' });
+  const ribbon = (A, B, n, vRep) => { const pos = [], uv = [], idx = []; for (let i = 0; i <= n; i++) { const u = i / n, a = A(u), b = B(u); pos.push(a.x, a.y, a.z, b.x, b.y, b.z); uv.push(0, u * vRep, 1, u * vRep); if (i < n) { const o = i * 2; idx.push(o, o + 1, o + 2, o + 1, o + 3, o + 2); } } const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); geo.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); geo.setIndex(idx); geo.computeVertexNormals(); const m = new THREE.Mesh(geo, ribbonMat); t.add(m); return m; };
+  const edge = (F, n, r) => { const pts = []; for (let i = 0; i <= n; i++) pts.push(F(i / n)); const m = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), n, r, 5), iron); t.add(m); return m; };
+  const Y1 = 11, Y2 = 22, YT = 58;
+  const c = y => 10 * Math.pow(Math.max(0, 1 - y / 24), 1.3) + 1.6, w = y => 2.6 - y * 0.07;
+  // four legs, each a hollow square column of lattice faces
+  [[-1, -1], [1, -1], [1, 1], [-1, 1]].forEach(([sx, sz]) => {
+    const corner = (dx, dz) => u => { const y = u * Y2; return new THREE.Vector3(sx * c(y) + dx * w(y), y, sz * c(y) + dz * w(y)); };
+    const C = [corner(-1, -1), corner(1, -1), corner(1, 1), corner(-1, 1)];
+    for (let f = 0; f < 4; f++) ribbon(C[f], C[(f + 1) % 4], 16, 9);
+    C.forEach(F => edge(F, 16, 0.14));
+  });
+  // the upper shaft
+  const s = y => 3.1 * Math.pow(Math.max(0, 1 - (y - Y2) / (YT - Y2 + 4)), 1.35) + 0.3;
+  const sc = (dx, dz) => u => { const y = Y2 + u * (YT - Y2); return new THREE.Vector3(dx * s(y), y, dz * s(y)); };
+  const S = [sc(-1, -1), sc(1, -1), sc(1, 1), sc(-1, 1)];
+  for (let f = 0; f < 4; f++) ribbon(S[f], S[(f + 1) % 4], 20, 24);
+  S.forEach(F => edge(F, 20, 0.12));
+  // inner cross-girders tying the legs together
+  [Y1 * 0.5, Y1, 16, Y2].forEach(y => { const r = c(y); [[0, -1], [0, 1], [-1, 0], [1, 0]].forEach(([ax, az]) => { const bar = new THREE.Mesh(new THREE.BoxGeometry(az ? 2 * r : 0.35, 0.35, ax ? 2 * r : 0.35), iron); bar.position.set(ax * r, y, az * r); t.add(bar); }); });
+  // the four big decorative arches between the legs
+  [[0, -1], [1, 0], [0, 1], [-1, 0]].forEach(([ax, az]) => { const pts = []; const Ra = c(2) - w(2) - 0.4, ya = 0.5, face = c(6); for (let i = 0; i <= 24; i++) { const a = i / 24 * Math.PI; const along = Math.cos(a) * Ra, up = ya + Math.sin(a) * 8.5; const fz = c(up) - 0.2; pts.push(new THREE.Vector3(ax ? ax * fz : along, up, az ? az * fz : along)); } t.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 40, 0.32, 6), iron)); });
+  // platforms with railings
+  const deck = (y, half, th) => { const d = new THREE.Mesh(new THREE.BoxGeometry(half * 2, th, half * 2), mstd('#5a4636', { roughness: 0.7 })); d.position.y = y; t.add(d); const railT = canvasTex(256, 32, (q, W, Hh) => { q.strokeStyle = '#3e3024'; q.lineWidth = 3; q.strokeRect(1, 1, W - 2, Hh - 2); for (let i = 0; i < W; i += 12) { q.beginPath(); q.moveTo(i, 0); q.lineTo(i, Hh); q.stroke(); } }); railT.wrapS = THREE.RepeatWrapping; railT.repeat.x = Math.round(half);
+    for (let f = 0; f < 4; f++) { const r = new THREE.Mesh(new THREE.PlaneGeometry(half * 2, 1), new THREE.MeshStandardMaterial({ map: railT, alphaTest: 0.4, transparent: true, side: THREE.DoubleSide })); const a = f * Math.PI / 2; r.position.set(Math.sin(a) * half, y + th / 2 + 0.5, Math.cos(a) * half); r.rotation.y = a; t.add(r); } };
+  deck(Y1, c(Y1) + w(Y1) + 0.8, 1.1); deck(Y2, c(Y2) + w(Y2) + 0.5, 0.8); deck(YT - 6, s(YT - 6) + 0.6, 0.5);
+  // the top: lantern, cupola and antenna
+  const top = new THREE.Mesh(new THREE.BoxGeometry(1.6, 1.6, 1.6), iron); top.position.y = YT + 0.8; t.add(top);
+  const cup = new THREE.Mesh(new THREE.SphereGeometry(0.8, 12, 8, 0, Math.PI * 2, 0, Math.PI / 2), iron); cup.position.y = YT + 1.6; t.add(cup);
+  const ant = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.12, 5, 6), iron); ant.position.y = YT + 4.4; t.add(ant);
+  const beacon = new THREE.Mesh(new THREE.SphereGeometry(0.25, 10, 8), new THREE.MeshBasicMaterial({ color: '#ffd27a' })); beacon.position.y = YT + 2.1; t.add(beacon);
+  // warm lights on the platform rims
+  [Y1, Y2].forEach(y => { for (let f = 0; f < 4; f++) for (let i = -3; i <= 3; i++) { const half = (y === Y1 ? c(Y1) + w(Y1) + 0.8 : c(Y2) + w(Y2) + 0.5), a = f * Math.PI / 2; const b = new THREE.Mesh(new THREE.SphereGeometry(0.12, 6, 4), new THREE.MeshBasicMaterial({ color: '#ffcf7a' })); b.position.set(Math.sin(a) * (half + 0.05) + Math.cos(a) * i * half / 3.5, y - 0.4, Math.cos(a) * (half + 0.05) - Math.sin(a) * i * half / 3.5); t.add(b); } });
   return t;
 }
 function mkTurkey(g, x, z, s) {
@@ -2018,7 +2046,7 @@ Object.assign(MAP_BUILD, {
     const zinc = mstd('#6a7480', { roughness: 0.5, metalness: 0.3 });
     ring(16, 33, 35, 61, a => Math.abs(a - Math.PI) < 0.5).forEach(([x, z, a, r], i) => { const h = 15 + r() * 3; building(g, x, z, a, 10, h, 7, tx[i % tx.length], '#6a7480'); const roof = addM(g, new THREE.CylinderGeometry(3.2, 4.6, 3.4, 4, 1), zinc, x, h + 1.7, z); roof.rotation.y = a + Math.PI / 4; roof.scale.set(1.55, 1, 1.05); for (let k = -1; k <= 1; k += 2) addM(g, new THREE.BoxGeometry(0.8, 2.2, 0.8), mstd('#c8a888'), x + Math.cos(a) * k * 3.4, h + 3.6, z - Math.sin(a) * k * 3.4); });
     // the Eiffel Tower, big and close enough to see
-    mkEiffel(g, -10, -52, 78);
+    mkEiffel(g, -27, -50, 84);
     // plane trees along the promenade
     const bark = mstd('#a8a090'), leaf = mstd('#4f8a3a', { roughness: 0.9 });
     ring(10, 22, 23, 17, a => Math.cos(a) > 0.7).forEach(([x, z, a, r]) => { addM(g, new THREE.CylinderGeometry(0.35, 0.45, 6, 8), bark, x, 3, z); [[0, 7, 0, 2.6], [1.4, 6.3, 0.6, 1.9], [-1.3, 6.5, -0.5, 2]].forEach(([dx, y, dz, s]) => addM(g, new THREE.IcosahedronGeometry(s, 1), leaf, x + dx, y, z + dz)); });
@@ -7425,7 +7453,7 @@ $('#startBtn').onclick = () => {
 };
 
 // ---------- installable app + automatic updates (website version only) ----------
-const BUILD = '1795619685';
+const BUILD = '1795619964';
 if (STANDALONE) {
   try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
   let deferredInstall = null;
