@@ -2712,7 +2712,7 @@ $('#addForm').addEventListener('submit', e => {
   $('#hint').classList.add('on');
 });
 function nameTaken(n) { n = n.toLowerCase(); return [...state.players, ...state.lobby].some(p => p.name.toLowerCase() === n); }
-function addToLobby(name) { state.lobby.push({ id: newId(), name, color: nextColor() }); addLog(`👋 ${name} joined`); save(); renderUI(); renderLobby(); if (!WATCH) setTimeout(() => showGobPay(name), 700); }
+function addToLobby(name) { state.lobby.push({ id: newId(), name, color: nextColor() }); addLog(`👋 ${name} joined`); save(); renderUI(); renderLobby(); }
 // a lobby player (joined but no circle yet) gets drawn: on the computer, or at a random spot
 // circles are drawn one at a time, in lobby order, so nobody draws on top of someone else
 const drawerId = () => state.started && state.lobby.length ? state.lobby[0].id : null;
@@ -7999,7 +7999,7 @@ $('#startBtn').onclick = () => {
 };
 
 // ---------- installable app + automatic updates (website version only) ----------
-const BUILD = '1795634018';
+const BUILD = '1795634134';
 if (STANDALONE) {
   try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
   let deferredInstall = null;
