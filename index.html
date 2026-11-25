@@ -218,6 +218,11 @@
   #slugSay::after{content:'';position:absolute;left:50%;bottom:-14px;margin-left:-10px;border:10px solid transparent;border-top-color:#2a1a05;border-bottom:0}
   .c-cd h3{font-size:30px;color:#ffd84a}
   .lb-note{color:var(--muted);font-size:13px;margin-top:10px}
+  .hl-list{display:flex;flex-direction:column;gap:6px;margin:12px auto 0;max-width:460px}
+  .hl-p{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.07);border-radius:10px;padding:6px 10px}
+  .hl-p .hl-n{flex:1;text-align:left;font-weight:800}.hl-p button{padding:6px 10px!important;margin:0!important;font-size:14px!important}
+  .hl-ok{color:#9be15d;font-weight:800}.hl-w{opacity:.7;font-size:13px}
+  .hl-p.good{background:rgba(155,225,93,.15)}.hl-p.bad{background:rgba(255,90,90,.18)}
   /* lobby: one centred column, scaled to the screen height so it never needs scrolling */
   .lb-card h1{font-size:clamp(38px,7vh,80px)}
   #lbJoin{margin:.4vh 0 1vh;font-size:clamp(14px,2vh,18px);line-height:1.4}
@@ -677,7 +682,7 @@ const S = 2048;            // top texture resolution
 const HALF = 4.94;         // half-size of the inside floor (world units)
 const OUT = 5.0;           // outer half-size of the box
 const IN = 10.12 / 16;    // world units per inch (box is ~16" across)
-const ruleR = () => 0.45 + Math.random() * 0.75; // rule circles: random size every time
+const ruleR = () => 0.3 + Math.random() * 0.3; // rule circles: small, random size every time
 const TOP = 0.05;          // inside floor height
 const WALL_H = 0.95;       // wall height
 const COIN_R = 0.38, COIN_T = 0.07;
@@ -6759,31 +6764,42 @@ function gp(title, body, btns) { $('#gamePanel').classList.add('on'); $('#gpTitl
 function gpOff() { $('#gamePanel').classList.remove('on'); }
 const hasPhone = p => claimed.has(String(p.id));
 // --- Higher or Lower ---
-function hlBegin() { mini.order = miniPlayers().slice().sort(() => Math.random() - 0.5); mini.idx = 0; mini.card = drawCard(); mini.drinkers = []; mini.n = 0; hlTurn(); }
-function hlTurn() {
-  const p = mini.order[mini.idx]; mini.who = p.id; mini.sub = 'guess'; mini.st = 0; mini.wait = 12; mini.next = null; mini.verdict = null; mini.n++;
-  miniBanner('🃏 HIGHER OR LOWER? 🃏', `${pName(p)}'s guess · ${mini.idx + 1}/${mini.order.length}`);
-  gp(`Is the next card higher or lower?`, `<div class="cards">${cardHTML(mini.card)}${cardHTML(null)}</div>`,
-    (hasPhone(p) ? `<small>📱 ${esc(p.name)} — guess on your phone (or tap here)</small><br>` : '') + `<button data-gp="hl" data-v="h">⬆️ Higher</button><button data-gp="hl" data-v="l">⬇️ Lower</button>`);
-  renderUI(); hostPublish();
+function hlBegin() { mini.order = miniPlayers().slice(); mini.round = 0; mini.rounds = 3; mini.card = drawCard(); mini.drinkers = []; mini.n = 0; mini.who = null; hlRound(); }
+// everyone guesses the same card at the same time; wrong, tie or no guess = drink
+function hlRound() {
+  mini.sub = 'guess'; mini.st = 0; mini.wait = 12; mini.next = null; mini.verdict = null; mini.votes = {}; mini.n++;
+  miniBanner('🃏 HIGHER OR LOWER? 🃏', `Everyone guess! · card ${mini.round + 1}/${mini.rounds}`);
+  hlPanel(); renderUI(); hostPublish();
+}
+function hlPanel() {
+  const rows = mini.order.map(p => { const g = mini.votes[p.id]; return `<div class="hl-p"><span class="hl-n">${pName(p)}</span>${g ? `<span class="hl-ok">✅ locked in</span>` : hasPhone(p) ? `<span class="hl-w">📱 guessing…</span><button data-gp="hl" data-p="${p.id}" data-v="h">⬆️</button><button data-gp="hl" data-p="${p.id}" data-v="l">⬇️</button>` : `<button data-gp="hl" data-p="${p.id}" data-v="h">⬆️ Higher</button><button data-gp="hl" data-p="${p.id}" data-v="l">⬇️ Lower</button>`}</div>`; }).join('');
+  gp(`Everyone: is the next card higher or lower?`, `<div class="cards">${cardHTML(mini.card)}${cardHTML(null)}</div><div class="hl-list">${rows}</div>`, '');
 }
 function hlGuess(pid, g) {
-  if (!mini || mini.type !== 'hilo' || mini.sub !== 'guess' || (pid != null && String(pid) !== String(mini.who))) return;
-  const p = pById(mini.who), nx = drawCard(), same = nx.r === mini.card.r, ok = !same && ((g === 'h' && nx.r > mini.card.r) || (g === 'l' && nx.r < mini.card.r));
+  if (!mini || mini.type !== 'hilo' || mini.sub !== 'guess' || pid == null || (g !== 'h' && g !== 'l')) return;
+  const p = pById(pid); if (!p || mini.votes[p.id]) return;
+  mini.votes[p.id] = g; tone('triangle', 700, 760, 0.06, 0.05);
+  if (mini.order.every(q => mini.votes[q.id])) hlReveal(); else { hlPanel(); hostPublishSoon(); }
+}
+function hlReveal() {
+  let nx = drawCard(); while (nx.r === mini.card.r && nx.s === mini.card.s) nx = drawCard(); const same = nx.r === mini.card.r, up = nx.r > mini.card.r;
   mini.sub = 'reveal'; mini.st = 0; mini.next = nx;
-  mini.verdict = same ? 'Same card — drink! 🍺' : ok ? '✅ Safe!' : g ? '❌ Wrong — drink! 🍺' : '⏰ Too slow — drink! 🍺';
-  gp(g ? `${pName(p)} said <b>${g === 'h' ? 'HIGHER ⬆️' : 'LOWER ⬇️'}</b>` : `${pName(p)} ran out of time`, `<div class="cards">${cardHTML(mini.card)}${cardHTML(nx, 'flip')}</div><div class="verdict ${ok ? 'ok' : 'bad'}">${mini.verdict}</div>`, '');
+  const bad = mini.order.filter(p => { const g = mini.votes[p.id]; return !g || same || (g === 'h') !== up; });
+  mini.verdict = same ? 'Same card — everyone drinks! 🍺' : bad.length ? `Drink: ${bad.map(p => p.name).join(', ')} 🍺` : 'Everyone got it! 🎉';
+  const rows = mini.order.map(p => { const g = mini.votes[p.id], ok = !bad.includes(p); return `<div class="hl-p ${ok ? 'good' : 'bad'}"><span class="hl-n">${pName(p)}</span><span>${g ? (g === 'h' ? '⬆️ Higher' : '⬇️ Lower') : '⏰ no guess'}</span><b>${ok ? '✅' : '🍺'}</b></div>`; }).join('');
+  gp(`It's ${same ? 'the same' : up ? 'HIGHER ⬆️' : 'LOWER ⬇️'}!`, `<div class="cards">${cardHTML(mini.card)}${cardHTML(nx, 'flip')}</div><div class="hl-list">${rows}</div><div class="verdict ${bad.length ? 'bad' : 'ok'}">${mini.verdict}</div>`, '');
   tone('triangle', 600, 900, 0.15, 0.08);
-  setTimeout(() => { if (!mini || mini.type !== 'hilo') return; if (ok) dingSfx(); else { tone('sawtooth', 300, 140, 0.45, 0.12); drink(p); mini.drinkers.push(p.name); renderUI(); } }, 550);
+  setTimeout(() => { if (!mini || mini.type !== 'hilo') return; if (!bad.length) dingSfx(); else { tone('sawtooth', 300, 140, 0.45, 0.12); bad.forEach(p => { drink(p); mini.drinkers.push(p.name); }); renderUI(); } }, 550);
   mini.card = nx; hostPublish();
 }
 function stepHL(dt) {
   mini.st += dt;
-  if (mini.sub === 'guess') { const l = Math.ceil(mini.wait - mini.st); if (l !== mini.left) { mini.left = l; hostPublishSoon(); } if (mini.st > mini.wait) hlGuess(null, null); }
-  else if (mini.sub === 'reveal' && mini.st > 2.6) {
-    mini.idx++;
-    if (mini.idx < mini.order.length) hlTurn();
-    else { mini.stage = 'done'; mini.t = 0; mini.sub = 'end'; const d = mini.drinkers; gp('🃏 Higher or Lower — done!', `<div class="verdict">${d.length ? 'Drinks: <b>' + d.map(esc).join(', ') + '</b>' : 'Nobody got it wrong! 🎉'}</div>`, '');
+  if (mini.sub === 'guess') { const l = Math.ceil(mini.wait - mini.st); if (l !== mini.left) { mini.left = l; hostPublishSoon(); } if (mini.st > mini.wait) hlReveal(); }
+  else if (mini.sub === 'reveal' && mini.st > 3.4) {
+    mini.round++;
+    if (mini.round < mini.rounds) hlRound();
+    else { mini.stage = 'done'; mini.t = 0; mini.sub = 'end'; const cnt = {}; mini.drinkers.forEach(n => cnt[n] = (cnt[n] || 0) + 1); const d = Object.entries(cnt).map(([n, c]) => c > 1 ? `${n} ×${c}` : n);
+      gp('🃏 Higher or Lower — done!', `<div class="verdict">${d.length ? 'Drinks: <b>' + d.map(esc).join(', ') + '</b>' : 'Nobody got one wrong! 🎉'}</div>`, '');
       showResult('🃏 Higher or Lower', d.length ? `Drinks: ${d.join(', ')}` : 'Everyone guessed right — nobody drinks!', '#ffd84a'); addLog(`🃏 Higher or Lower${d.length ? ' — ' + d.join(', ') + ' drank' : ''}`); renderUI(); hostPublish(); }
   }
 }
@@ -6973,7 +6989,7 @@ function startMini(type) {
   if (type === 'hot') miniBanner('🔥 HOT GOBLIN! 🔥', 'Pass him before he blows! &nbsp;📱 tap <b>PASS</b> · 💻 <b>Space</b>');
   else if (type === 'roulette') miniBanner('🎰 RULE ROULETTE! 🎰', 'One rule for EVERYONE — for a whole round');
   else if (type === 'cups') miniBanner('🥤 COIN UNDER THE CUP! 🥤', 'Follow the coin… then pick the right cup');
-  else if (type === 'hilo') miniBanner('🃏 HIGHER OR LOWER! 🃏', 'Guess if the next card is higher or lower — wrong (or a tie) and you drink');
+  else if (type === 'hilo') miniBanner('🃏 HIGHER OR LOWER! 🃏', 'Everyone guesses at once — higher or lower? Wrong (or a tie) and you drink');
   else if (type === 'tos') miniBanner('🥃 TRUTH OR SHOT! 🥃', "See the question — answer it, or take a shot");
   else if (type === 'fieldgoal') miniBanner('🏈 FIELD GOAL! 🏈', 'Kick it through the posts — miss and you drink');
   else miniBanner('👹 GOBLIN BOSS FIGHT! 👹', 'Mash <b>HIT</b> on your phones (or <b>Space</b>) — beat him in 10 seconds!');
@@ -7355,7 +7371,7 @@ $('#jackList').onclick = () => {
 $('#jackActs').onclick = e => { const b = e.target.closest('[data-act]'); if (b) watchJack(b.dataset.act); };
 if (WATCH) setTimeout(watchBoot, 700);
 ['Hilo:hilo', 'Tos:tos', 'Fg:fieldgoal'].forEach(x => { const [id, t] = x.split(':'); $('#try' + id).onclick = () => { if (!canAim() && !mini) return toast('Start a game with 2+ players first (and wait for the turn to finish)'); startMini(t); if (mini && t === 'fieldgoal') mini.who = current().id; }; });
-document.addEventListener('click', e => { const b = e.target.closest('[data-gp]'); if (!b || !mini) return; const k = b.dataset.gp; if (k === 'hl') hlGuess(null, b.dataset.v); else if (k === 'tos') tosChoose(null, b.dataset.v); else if (k === 'vote') tosVote(null, b.dataset.v); else if (k === 'tosq') tosAsk(null, b.dataset.v); else if (k === 'kick') fgPress(null); });
+document.addEventListener('click', e => { const b = e.target.closest('[data-gp]'); if (!b || !mini) return; const k = b.dataset.gp; if (k === 'hl') hlGuess(b.dataset.p, b.dataset.v); else if (k === 'tos') tosChoose(null, b.dataset.v); else if (k === 'vote') tosVote(null, b.dataset.v); else if (k === 'tosq') tosAsk(null, b.dataset.v); else if (k === 'kick') fgPress(null); });
 $('#tryCups').onclick = () => { if (!canAim() && !mini) return toast('Start a game with 2+ players first (and wait for the turn to finish)'); startMini('cups'); };
 $('#tryRoul').onclick = () => { if (!canAim() && !mini) return toast('Start a game with 2+ players first (and wait for the turn to finish)'); startMini('roulette'); };
 $('#tryBoss').onclick = () => { if (!canAim() && !mini) return toast('Start a game with 2+ players first (and wait for the turn to finish)'); startMini('boss'); };
@@ -7776,11 +7792,13 @@ function renderMiniCtrl(body, mine, players) {
   const myTurn = M.who != null && String(M.who) === String(mine.id), whoP = players.find(p => String(p.id) === String(M.who)), whoN = whoP ? esc(whoP.name) : 'Someone';
   const resCard = () => `<div class="c-card c-result" id="cMini" style="border-color:#ffd84a"><div class="t" style="color:#ffd84a">${H.result ? esc(H.result.t) : ''}</div><p>${H.result ? esc(H.result.s) : ''}</p></div>`;
   if (M.type === 'hilo') {
-    if (M.stage === 'intro') html = `<div class="c-card" id="cMini" style="text-align:center"><h3>🃏 HIGHER OR LOWER</h3><p>When it's your turn, guess if the next card is higher or lower. Wrong or a tie = drink!</p></div>`;
+    const guessed = (M.voted || []).map(String).includes(String(mine.id)), red = M.cardS === 1 || M.cardS === 2;
+    if (M.stage === 'intro') html = `<div class="c-card" id="cMini" style="text-align:center"><h3>🃏 HIGHER OR LOWER</h3><p>Everyone guesses at the same time: is the next card higher or lower? Wrong or a tie = drink!</p></div>`;
     else if (M.stage === 'done') html = resCard();
-    else if (M.sub === 'guess' && myTurn) { html = `<div class="c-card" id="cMini" style="text-align:center"><h3>Your guess! <b id="cHlT">${M.left}s</b></h3><p style="font-size:44px;font-weight:900;margin:6px 0;color:${M.cardS === 1 || M.cardS === 2 ? '#ff6b7d' : '#fff'}">${esc(M.card || '')}</p><p>Is the next card higher or lower?</p></div><button class="c-big" data-hl="h">⬆️ HIGHER</button><button class="c-big" data-hl="l" style="margin-top:10px">⬇️ LOWER</button>`; try { navigator.vibrate && navigator.vibrate(120); } catch (e) {} }
-    else if (M.sub === 'reveal') html = `<div class="c-card" id="cMini" style="text-align:center"><h3>${whoN}: ${esc(M.next || '')}</h3><p style="font-size:22px;font-weight:900">${esc(M.verdict || '')}</p></div>`;
-    else html = `<div class="c-card" id="cMini" style="text-align:center"><h3>🃏 ${whoN} is guessing…</h3><p style="font-size:34px;font-weight:900">${esc(M.card || '')}</p><p>Watch the big screen 👀</p></div>`;
+    else if (M.sub === 'guess' && !guessed) { html = `<div class="c-card" id="cMini" style="text-align:center"><h3>Guess now! <b id="cHlT">${M.left}s</b></h3><p style="font-size:44px;font-weight:900;margin:6px 0;color:${red ? '#ff6b7d' : '#fff'}">${esc(M.card || '')}</p><p>Is the next card higher or lower?</p></div><button class="c-big" data-hl="h">⬆️ HIGHER</button><button class="c-big" data-hl="l" style="margin-top:10px">⬇️ LOWER</button>`; try { navigator.vibrate && navigator.vibrate(120); } catch (e) {} }
+    else if (M.sub === 'guess') html = `<div class="c-card" id="cMini" style="text-align:center"><h3>✅ Locked in!</h3><p style="font-size:34px;font-weight:900">${esc(M.card || '')}</p><p>Waiting for everyone else… <b id="cHlT">${M.left}s</b></p></div>`;
+    else if (M.sub === 'reveal') html = `<div class="c-card" id="cMini" style="text-align:center"><h3>Next card: ${esc(M.next || '')}</h3><p style="font-size:20px;font-weight:900">${esc(M.verdict || '')}</p></div>`;
+    else html = `<div class="c-card" id="cMini" style="text-align:center"><h3>🃏 Higher or lower…</h3><p>Watch the big screen 👀</p></div>`;
   } else if (M.type === 'tos') {
     const voted = (M.voted || []).map(String).includes(String(mine.id));
     if (M.stage === 'intro') html = `<div class="c-card" id="cMini" style="text-align:center"><h3>🥃 TRUTH OR SHOT</h3><p>Someone's about to get put on the spot…</p></div>`;
@@ -8149,7 +8167,7 @@ $('#startBtn').onclick = () => {
 };
 
 // ---------- installable app + automatic updates (website version only) ----------
-const BUILD = '1795637583';
+const BUILD = '1795639065';
 if (STANDALONE) {
   try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
   let deferredInstall = null;
