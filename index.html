@@ -1405,6 +1405,28 @@ const hemiMain = scene.children.find(o => o.isHemisphereLight);
 let mapGroup = null, mapTick = null;
 const tableMat = table.material, partyTableTex = tableMat.map;
 function canvasTex(w, h, draw, rep) { const c = makeCanvas(w, h), g = c.getContext('2d'); draw(g, w, h); const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding; t.anisotropy = maxAniso; if (rep) { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(rep, rep); } return t; }
+// merge every static mesh under root into one mesh per material, so a detailed prop costs a handful of draw calls instead of hundreds
+function disposeTree(root, mats = true) {
+  const keep = new Set([tableMat, tableMat && tableMat.map]);
+  root.traverse(o => { if (o.geometry) o.geometry.dispose(); const ms = o.material ? (Array.isArray(o.material) ? o.material : [o.material]) : [];
+    ms.forEach(m => { if (keep.has(m)) return; ['map', 'emissiveMap', 'alphaMap', 'normalMap', 'roughnessMap', 'bumpMap'].forEach(k => { const t = m[k]; if (t && t.isTexture && !keep.has(t) && !(t.userData && t.userData.keep)) t.dispose(); }); if (mats) m.dispose(); }); });
+}
+function mergeStatic(root, shadow) {
+  root.updateMatrixWorld(true); const inv = new THREE.Matrix4().copy(root.matrixWorld).invert(), buckets = new Map(), kill = [];
+  root.traverse(o => { if (!o.isMesh || Array.isArray(o.material) || o.isInstancedMesh) return; let b = buckets.get(o.material); if (!b) buckets.set(o.material, b = []); b.push(o); kill.push(o); });
+  const out = [];
+  buckets.forEach((list, mat) => {
+    const parts = list.map(o => { let g = o.geometry.index ? o.geometry.toNonIndexed() : o.geometry.clone(); g.applyMatrix4(new THREE.Matrix4().multiplyMatrices(inv, o.matrixWorld)); return g; });
+    let n = 0; parts.forEach(g => n += g.attributes.position.count);
+    const pos = new Float32Array(n * 3), nor = new Float32Array(n * 3), uv = new Float32Array(n * 2); let k = 0;
+    parts.forEach(g => { const c = g.attributes.position.count; pos.set(g.attributes.position.array, k * 3); if (g.attributes.normal) nor.set(g.attributes.normal.array, k * 3); if (g.attributes.uv) uv.set(g.attributes.uv.array, k * 2); k += c; g.dispose(); });
+    const G = new THREE.BufferGeometry(); G.setAttribute('position', new THREE.BufferAttribute(pos, 3)); G.setAttribute('normal', new THREE.BufferAttribute(nor, 3)); G.setAttribute('uv', new THREE.BufferAttribute(uv, 2)); G.computeBoundingSphere();
+    const m = new THREE.Mesh(G, mat); m.castShadow = shadow !== false && list.some(o => o.castShadow); m.receiveShadow = list.some(o => o.receiveShadow); out.push(m);
+  });
+  kill.forEach(o => { o.parent.remove(o); o.geometry.dispose(); });
+  for (let i = root.children.length - 1; i >= 0; i--) { const c = root.children[i]; if (!c.isMesh && !c.children.length) root.remove(c); }
+  out.forEach(m => root.add(m)); return root;
+}
 const mstd = (color, o) => new THREE.MeshStandardMaterial(Object.assign({ color, roughness: 0.9 }, o || {}));
 function addM(g, geo, mat, x, y, z, ry) { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); if (ry) m.rotation.y = ry; g.add(m); return m; }
 // place things on a ring around the box, facing it
@@ -1631,7 +1653,7 @@ function setMap(id) {
   { const sb = document.getElementById('slugSay'); if (sb) sb.remove(); }
   setTimeout(() => { try { applyMapMusic(); } catch (e) {} }, 0);
   if (typeof evClear === 'function') { evClear(); evNext = 20 + Math.random() * 20; }
-  if (mapGroup) { scene.remove(mapGroup); mapGroup.traverse(o => { if (o.geometry) o.geometry.dispose(); }); mapGroup = null; }
+  if (mapGroup) { scene.remove(mapGroup); disposeTree(mapGroup); mapGroup = null; } weedPlant.M = null;
   mapTick = null;
   if (tableMat.map !== partyTableTex) tableMat.map.dispose();
   const P = MAPENV.party;
@@ -1897,8 +1919,8 @@ const LEAF_TEX = (() => { let t = null; return () => t || (t = canvasTex(512, 51
   g.fillStyle = '#3a7a28'; g.fillRect(-5, -6, 10, 40);
 })); })();
 function weedPlant(g, x, z, h, rnd) {
-  const lm = new THREE.MeshStandardMaterial({ map: LEAF_TEX(), alphaTest: 0.45, side: THREE.DoubleSide, roughness: 0.75 });
-  const stem = mstd('#5a8a2a', { roughness: 0.8 }), p = new THREE.Group();
+  const W = weedPlant.M || (weedPlant.M = { lm: new THREE.MeshStandardMaterial({ map: LEAF_TEX(), alphaTest: 0.45, side: THREE.DoubleSide, roughness: 0.75 }), stem: mstd('#5a8a2a', { roughness: 0.8 }), bud: mstd('#2c5410', { roughness: 0.9 }), hair: mstd('#a8480a'), frost: mstd('#557a36', { roughness: 0.6 }) });
+  const lm = W.lm, stem = W.stem, p = new THREE.Group();
   addM(p, new THREE.CylinderGeometry(0.04, 0.09, h, 8), stem, 0, h / 2, 0);
   const nodes = 6;
   for (let k = 0; k < nodes; k++) {
@@ -1911,10 +1933,10 @@ function weedPlant(g, x, z, h, rnd) {
     });
   }
   // the top cola: a dense bud cone with orange pistils and little sugar leaves
-  const bud = mstd('#3f6e16', { roughness: 0.9 }), hair = mstd('#b8540c'), frost = mstd('#7a9a52', { roughness: 0.6 });
+  const bud = W.bud, hair = W.hair, frost = W.frost;
   for (let k = 0; k < 9; k++) { const r = 0.2 - k * 0.015, b = addM(p, new THREE.SphereGeometry(r, 9, 7), k % 3 ? bud : frost, (rnd() - .5) * 0.08, h + 0.1 - k * 0.11, (rnd() - .5) * 0.08); b.scale.y = 1.25; for (let q = 0; q < 4; q++) { const hh = addM(b, new THREE.CylinderGeometry(0.008, 0.008, 0.12, 3), hair, (rnd() - .5) * r * 2, (rnd() - .5) * r * 2, r * 0.8); hh.rotation.set(rnd() * 3, rnd() * 3, 0); } }
   for (let q = 0; q < 4; q++) { const geo = new THREE.PlaneGeometry(0.45, 0.45); geo.translate(0, 0.2, 0); const sl = new THREE.Mesh(geo, lm); sl.position.y = h - 0.2; sl.rotation.set(-0.5, q * Math.PI / 2, 0, 'YXZ'); p.add(sl); }
-  p.position.set(x, 0, z); p.rotation.y = rnd() * 6; g.add(p); return p;
+  mergeStatic(p); p.position.set(x, 0, z); p.rotation.y = rnd() * 6; g.add(p); return p;
 }
 {
   const base = MAP_BUILD.ucsc;
@@ -2479,7 +2501,7 @@ const walkLegs2 = (o, t, sp = 9, a = 0.5) => (o.userData.legs || []).forEach((l,
 
 const evGroup = new THREE.Group(); scene.add(evGroup);
 let EV = null, evNext = 25 + Math.random() * 25;
-function evClear() { if (EV && EV.end) try { EV.end(); } catch (e) {} EV = null; while (evGroup.children.length) evGroup.remove(evGroup.children[0]); }
+function evClear() { if (EV && EV.end) try { EV.end(); } catch (e) {} EV = null; while (evGroup.children.length) { const c = evGroup.children[0]; evGroup.remove(c); disposeTree(c, false); } }
 const evAdd = o => { evGroup.add(o); return o; };
 const faceAlong = (o, dx, dz) => { o.rotation.y = Math.atan2(-dz, dx); };
 const flap = (b, t, sp = 14, amp = 0.7) => (b.userData.wings || []).forEach(w => w.rotation.x = w.userData.s * amp * Math.sin(t * sp));
@@ -2721,7 +2743,7 @@ function stepEvents(dt) {
   try { const e = list[Math.floor(Math.random() * list.length)](); e.t = 0; EV = e; } catch (er) { console.warn(er); evClear(); }
 }
 
-window.__look = { proj: (x, y, z) => { const v = new THREE.Vector3(x, y, z).project(camera); return [+v.x.toFixed(2), +v.y.toFixed(2)]; }, landAt: (kind) => { const R0 = Math.random; Math.random = () => 0.95; try { let x, z; if (kind === 'person') { const p = state.players[1]; x = p.x + 0.1; z = p.z; } else { const r = state.rules.find(r => !state.players.some(p => Math.hypot(p.x - r.x, p.z - r.z) < p.r + r.r + 0.4)) || state.rules[0]; x = r.x; z = r.z; } coin.visible = true; coin.position.set(x, TOP + 0.03, z); coin.rotation.set(0, 0.4, 0); evaluate(x, z); renderUI(); } finally { Math.random = R0; } }, testObey: () => startObey(state.players[0], state.rules[2]), testMusic: () => { ensureAudio(); if (!jazz.out) jazzGraph(); mBus(); const errs = []; Object.entries(MAP_MUSIC).forEach(([k, tr]) => { try { for (let b = 0; b < 72; b++) tr.fn(b, actx.currentTime + 1 + b * 0.01); } catch (e) { errs.push(k + ': ' + e.message); } }); return errs.join(' | ') || 'all ok ' + Object.keys(MAP_MUSIC).length; }, testModels: () => { const K = ['pigeon', 'gull', 'dove', 'jay', 'vulture', 'stork']; K.forEach((k, i) => { const b = mkBirdPro(k, 1.6); b.position.set(-5 + i * 2, 2.5, 2); b.userData.wings.forEach(w => w.rotation.x = w.userData.s * 0.5); scene.add(b); }); const bt = mkBat(1.6); bt.position.set(7, 2.5, 2); scene.add(bt); const pg2 = mkPigeon(); pg2.position.set(-3, 1, 4.5); pg2.scale.setScalar(2); scene.add(pg2); const d = MAP_EVENTS.ucsc[0](); d.t = 0; d.tick(0.5, 1); return evGroup.children.length; }, MAP_EVENTS: () => MAP_EVENTS, evT: v => { if (EV) EV.t = v; }, EVS: () => [EV && EV.t, EV && EV.dur, evGroup.children.map(c => c.position.toArray().map(v => +v.toFixed(1)))], fireEvent: (k) => { evClear(); const l = MAP_EVENTS[state.map || 'party']; const e = l[k % l.length](); e.t = 0; EV = e; }, setMap, applySkin, LIDCTL, castVote, get goal() { return goal; }, get mapGroup() { return mapGroup; }, buildGoblin: o => buildGoblin(o), scene, get VOTE() { return VOTE; } };
+window.__look = { renderer, proj: (x, y, z) => { const v = new THREE.Vector3(x, y, z).project(camera); return [+v.x.toFixed(2), +v.y.toFixed(2)]; }, landAt: (kind) => { const R0 = Math.random; Math.random = () => 0.95; try { let x, z; if (kind === 'person') { const p = state.players[1]; x = p.x + 0.1; z = p.z; } else { const r = state.rules.find(r => !state.players.some(p => Math.hypot(p.x - r.x, p.z - r.z) < p.r + r.r + 0.4)) || state.rules[0]; x = r.x; z = r.z; } coin.visible = true; coin.position.set(x, TOP + 0.03, z); coin.rotation.set(0, 0.4, 0); evaluate(x, z); renderUI(); } finally { Math.random = R0; } }, testObey: () => startObey(state.players[0], state.rules[2]), testMusic: () => { ensureAudio(); if (!jazz.out) jazzGraph(); mBus(); const errs = []; Object.entries(MAP_MUSIC).forEach(([k, tr]) => { try { for (let b = 0; b < 72; b++) tr.fn(b, actx.currentTime + 1 + b * 0.01); } catch (e) { errs.push(k + ': ' + e.message); } }); return errs.join(' | ') || 'all ok ' + Object.keys(MAP_MUSIC).length; }, testModels: () => { const K = ['pigeon', 'gull', 'dove', 'jay', 'vulture', 'stork']; K.forEach((k, i) => { const b = mkBirdPro(k, 1.6); b.position.set(-5 + i * 2, 2.5, 2); b.userData.wings.forEach(w => w.rotation.x = w.userData.s * 0.5); scene.add(b); }); const bt = mkBat(1.6); bt.position.set(7, 2.5, 2); scene.add(bt); const pg2 = mkPigeon(); pg2.position.set(-3, 1, 4.5); pg2.scale.setScalar(2); scene.add(pg2); const d = MAP_EVENTS.ucsc[0](); d.t = 0; d.tick(0.5, 1); return evGroup.children.length; }, MAP_EVENTS: () => MAP_EVENTS, evT: v => { if (EV) EV.t = v; }, EVS: () => [EV && EV.t, EV && EV.dur, evGroup.children.map(c => c.position.toArray().map(v => +v.toFixed(1)))], fireEvent: (k) => { evClear(); const l = MAP_EVENTS[state.map || 'party']; const e = l[k % l.length](); e.t = 0; EV = e; }, setMap, applySkin, LIDCTL, castVote, get goal() { return goal; }, get mapGroup() { return mapGroup; }, buildGoblin: o => buildGoblin(o), scene, get VOTE() { return VOTE; } };
 LIDCTL.pos = LIDCTL.want = (CTRL || WATCH || state.started) ? 1 : 0; stepLid(0);
 if (!CTRL && state.map && state.map !== 'party') setTimeout(() => setMap(state.map), 0);
 if (state.skin && curSkin().photo) faceImg();
@@ -8187,7 +8209,7 @@ $('#startBtn').onclick = () => {
 };
 
 // ---------- installable app + automatic updates (website version only) ----------
-const BUILD = '1795641393';
+const BUILD = '1795709265';
 if (STANDALONE) {
   try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
   let deferredInstall = null;
