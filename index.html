@@ -222,6 +222,47 @@
   #slugSay::after{content:'';position:absolute;left:50%;bottom:-14px;margin-left:-10px;border:10px solid transparent;border-top-color:#2a1a05;border-bottom:0}
   .c-cd h3{font-size:30px;color:#ffd84a}
   .lb-note{color:var(--muted);font-size:13px;margin-top:10px}
+  /* ---- Goblin Runway ---- */
+  .rw-mirrors{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin:6px 0 10px}
+  .rw-mir{width:110px;border-radius:55px 55px 12px 12px;background:linear-gradient(180deg,#3a2448,#22142c);border:4px solid #e0aa3e;padding:16px 6px 8px;text-align:center}
+  .rw-mir.ok{box-shadow:0 0 0 3px #9be15d,0 0 20px rgba(155,225,93,.5)}
+  .rw-sil{font-size:44px;line-height:1.1}.rw-nm{border-radius:8px;font-weight:900;color:#fff;padding:3px;margin:6px 0 2px}.rw-mir small{color:#cbb8d8;font-size:12px}
+  .rw-left{text-align:center;color:#cbb8d8;font-size:14px}
+  body.rwShow #eTicket,body.rwShow #eRules,body.rwShow #eTurn,body.rwShow #gamePanel,body.rwShow #mini,body.rwShow #result,body.rwShow #hud{display:none!important}
+  #rwHud{position:fixed;inset:0;pointer-events:none;z-index:30;font-family:Inter,system-ui,sans-serif}
+  #rwHud .rw-plate{position:absolute;left:3vw;top:12vh;background:rgba(255,250,240,.96);color:#2a1606;border-radius:18px;padding:14px 18px;width:min(300px,28vw);transform:rotate(-2deg);box-shadow:0 10px 30px rgba(0,0,0,.5)}
+  #rwHud .rw-plate .w{font-size:12px;font-weight:800;color:#7a5a3a;letter-spacing:1px}#rwHud .rw-plate h3{margin:4px 0;font:900 clamp(22px,2.6vw,32px) 'Permanent Marker',cursive}
+  #rwHud .rw-plate .th{font-weight:800;color:#b0306a;margin-bottom:6px}#rwHud .rw-plate .its{font-size:15px;font-weight:700;line-height:1.55}
+  #rwHud .rw-votes{position:absolute;right:3vw;top:12vh;width:min(260px,24vw);color:#fff;pointer-events:auto}
+  #rwHud .rw-votes .r{display:flex;justify-content:space-between;background:rgba(255,255,255,.12);border-radius:12px;padding:8px 12px;font-weight:800}
+  #rwHud .rw-votes .st{font-size:clamp(30px,3.4vw,46px);letter-spacing:3px;color:#ffd84a;text-align:center;margin:6px 0;text-shadow:0 0 20px rgba(255,216,74,.6)}#rwHud .rw-votes .st span{color:rgba(255,255,255,.2)}
+  #rwHud .rw-votes .hint{text-align:center;color:#e6d8f0;font-size:15px}
+  #rwHud .np{margin-top:8px;background:rgba(0,0,0,.45);border-radius:10px;padding:6px;font-weight:800;font-size:13px;display:flex;gap:3px;align-items:center;flex-wrap:wrap}
+  #rwHud .np button{border:0;border-radius:8px;background:#ffd84a;color:#2a1606;font-weight:900;padding:4px 6px;cursor:pointer}
+  #rwHud .rw-res{position:absolute;left:50%;bottom:3vh;transform:translateX(-50%);width:min(560px,60vw);background:rgba(20,10,28,.88);border:2px solid #ffd84a;border-radius:20px;padding:16px;color:#fff}
+  #rwHud .rw-res h2{margin:0 0 10px;text-align:center;font:900 clamp(22px,2.6vw,34px) 'Permanent Marker',cursive;color:#ffd84a}
+  #rwHud .rw-res .rows{display:grid;grid-template-columns:1fr 1fr;gap:2px 12px}#rwHud .rw-res .row{display:flex;gap:10px;align-items:center;padding:6px 8px;border-radius:10px;font-size:18px}#rwHud .rw-res .row b{flex:1}#rwHud .rw-res .row em{font-style:normal;color:#ffd84a;font-weight:900}
+  #rwHud .rw-res .row.win{background:rgba(255,216,74,.18)}#rwHud .rw-drinks{margin-top:10px;text-align:center;font-weight:700;line-height:1.5}
+  /* phone */
+  .rwp{display:flex;flex-direction:column;height:calc(100dvh - 150px);min-height:440px}
+  .rwp-top{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:4px}.rwp-th{background:linear-gradient(90deg,#ff4fa3,#ffb03a);border-radius:12px;padding:5px 10px;font-size:14px;color:#fff;flex:1}
+  .rwp-t{background:#fff;color:#2a1606;border-radius:999px;padding:3px 10px}
+  .rwp-stage{flex:1;min-height:150px;position:relative;background:radial-gradient(ellipse at 50% 90%,rgba(255,216,74,.28),transparent 60%);border-radius:16px}
+  .rwp-stage canvas{width:100%;height:100%;display:block;touch-action:none}.rwp-hint{position:absolute;bottom:4px;left:0;right:0;text-align:center;font-size:11px;color:#cbb8d8;pointer-events:none}
+  .rwp-tabs{display:flex;gap:5px;margin:6px 0}.rwp-tabs button{flex:1;border:0;border-radius:11px;background:rgba(255,255,255,.1);color:#fff;font-size:19px;padding:5px 0;position:relative}
+  .rwp-tabs small{display:block;font-size:8.5px;font-weight:800;letter-spacing:.4px;color:#cbb8d8}.rwp-tabs button.on{background:#ffd84a;color:#2a1606}.rwp-tabs button.on small{color:#5a3a06}
+  .rwp-tabs button.done:after{content:'✓';position:absolute;top:-4px;right:-2px;background:#9be15d;color:#10230a;border-radius:50%;width:15px;height:15px;font-size:10px;font-weight:900;line-height:15px}
+  .rwp-car{display:flex;gap:6px;align-items:stretch}.rwp-arr{width:42px;border:0;border-radius:12px;background:rgba(255,255,255,.14);color:#fff;font-size:24px;font-weight:900}
+  .rwp-items{flex:1;display:flex;gap:6px}.rwp-items button{flex:1;border:0;border-radius:12px;background:#fffaf0;color:#2a1606;padding:5px 2px;font-size:26px;line-height:1.05;min-width:0}
+  .rwp-items button b{display:block;font-size:10px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.rwp-items button.sel{outline:3px solid #ffd84a;transform:translateY(-2px)}
+  .rwp-sw{display:flex;gap:7px;justify-content:center;align-items:center;flex-wrap:wrap;margin:7px 0 2px;min-height:26px}.rwp-sw i{width:24px;height:24px;border-radius:50%;border:3px solid rgba(255,255,255,.25)}.rwp-sw i.on{border-color:#fff;transform:scale(1.15)}
+  .rwp-pats{display:flex;gap:4px;flex-wrap:wrap;justify-content:center}.rwp-pats button{border:0;border-radius:999px;background:rgba(255,255,255,.12);color:#fff;font-size:11px;font-weight:800;padding:3px 8px}.rwp-pats button.on{background:#ff4fa3}
+  .rwp-cnt{color:#cbb8d8;font-size:12px}
+  .rwp .c-big{min-height:0!important;height:auto!important;padding:13px 10px!important;font-size:19px!important;margin-top:6px}
+  .rwp-q{text-align:center;margin:8px 0 6px;color:#e6d8f0}.rwp-stars{display:flex;gap:6px}.rwp-stars button{flex:1;border:0;border-radius:14px;background:#fffaf0;color:#2a1606;font-size:22px;font-weight:900;padding:12px 0;display:flex;flex-direction:column;align-items:center}
+  .rwp-stars button span{color:#e0aa3e;font-size:20px}.rwp-stars button.on{background:#ffd84a}.rwp-stars button:disabled{opacity:.5}
+  .rwp-rk{display:flex;gap:10px;padding:6px 10px;border-radius:10px;font-size:18px;text-align:left}.rwp-rk.me{background:rgba(255,216,74,.2)}
+  /* ---- end runway ---- */
   .hl-list{display:flex;flex-direction:column;gap:6px;margin:12px auto 0;max-width:460px}
   .hl-p{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.07);border-radius:10px;padding:6px 10px}
   .hl-p .hl-n{flex:1;text-align:left;font-weight:800}.hl-p button{padding:6px 10px!important;margin:0!important;font-size:14px!important}
@@ -587,7 +628,7 @@
     <button id="asCtrl" class="c-link" style="margin-top:6px">Use this device as a controller instead</button>
     <button id="extrasBtn" title="Extras">⋯</button>
     <div id="extras"><div><button id="introBtn2" class="c-link">▶ Watch the rules intro</button></div>
-    <div><button id="tryHot" class="c-link">🔥 Play Hot Goblin now</button> <button id="tryBoss" class="c-link">👹 Play Boss Fight now</button> <button id="tryRoul" class="c-link">🎰 Play Rule Roulette now</button> <button id="tryCups" class="c-link">🥤 Play Coin Under the Cup now</button> <button id="tryHilo" class="c-link">🃏 Play Higher or Lower now</button> <button id="tryTos" class="c-link">🥃 Play Truth or Shot now</button> <button id="tryFg" class="c-link">🏈 Kick a field goal now</button> <button id="tryHolo" class="c-link">💠 Show Yugo's hologram</button> <a class="c-link" href="https://smaltkarna.github.io/classic/#host" target="_blank" rel="noopener">🕰️ Play the classic version (original goblins)</a> <button id="jackList" class="c-link">👺 All Jack animations</button><div id="jackActs"></div></div></div>
+    <div><button id="tryRunway" class="c-link">👗 Play Goblin Runway now</button> <button id="tryHot" class="c-link">🔥 Play Hot Goblin now</button> <button id="tryBoss" class="c-link">👹 Play Boss Fight now</button> <button id="tryRoul" class="c-link">🎰 Play Rule Roulette now</button> <button id="tryCups" class="c-link">🥤 Play Coin Under the Cup now</button> <button id="tryHilo" class="c-link">🃏 Play Higher or Lower now</button> <button id="tryTos" class="c-link">🥃 Play Truth or Shot now</button> <button id="tryFg" class="c-link">🏈 Kick a field goal now</button> <button id="tryHolo" class="c-link">💠 Show Yugo's hologram</button> <a class="c-link" href="https://smaltkarna.github.io/classic/#host" target="_blank" rel="noopener">🕰️ Play the classic version (original goblins)</a> <button id="jackList" class="c-link">👺 All Jack animations</button><div id="jackActs"></div></div></div>
   </section>
   <footer>
     <button id="clearRules">Wipe rules</button>
@@ -2743,7 +2784,7 @@ function stepEvents(dt) {
   try { const e = list[Math.floor(Math.random() * list.length)](); e.t = 0; EV = e; } catch (er) { console.warn(er); evClear(); }
 }
 
-window.__look = { renderer, proj: (x, y, z) => { const v = new THREE.Vector3(x, y, z).project(camera); return [+v.x.toFixed(2), +v.y.toFixed(2)]; }, landAt: (kind) => { const R0 = Math.random; Math.random = () => 0.95; try { let x, z; if (kind === 'person') { const p = state.players[1]; x = p.x + 0.1; z = p.z; } else { const r = state.rules.find(r => !state.players.some(p => Math.hypot(p.x - r.x, p.z - r.z) < p.r + r.r + 0.4)) || state.rules[0]; x = r.x; z = r.z; } coin.visible = true; coin.position.set(x, TOP + 0.03, z); coin.rotation.set(0, 0.4, 0); evaluate(x, z); renderUI(); } finally { Math.random = R0; } }, testObey: () => startObey(state.players[0], state.rules[2]), testMusic: () => { ensureAudio(); if (!jazz.out) jazzGraph(); mBus(); const errs = []; Object.entries(MAP_MUSIC).forEach(([k, tr]) => { try { for (let b = 0; b < 72; b++) tr.fn(b, actx.currentTime + 1 + b * 0.01); } catch (e) { errs.push(k + ': ' + e.message); } }); return errs.join(' | ') || 'all ok ' + Object.keys(MAP_MUSIC).length; }, testModels: () => { const K = ['pigeon', 'gull', 'dove', 'jay', 'vulture', 'stork']; K.forEach((k, i) => { const b = mkBirdPro(k, 1.6); b.position.set(-5 + i * 2, 2.5, 2); b.userData.wings.forEach(w => w.rotation.x = w.userData.s * 0.5); scene.add(b); }); const bt = mkBat(1.6); bt.position.set(7, 2.5, 2); scene.add(bt); const pg2 = mkPigeon(); pg2.position.set(-3, 1, 4.5); pg2.scale.setScalar(2); scene.add(pg2); const d = MAP_EVENTS.ucsc[0](); d.t = 0; d.tick(0.5, 1); return evGroup.children.length; }, MAP_EVENTS: () => MAP_EVENTS, evT: v => { if (EV) EV.t = v; }, EVS: () => [EV && EV.t, EV && EV.dur, evGroup.children.map(c => c.position.toArray().map(v => +v.toFixed(1)))], fireEvent: (k) => { evClear(); const l = MAP_EVENTS[state.map || 'party']; const e = l[k % l.length](); e.t = 0; EV = e; }, setMap, applySkin, LIDCTL, castVote, get goal() { return goal; }, get mapGroup() { return mapGroup; }, buildGoblin: o => buildGoblin(o), scene, get VOTE() { return VOTE; } };
+window.__look = { renderer, get WR() { return WR; }, get mini() { return mini; }, get RW() { return RW; }, proj: (x, y, z) => { const v = new THREE.Vector3(x, y, z).project(camera); return [+v.x.toFixed(2), +v.y.toFixed(2)]; }, landAt: (kind) => { const R0 = Math.random; Math.random = () => 0.95; try { let x, z; if (kind === 'person') { const p = state.players[1]; x = p.x + 0.1; z = p.z; } else { const r = state.rules.find(r => !state.players.some(p => Math.hypot(p.x - r.x, p.z - r.z) < p.r + r.r + 0.4)) || state.rules[0]; x = r.x; z = r.z; } coin.visible = true; coin.position.set(x, TOP + 0.03, z); coin.rotation.set(0, 0.4, 0); evaluate(x, z); renderUI(); } finally { Math.random = R0; } }, testObey: () => startObey(state.players[0], state.rules[2]), testMusic: () => { ensureAudio(); if (!jazz.out) jazzGraph(); mBus(); const errs = []; Object.entries(MAP_MUSIC).forEach(([k, tr]) => { try { for (let b = 0; b < 72; b++) tr.fn(b, actx.currentTime + 1 + b * 0.01); } catch (e) { errs.push(k + ': ' + e.message); } }); return errs.join(' | ') || 'all ok ' + Object.keys(MAP_MUSIC).length; }, testModels: () => { const K = ['pigeon', 'gull', 'dove', 'jay', 'vulture', 'stork']; K.forEach((k, i) => { const b = mkBirdPro(k, 1.6); b.position.set(-5 + i * 2, 2.5, 2); b.userData.wings.forEach(w => w.rotation.x = w.userData.s * 0.5); scene.add(b); }); const bt = mkBat(1.6); bt.position.set(7, 2.5, 2); scene.add(bt); const pg2 = mkPigeon(); pg2.position.set(-3, 1, 4.5); pg2.scale.setScalar(2); scene.add(pg2); const d = MAP_EVENTS.ucsc[0](); d.t = 0; d.tick(0.5, 1); return evGroup.children.length; }, MAP_EVENTS: () => MAP_EVENTS, evT: v => { if (EV) EV.t = v; }, EVS: () => [EV && EV.t, EV && EV.dur, evGroup.children.map(c => c.position.toArray().map(v => +v.toFixed(1)))], fireEvent: (k) => { evClear(); const l = MAP_EVENTS[state.map || 'party']; const e = l[k % l.length](); e.t = 0; EV = e; }, setMap, applySkin, LIDCTL, castVote, get goal() { return goal; }, get mapGroup() { return mapGroup; }, buildGoblin: o => buildGoblin(o), scene, get VOTE() { return VOTE; } };
 LIDCTL.pos = LIDCTL.want = (CTRL || WATCH || state.started) ? 1 : 0; stepLid(0);
 if (!CTRL && state.map && state.map !== 'party') setTimeout(() => setMap(state.map), 0);
 if (state.skin && curSkin().photo) faceImg();
@@ -3468,6 +3509,261 @@ function propMesh(name, tint) {
 
 const GOB_LOOKS = { head: ['round', 'long', 'wide'], ears: ['long', 'droopy', 'bat', 'tall'], nose: ['hook', 'bulb', 'long', 'pig'], body: ['pot', 'skinny', 'chunky'] };
 const RULES_LOOK = { head: 'round', ears: 'long', nose: 'hook', body: 'pot' };
+// ===================== GOBLIN WARDROBE (runway) =====================
+// Clothes are cut from the goblin's own body meshes and pushed out along the surface normals, so they fit every body type.
+const WR = (() => {
+  const TX = {};
+  const canvasT = (key, w, h, draw) => { if (TX[key]) return TX[key]; const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h); const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 4; t.userData = { keep: true }; return (TX[key] = t); };
+  const R = s => { let x = s; return () => (x = (x * 16807) % 2147483647) / 2147483647; };
+  const shade = (hex, k) => { const c = new THREE.Color(hex); c.multiplyScalar(k); return '#' + c.getHexString(); };
+  const weave = (g, w, h, base, amt) => { g.fillStyle = base; g.fillRect(0, 0, w, h); const r = R(7); for (let i = 0; i < w * h / 6; i++) { g.fillStyle = r() < 0.5 ? `rgba(255,255,255,${amt * r()})` : `rgba(0,0,0,${amt * r()})`; g.fillRect(r() * w, r() * h, 1 + r() * 2, 1); } };
+  // ---------- fabrics: (pattern, colour A, colour B) ----------
+  const PATTERNS = {
+    solid: (g, w, h, a) => weave(g, w, h, a, 0.08),
+    denim: (g, w, h, a) => { weave(g, w, h, a, 0.05); g.globalAlpha = 0.18; for (let i = -h; i < w; i += 3) { g.strokeStyle = i % 6 ? '#fff' : '#000'; g.beginPath(); g.moveTo(i, 0); g.lineTo(i + h, h); g.stroke(); } g.globalAlpha = 1; },
+    stripes: (g, w, h, a, b) => { weave(g, w, h, a, 0.06); g.fillStyle = b; for (let y = 0; y < h; y += 32) g.fillRect(0, y, w, 14); },
+    pinstripe: (g, w, h, a, b) => { weave(g, w, h, a, 0.05); g.fillStyle = b; for (let x = 0; x < w; x += 16) g.fillRect(x, 0, 2, h); },
+    plaid: (g, w, h, a, b) => { weave(g, w, h, a, 0.05); g.globalAlpha = 0.45; g.fillStyle = b; for (let x = 0; x < w; x += 64) { g.fillRect(x, 0, 20, h); g.fillRect(0, x, w, 20); } g.globalAlpha = 0.6; g.fillStyle = '#111'; for (let x = 32; x < w; x += 64) { g.fillRect(x, 0, 4, h); g.fillRect(0, x, w, 4); } g.globalAlpha = 1; },
+    polka: (g, w, h, a, b) => { weave(g, w, h, a, 0.06); g.fillStyle = b; for (let y = 0; y < h; y += 40) for (let x = (y / 40 % 2) * 20; x < w; x += 40) { g.beginPath(); g.arc(x, y, 8, 0, 7); g.fill(); } },
+    floral: (g, w, h, a, b) => { weave(g, w, h, a, 0.05); const r = R(11); for (let i = 0; i < 26; i++) { const x = r() * w, y = r() * h, s = 10 + r() * 10; g.fillStyle = '#2f7a3a'; g.beginPath(); g.ellipse(x + s, y + s * 0.3, s * 0.9, s * 0.35, 0.6, 0, 7); g.fill(); g.fillStyle = b; for (let k = 0; k < 5; k++) { g.beginPath(); g.arc(x + Math.cos(k * 1.256) * s * 0.6, y + Math.sin(k * 1.256) * s * 0.6, s * 0.5, 0, 7); g.fill(); } g.fillStyle = '#ffe14d'; g.beginPath(); g.arc(x, y, s * 0.3, 0, 7); g.fill(); } },
+    leopard: (g, w, h, a, b) => { weave(g, w, h, a, 0.05); const r = R(5); for (let i = 0; i < 60; i++) { const x = r() * w, y = r() * h, s = 6 + r() * 7; g.fillStyle = '#1a1008'; g.beginPath(); g.ellipse(x, y, s, s * 0.75, r() * 3, 0, 7); g.fill(); g.fillStyle = b; g.beginPath(); g.ellipse(x, y, s * 0.5, s * 0.35, r() * 3, 0, 7); g.fill(); } },
+    camo: (g, w, h, a, b) => { g.fillStyle = a; g.fillRect(0, 0, w, h); const r = R(3); [b, shade(a, 0.6), shade(b, 0.5)].forEach(c => { g.fillStyle = c; for (let i = 0; i < 14; i++) { g.beginPath(); const x = r() * w, y = r() * h; for (let k = 0; k < 8; k++) { const an = k / 8 * 6.28, rr = 14 + r() * 18; g.lineTo(x + Math.cos(an) * rr, y + Math.sin(an) * rr * 0.7); } g.fill(); } }); },
+    sequin: (g, w, h, a) => { g.fillStyle = shade(a, 0.5); g.fillRect(0, 0, w, h); const r = R(9); for (let y = 0; y < h; y += 8) for (let x = (y / 8 % 2) * 4; x < w; x += 8) { const k = 0.6 + r() * 0.9; g.fillStyle = shade(a, k); g.beginPath(); g.arc(x, y, 3.6, 0, 7); g.fill(); if (r() < 0.12) { g.fillStyle = '#fff'; g.fillRect(x - 1, y - 1, 2, 2); } } },
+    leather: (g, w, h, a) => { weave(g, w, h, a, 0.04); const r = R(13); g.globalAlpha = 0.12; for (let i = 0; i < 40; i++) { g.strokeStyle = '#fff'; g.beginPath(); const x = r() * w, y = r() * h; g.moveTo(x, y); g.quadraticCurveTo(x + 20, y + r() * 10, x + 30 + r() * 40, y + r() * 20 - 10); g.stroke(); } g.globalAlpha = 1; },
+    knit: (g, w, h, a, b) => { g.fillStyle = shade(a, 0.75); g.fillRect(0, 0, w, h); for (let y = 0; y < h; y += 8) for (let x = 0; x < w; x += 10) { g.fillStyle = (Math.floor(y / 48) % 2) ? a : (b || a); g.beginPath(); g.ellipse(x + 2.5, y + 4, 2.6, 4.2, 0.5, 0, 7); g.ellipse(x + 7.5, y + 4, 2.6, 4.2, -0.5, 0, 7); g.fill(); } },
+    flames: (g, w, h, a, b) => { weave(g, w, h, a, 0.06); for (let x = -20; x < w; x += 42) { [b, '#ffd84a'].forEach((c, k) => { g.fillStyle = c; g.beginPath(); g.moveTo(x, h); const s = k ? 0.55 : 1; g.bezierCurveTo(x - 10, h - 60 * s, x + 30, h - 90 * s, x + 18, h - 150 * s); g.bezierCurveTo(x + 40, h - 90 * s, x + 50, h - 60 * s, x + 40, h); g.fill(); }); } },
+    tiedye: (g, w, h, a, b) => { const cs = [a, b, '#ffd84a', '#3ae8ff', '#ff4fa3']; for (let r = Math.hypot(w, h); r > 0; r -= 14) { g.fillStyle = cs[Math.floor(r / 14) % cs.length]; g.beginPath(); g.arc(w / 2, h / 2, r, 0, 7); g.fill(); } },
+    stars: (g, w, h, a, b) => { weave(g, w, h, a, 0.05); const r = R(17); g.fillStyle = b; for (let i = 0; i < 40; i++) { const x = r() * w, y = r() * h, s = 4 + r() * 6; g.beginPath(); for (let k = 0; k < 10; k++) { const an = k * Math.PI / 5 - Math.PI / 2, rr = k % 2 ? s * 0.45 : s; g.lineTo(x + Math.cos(an) * rr, y + Math.sin(an) * rr); } g.fill(); } },
+    check: (g, w, h, a, b) => { for (let y = 0; y < h; y += 32) for (let x = 0; x < w; x += 32) { g.fillStyle = ((x + y) / 32) % 2 ? a : b; g.fillRect(x, y, 32, 32); } weave(g, 0, 0, a, 0); },
+    hawaiian: (g, w, h, a, b) => { weave(g, w, h, a, 0.05); const r = R(23); for (let i = 0; i < 14; i++) { const x = r() * w, y = r() * h; g.fillStyle = '#1f7a3a'; for (let k = 0; k < 5; k++) { g.save(); g.translate(x, y); g.rotate(k * 1.25 + r()); g.beginPath(); g.ellipse(0, -22, 7, 22, 0, 0, 7); g.fill(); g.restore(); } } for (let i = 0; i < 18; i++) { const x = r() * w, y = r() * h, s = 9 + r() * 6; g.fillStyle = b; for (let k = 0; k < 5; k++) { g.beginPath(); g.ellipse(x + Math.cos(k * 1.256) * s * 0.7, y + Math.sin(k * 1.256) * s * 0.7, s * 0.6, s * 0.38, k * 1.256, 0, 7); g.fill(); } g.fillStyle = '#ffe14d'; g.beginPath(); g.arc(x, y, s * 0.25, 0, 7); g.fill(); } },
+  };
+  PATTERNS.hair = (g, w, h, a) => { g.fillStyle = a; g.fillRect(0, 0, w, h); const r = R(31); for (let i = 0; i < 900; i++) { const x = r() * w, y = r() * h; g.strokeStyle = r() < 0.5 ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.22)'; g.lineWidth = 1 + r(); g.beginPath(); g.moveTo(x, y); g.lineTo(x + (r() - 0.5) * 4, y + 18 + r() * 20); g.stroke(); } };
+  PATTERNS.curly = (g, w, h, a) => { g.fillStyle = shade(a, 0.7); g.fillRect(0, 0, w, h); const r = R(37); for (let i = 0; i < 700; i++) { const x = r() * w, y = r() * h; g.strokeStyle = r() < 0.5 ? shade(a, 1.25) : a; g.lineWidth = 2; g.beginPath(); g.arc(x, y, 3 + r() * 3, r() * 6, r() * 6 + 4); g.stroke(); } };
+  const PAT_LIST = ['solid', 'stripes', 'polka', 'plaid', 'floral', 'leopard', 'camo', 'sequin', 'tiedye', 'flames', 'stars', 'check', 'pinstripe', 'hawaiian', 'knit', 'denim', 'leather'];
+  const fabric = (pat, a, b) => canvasT(`f:${pat}:${a}:${b}`, 256, 256, (g, w, h) => (PATTERNS[pat] || PATTERNS.solid)(g, w, h, a, b || '#ffffff'));
+  const MAT = {};
+  // fabric mapped once around a body part (u: 0.5 = front centre, v: 0 = bottom .. 1 = top), with holes cut by cut(g, w, h)
+  const cutCloth = (key, pat, a, b, cut, tiles = [2, 1.6], o = {}) => { const k = `cut|${key}|${pat}|${a}|${b}`; if (MAT[k]) return MAT[k];
+    const t = canvasT(k, 512, 512, (g, w, h) => { const src = fabric(pat, a, b).image; for (let x = 0; x < tiles[0]; x++) for (let y = 0; y < Math.ceil(tiles[1]); y++) g.drawImage(src, x * w / tiles[0], h - (y + 1) * h / tiles[1], w / tiles[0], h / tiles[1]); g.globalCompositeOperation = 'destination-out'; g.fillStyle = '#000'; cut(g, w, h); g.globalCompositeOperation = 'source-over'; });
+    return (MAT[k] = new THREE.MeshStandardMaterial(Object.assign({ map: t, alphaTest: 0.5, roughness: pat === 'leather' ? 0.45 : 0.85, side: THREE.DoubleSide }, o))); };
+  // V opening at the front from v0 (bottom of the V) to the top, half-width wTop (in u)
+  const vNeck = (v0, wTop, off = 0) => (g, w, h) => { g.beginPath(); g.moveTo(w * (0.5 + off), h * (1 - v0)); g.lineTo(w * (0.5 + off + wTop), 0); g.lineTo(w * (0.5 + off - wTop), 0); g.closePath(); g.fill(); };
+  const slit = (v0, half, off = 0) => (g, w, h) => g.fillRect(w * (0.5 + off - half), 0, w * half * 2, h * (1 - v0));
+  const cloth = (pat, a, b, o = {}) => { const k = `${pat}|${a}|${b}|${JSON.stringify(o)}`; return MAT[k] || (MAT[k] = new THREE.MeshStandardMaterial(Object.assign({ map: fabric(pat, a, b), roughness: pat === 'leather' ? 0.45 : pat === 'sequin' ? 0.25 : 0.85, metalness: pat === 'sequin' ? 0.55 : 0, side: THREE.DoubleSide, envMap: pat === 'sequin' ? (window.__env || null) : null }, o))); };
+  const plain = (c, r = 0.6, o = {}) => { const k = `p|${c}|${r}|${JSON.stringify(o)}`; return MAT[k] || (MAT[k] = new THREE.MeshStandardMaterial(Object.assign({ color: c, roughness: r, side: THREE.DoubleSide, envMap: o.metalness ? (window.__env || null) : null }, o))); };
+  const gold = () => plain('#e0aa3e', 0.22, { metalness: 1 }), silver = () => plain('#d4d8de', 0.2, { metalness: 1 });
+
+  // ---------- the tailor: cut a band out of a body mesh and push it out along its normals ----------
+  // o: t0..t1 = vertical band (0 = bottom of the part, 1 = top); off = thickness; flare(t) = extra outward push (t 0 bottom..1 top); keep(c) = keep triangle by centroid
+  function shell(src, o) {
+    const g = src.index ? src.toNonIndexed() : src.clone(); if (!g.attributes.normal) g.computeVertexNormals(); g.computeBoundingBox();
+    const bb = g.boundingBox, H = bb.max.y - bb.min.y, cx = (bb.min.x + bb.max.x) / 2 + (o.cx || 0), cz = (bb.min.z + bb.max.z) / 2 + (o.cz || 0), y0 = bb.min.y + H * (o.t0 ?? 0), y1 = bb.min.y + H * (o.t1 ?? 1);
+    const P = g.attributes.position.array, NA = g.attributes.normal, N = new Float32Array(NA.count * 3), pos = [], nor = [], uv = [], rep = o.rep || 1;
+    for (let i = 0; i < NA.count; i++) { const x = NA.getX(i), y = NA.getY(i), z = NA.getZ(i), l = Math.hypot(x, y, z) || 1; N[i * 3] = x / l; N[i * 3 + 1] = y / l; N[i * 3 + 2] = z / l; }
+    for (let i = 0; i < P.length; i += 9) {
+      const ys = [P[i + 1], P[i + 4], P[i + 7]];
+      if (ys.every(y => y < y0) || ys.every(y => y > y1)) continue;
+      const c = { x: (P[i] + P[i + 3] + P[i + 6]) / 3, y: (ys[0] + ys[1] + ys[2]) / 3, z: (P[i + 2] + P[i + 5] + P[i + 8]) / 3 }; c.t = (c.y - bb.min.y) / H; c.cx = cx; c.cz = cz;
+      if (o.keep && !o.keep(c)) continue;
+      const us = [];
+      for (let k = 0; k < 3; k++) {
+        const j = i + k * 3; let x = P[j], y = Math.min(y1, Math.max(y0, P[j + 1])), z = P[j + 2];
+        const t = (y - y0) / ((y1 - y0) || 1), off = (o.off || 0.02) * (o.offF ? o.offF(t) : 1);
+        x += N[j] * off; z += N[j + 2] * off; y += N[j + 1] * off * (o.offY ?? 1);
+        if (o.flare) { const dx = x - cx, dz = z - cz, l = Math.hypot(dx, dz) || 1, f = o.flare(t); x += dx / l * f; z += dz / l * f; }
+        if (o.drop) y -= o.drop(t, x, z);
+        pos.push(x, y, z); nor.push(N[j], N[j + 1], N[j + 2]);
+        us.push(Math.atan2(x - cx, z - cz) / (Math.PI * 2) + 0.5); uv.push(0, (y - bb.min.y) / H * rep);
+      }
+      if (Math.max(...us) - Math.min(...us) > 0.5) for (let k = 0; k < 3; k++) if (us[k] < 0.5) us[k] += 1;
+      const n = uv.length; for (let k = 0; k < 3; k++) uv[n - 6 + k * 2] = us[k] * rep * (o.urep || 2);
+    }
+    const G = new THREE.BufferGeometry(); G.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); G.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3)); G.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); return G;
+  }
+  const geoOf = m => m.geometry;
+  const meshOf = grp => grp.isMesh ? grp : grp.children.find(c => c.isMesh);
+  const put = (parent, geo, mat, p, r, s) => { const m = new THREE.Mesh(geo, mat); if (p) m.position.set(p[0], p[1], p[2]); if (r) m.rotation.set(r[0], r[1], r[2]); if (s) (typeof s === 'number' ? m.scale.setScalar(s) : m.scale.set(s[0], s[1], s[2])); m.castShadow = true; parent.add(m); return m; };
+  const tube = (pts, r, seg = 40, closed = false) => new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts.map(p => new THREE.Vector3(p[0], p[1], p[2])), closed), seg, r, 8, closed);
+
+  // ---------- body context ----------
+  function ctx(G) {
+    const look = G.look, HM = GOB.meta.heads[look.head], BM = GOB.meta.bodies[look.body];
+    const torso = G.belly.children.find(c => c.isMesh), headM = meshOf(G.head), armsM = G.arms.map(meshOf), legsM = G.legs.map(meshOf);
+    [torso, headM, ...armsM, ...legsM].forEach(m => { if (!m.geometry.boundingBox) m.geometry.computeBoundingBox(); });
+    const TB = torso.geometry.boundingBox, HB = headM.geometry.boundingBox, LB = legsM[1].geometry.boundingBox, AB = armsM[1].geometry.boundingBox;
+    const tY = t => TB.min.y + (TB.max.y - TB.min.y) * t;
+    return { G, look, HM, BM, torso, headM, armsM, legsM, TB, HB, LB, AB, tY, hs: HM.width / 0.3075 };
+  }
+  // garments on both arms / legs (the left ones are mirrored meshes, so the same geometry fits)
+  const both = (list, geo, mat) => list.map(m => put(m, geo, mat));
+  const sleeve = (C, mat, t0, o = {}) => { C.G.arms.forEach(a => { const ball = a.userData.ball; if (ball) { const c = new THREE.Mesh(ball.geometry, mat); const k = 1 + (o.off || 0.03) * 0.75 / ball.geometry.parameters.radius; c.scale.set(k, k * 0.88, k); c.position.copy(ball.position); c.castShadow = true; a.add(c); } }); return both(C.armsM, shell(geoOf(C.armsM[1]), Object.assign({ t0, t1: 1, off: 0.03, rep: 1.4 }, o)), mat); };
+  const trouser = (C, mat, t0, o = {}) => both(C.legsM, shell(geoOf(C.legsM[1]), Object.assign({ t0, t1: 1, off: 0.028, rep: 1.3 }, o)), mat);
+  const bodice = (C, mat, t0, t1, o = {}) => put(C.torso, shell(geoOf(C.torso), Object.assign({ t0, t1, off: 0.03, rep: 1.6 }, o)), mat);
+  const bodiceCut = (C, mat, t0, t1, o = {}) => bodice(C, mat, t0, t1, Object.assign({ rep: 1, urep: 1 }, o));
+  const hideLoin = C => C.G.belly.children.forEach(c => { if (c !== C.torso && !c.userData.wr) c.visible = false; });
+  // hems / trims: a ring of the shell at one height
+  const cuff = (parent, src, t, mat, off = 0.045, h = 0.035) => { const g = shell(src, { t0: t, t1: Math.min(1, t + h), off }); return put(parent, g, mat); };
+
+  // ---------- HEAD: hats + hair ----------
+  const capAt = C => [C.HM.top[0], C.HM.top[1], C.HM.top[2]];
+  const eyeT = C => (C.HM.eye[1] + C.HM.eyeR - C.HB.min.y) / (C.HB.max.y - C.HB.min.y);
+  // how wide the head is at height y (head-local), and the height where a hat of inner radius r sits snugly
+  const headCz = C => (C.HB.min.z + C.HB.max.z) / 2 - 0.02;
+  const headR = (C, y) => { const P = C.headM.geometry.attributes.position, cz = headCz(C); let m = 0; for (let i = 0; i < P.count; i++) if (Math.abs(P.getY(i) - y) < 0.025) { const r = Math.hypot(P.getX(i), (P.getZ(i) - cz) * 0.95); if (r > m) m = r; } return m; };
+  const seat = (C, r) => { for (let y = C.HB.max.y; y > C.HB.min.y; y -= 0.005) if (headR(C, y) >= r) return y; return C.HM.top[1] - 0.1; };
+  const hatBase = (C, r) => [0, seat(C, r), headCz(C)];
+  const hairShell = (C, mat, o = {}) => { const e = eyeT(C); return put(C.headM, shell(geoOf(C.headM), Object.assign({ t0: 0, t1: 1, off: 0.032, rep: 1, urep: 3, keep: c => { const dz = c.z - c.cz; return dz > 0.05 ? c.t > e + (o.fringe ?? 0.14) : dz > -0.08 ? c.t > e + 0.02 : c.t > e - (o.back ?? 0.3); } }, o)), mat); };
+  const HEAD = [
+    { id: 'none', name: 'Nothing', e: '🚫', build() {} },
+    { id: 'afro', name: 'Afro', e: '🧑‍🦱', cols: ['#3a2414', '#1a1008', '#e8c070', '#ff4fa3', '#7c3aed'], build(C, a) { const hm = cloth('curly', a), r = R(4), cy = seat(C, C.HM.width * 0.6), cz = headCz(C) - 0.03; hairShell(C, hm, { off: 0.03 }); for (let i = 0; i < 90; i++) { const u = r() * 6.28, v = r() * 1.5, R0 = C.HM.width * 1.02; put(C.G.head, new THREE.SphereGeometry(0.085 * C.hs + r() * 0.03, 10, 8), hm, [Math.cos(u) * Math.sin(v) * R0, cy + Math.cos(v) * R0 * 0.62 - 0.02, cz + Math.sin(u) * Math.sin(v) * R0 * 0.92]); } } },
+    { id: 'quiff', name: 'Rockabilly quiff', e: '🕺', cols: ['#151515', '#5a3214', '#ffd84a', '#e63946'], build(C, a) { const m = cloth('hair', a); hairShell(C, m, { off: 0.03 }); const y = seat(C, C.HM.width * 0.55), z = headCz(C); const sw = new THREE.TorusGeometry(0.1 * C.hs, 0.075 * C.hs, 12, 24, Math.PI * 1.3); put(C.G.head, sw, m, [0, y + 0.02, z + C.HM.width * 0.55], [0, Math.PI / 2, -0.4], [1.6, 1, 1]); put(C.G.head, new THREE.SphereGeometry(0.11 * C.hs, 14, 10), m, [0, y + 0.03, z + C.HM.width * 0.2], null, [1.5, 0.7, 1.6]); } },
+    { id: 'mohawk', name: 'Mohawk', e: '🤘', cols: ['#ff2a6d', '#3ae8ff', '#9be15d', '#ffd84a', '#151515'], build(C, a) { const m = plain(a, 0.5); const cy = C.HB.max.y - C.HM.width * 0.75, cz = headCz(C); for (let i = 0; i < 9; i++) { const an = -1.25 + i * 0.31, rr = C.HM.width * 0.72; put(C.G.head, new THREE.ConeGeometry(0.05 * C.hs, 0.3 * C.hs, 8), m, [0, cy + Math.cos(an) * rr + Math.cos(an) * 0.1, cz + Math.sin(an) * rr * 1.05 + Math.sin(an) * 0.1], [an, 0, 0]); } } },
+    { id: 'pigtails', name: 'Pigtails', e: '🎀', cols: ['#e8c070', '#3a2414', '#ff4fa3', '#e63946'], build(C, a) { const m = cloth('hair', a); hairShell(C, m, { fringe: 0.06 }); [-1, 1].forEach(s => { const x = s * C.HM.ear[0] * 0.95, y = seat(C, C.HM.width * 0.75); put(C.G.head, tube([[x * 0.8, y, -0.05], [x * 1.25, y - 0.05, -0.08], [x * 1.45, y - 0.25, -0.05], [x * 1.4, y - 0.42, 0]], 0.055 * C.hs, 24), m); put(C.G.head, new THREE.SphereGeometry(0.05 * C.hs, 10, 8), plain('#ff4fa3', 0.6), [x * 1.18, y - 0.03, -0.07], null, [1.4, 0.8, 0.8]); }); } },
+    { id: 'long', name: 'Long flowing hair', e: '💇', cols: ['#e8c070', '#3a2414', '#151515', '#c0c6d0', '#ff7a3a'], build(C, a) { const m = cloth('hair', a); hairShell(C, m, { fringe: 0.08, back: 0.6 }); const ey = C.HM.ear[1] + 0.08, w = headR(C, ey) + 0.035; const cur = new THREE.CylinderGeometry(w, w * 1.3, 0.62, 30, 8, true, Math.PI * 0.42, Math.PI * 1.16); const pp = cur.attributes.position; for (let i = 0; i < pp.count; i++) { const an = Math.atan2(pp.getX(i), pp.getZ(i)), k = 1 + Math.sin(an * 14) * 0.03 * (0.31 - pp.getY(i)); pp.setX(i, pp.getX(i) * k); pp.setZ(i, pp.getZ(i) * k); } cur.computeVertexNormals(); put(C.G.head, cur, m, [0, ey - 0.31, headCz(C)]); } },
+    { id: 'bun', name: 'Top bun', e: '🍡', cols: ['#3a2414', '#151515', '#e8c070', '#c0c6d0'], build(C, a) { const m = cloth('hair', a); hairShell(C, m, { fringe: 0.12 }); const y = C.HB.max.y + 0.02, z = headCz(C) - 0.04; put(C.G.head, new THREE.TorusGeometry(0.075 * C.hs, 0.05 * C.hs, 10, 20), m, [0, y, z], [Math.PI / 2, 0, 0]); put(C.G.head, new THREE.SphereGeometry(0.09 * C.hs, 14, 10), m, [0, y + 0.05, z]); } },
+    { id: 'beanie', name: 'Beanie', e: '🧶', pat: ['knit', 'stripes', 'solid'], cols: ['#e63946', '#1d4ed8', '#ffd84a', '#2a2a2a', '#9be15d'], build(C, a, b, pat) { const m = cloth(pat || 'knit', a, b); const b0 = eyeT(C) + 0.14; put(C.headM, shell(geoOf(C.headM), { t0: b0, t1: 1, off: 0.045, rep: 1.5 }), m); cuff(C.headM, geoOf(C.headM), b0, cloth('knit', shade(a, 0.8)), 0.06, 0.08); put(C.G.head, new THREE.SphereGeometry(0.075 * C.hs, 12, 10), cloth('knit', b || '#fff'), [0, C.HB.max.y + 0.08, headCz(C)]); } },
+    { id: 'cowboy', name: 'Cowboy hat', e: '🤠', cols: ['#8a5a2a', '#2a1a10', '#f0e6d0', '#e63946'], build(C, a) { const m = cloth('leather', a), s = C.hs, t = hatBase(C, 0.19 * s); t[1] += 0.035; const brim = new THREE.LatheGeometry([[0.05, 0.06], [0.3, 0.02], [0.44, 0.0], [0.5, 0.06]].map(p => new THREE.Vector2(p[0] * s, p[1] * s)), 32); brim.scale(1, 1, 0.82); put(C.G.head, brim, m, [t[0], t[1] - 0.06, t[2]]); const crown = new THREE.LatheGeometry([[0.2, 0], [0.21, 0.12], [0.19, 0.22], [0.08, 0.25], [0, 0.22]].map(p => new THREE.Vector2(p[0] * s, p[1] * s)), 28); crown.scale(1, 1, 0.85); put(C.G.head, crown, m, [t[0], t[1] - 0.06, t[2]]); put(C.G.head, new THREE.CylinderGeometry(0.205 * s, 0.208 * s, 0.035 * s, 28, 1, true), plain('#2a1a10'), [t[0], t[1] - 0.03, t[2]], null, [1, 1, 0.85]); } },
+    { id: 'tophat', name: 'Top hat', e: '🎩', cols: ['#151515', '#7c3aed', '#e63946', '#f2f2f2'], build(C, a) { const m = plain(a, 0.4), s = C.hs, t = hatBase(C, 0.17 * s); t[1] += 0.025; put(C.G.head, new THREE.CylinderGeometry(0.36 * s, 0.36 * s, 0.02 * s, 30), m, [t[0], t[1] - 0.05, t[2]]); put(C.G.head, new THREE.CylinderGeometry(0.2 * s, 0.18 * s, 0.38 * s, 30), m, [t[0], t[1] + 0.14 * s, t[2]]); put(C.G.head, new THREE.CylinderGeometry(0.183 * s, 0.183 * s, 0.06 * s, 30), plain('#c8202a', 0.5), [t[0], t[1] - 0.0, t[2]]); } },
+    { id: 'crown', name: 'Crown', e: '👑', cols: ['#e0aa3e'], build(C) { const s = C.hs, t = hatBase(C, 0.185 * s), g = gold(); t[1] += 0.015; put(C.G.head, new THREE.CylinderGeometry(0.2 * s, 0.19 * s, 0.09 * s, 30, 1, true), g, [t[0], t[1] - 0.01, t[2]]); for (let i = 0; i < 8; i++) { const an = i / 8 * 6.28; put(C.G.head, new THREE.ConeGeometry(0.04 * s, 0.12 * s, 6), g, [t[0] + Math.sin(an) * 0.195 * s, t[1] + 0.09 * s, t[2] + Math.cos(an) * 0.195 * s]); put(C.G.head, new THREE.SphereGeometry(0.022 * s, 10, 8), plain(['#e63946', '#1d4ed8', '#15803d'][i % 3], 0.1, { metalness: 0.3 }), [t[0] + Math.sin(an) * 0.205 * s, t[1] - 0.005, t[2] + Math.cos(an) * 0.205 * s]); } } },
+    { id: 'cap', name: 'Backwards cap', e: '🧢', pat: ['solid', 'camo', 'check'], cols: ['#e63946', '#1d4ed8', '#151515', '#9be15d', '#ffffff'], build(C, a, b, pat) { const m = cloth(pat || 'solid', a, b); put(C.headM, shell(geoOf(C.headM), { t0: eyeT(C) + 0.12, t1: 1, off: 0.04 }), m); const s = C.hs, t = [0, C.HB.max.y, headCz(C)]; const bill = new THREE.CylinderGeometry(0.2 * s, 0.2 * s, 0.02 * s, 24, 1, false, -0.9, 1.8); put(C.G.head, bill, m, [t[0], t[1] - 0.12, t[2] - 0.12 * s], [0.25, Math.PI, 0]); put(C.G.head, new THREE.SphereGeometry(0.025 * s, 8, 6), m, [t[0], t[1] + 0.04, t[2]]); } },
+    { id: 'sunhat', name: 'Floppy sun hat', e: '👒', pat: ['solid', 'floral', 'polka'], cols: ['#f0e0b0', '#ff9ec7', '#ffffff', '#151515'], build(C, a, b, pat) { const m = cloth(pat || 'solid', a, b), s = C.hs, t = hatBase(C, 0.2 * s); t[1] += 0.035; const brim = new THREE.LatheGeometry([[0.05, 0.03], [0.32, 0.0], [0.55, -0.06], [0.62, -0.1]].map(p => new THREE.Vector2(p[0] * s, p[1] * s)), 40); put(C.G.head, brim, m, [t[0], t[1] - 0.06, t[2]], [0.12, 0, 0.05]); put(C.G.head, new THREE.SphereGeometry(0.22 * s, 24, 12, 0, 6.28, 0, 1.45), m, [t[0], t[1] - 0.07, t[2]], [0.12, 0, 0.05], [1, 0.75, 0.9]); put(C.G.head, new THREE.TorusGeometry(0.215 * s, 0.022 * s, 8, 30), plain('#e63946', 0.6), [t[0], t[1] - 0.04, t[2] + 0.01], [Math.PI / 2 + 0.12, 0, 0]); } },
+    { id: 'beret', name: 'Beret', e: '🎨', cols: ['#151515', '#e63946', '#1d4ed8', '#ff9ec7'], build(C, a) { const s = C.hs, t = hatBase(C, 0.15 * s); t[1] += 0.03; put(C.G.head, new THREE.SphereGeometry(0.26 * s, 24, 12), cloth('solid', a), [t[0] + 0.05, t[1] - 0.03, t[2]], [0, 0, -0.25], [1, 0.32, 1]); put(C.G.head, new THREE.CylinderGeometry(0.01 * s, 0.015 * s, 0.05 * s, 6), plain(a), [t[0] + 0.03, t[1] + 0.06, t[2]]); } },
+    { id: 'viking', name: 'Viking helmet', e: '🪓', cols: ['#9aa0a8'], build(C) { const s = C.hs, t = hatBase(C, 0.2 * s); t[1] += 0.05; put(C.headM, shell(geoOf(C.headM), { t0: eyeT(C) + 0.08, t1: 1, off: 0.05 }), silver()); cuff(C.headM, geoOf(C.headM), eyeT(C) + 0.08, gold(), 0.07, 0.05); [-1, 1].forEach(x => put(C.G.head, tube([[x * 0.2 * s, t[1] - 0.06, t[2]], [x * 0.33 * s, t[1] - 0.02, t[2]], [x * 0.4 * s, t[1] + 0.12, t[2] + 0.02], [x * 0.36 * s, t[1] + 0.25, t[2] + 0.06]], 0.035 * s, 20), plain('#f0e6d0', 0.4))); } },
+    { id: 'flowers', name: 'Flower crown', e: '🌸', cols: ['#ff9ec7', '#ffd84a', '#ffffff', '#b07cff'], build(C, a) { const s = C.hs, t = hatBase(C, 0.21 * s); t[1] += 0.07; for (let i = 0; i < 12; i++) { const an = i / 12 * 6.28, x = t[0] + Math.sin(an) * 0.22 * s, z = t[2] + Math.cos(an) * 0.24 * s, y = t[1] - 0.06; put(C.G.head, new THREE.SphereGeometry(0.04 * s, 8, 6), plain('#2f7a3a', 0.8), [x, y - 0.01, z]); for (let k = 0; k < 5; k++) put(C.G.head, new THREE.SphereGeometry(0.03 * s, 8, 6), plain(i % 2 ? a : '#ffffff', 0.7), [x + Math.cos(k * 1.256) * 0.03 * s, y + 0.02, z + Math.sin(k * 1.256) * 0.03 * s], null, [1, 0.5, 1]); put(C.G.head, new THREE.SphereGeometry(0.018 * s, 8, 6), plain('#ffd84a'), [x, y + 0.03, z]); } } },
+    { id: 'bunny', name: 'Bunny ears', e: '🐰', cols: ['#ffffff', '#ff9ec7', '#151515'], build(C, a) { const s = C.hs, t = hatBase(C, 0.18 * s); t[1] += 0.1; put(C.G.head, new THREE.TorusGeometry(headR(C, t[1] - 0.15) + 0.015, 0.015 * s, 6, 24, Math.PI), plain('#151515'), [t[0], t[1] - 0.15, t[2]], [0, 0, 0]); [-1, 1].forEach(x => { put(C.G.head, new THREE.SphereGeometry(0.06 * s, 12, 10), plain(a, 0.9), [t[0] + x * 0.09 * s, t[1] + 0.17 * s, t[2]], [0, 0, -x * 0.2], [0.8, 3, 0.4]); put(C.G.head, new THREE.SphereGeometry(0.035 * s, 10, 8), plain('#ff9ec7', 0.9), [t[0] + x * 0.09 * s, t[1] + 0.17 * s, t[2] + 0.015], [0, 0, -x * 0.2], [0.8, 3, 0.4]); }); } },
+    { id: 'chef', name: 'Chef hat', e: '👨‍🍳', cols: ['#ffffff'], build(C) { const s = C.hs, t = hatBase(C, 0.19 * s), m = plain('#ffffff', 0.9); t[1] += 0.02; put(C.G.head, new THREE.CylinderGeometry(0.2 * s, 0.2 * s, 0.14 * s, 24), m, [t[0], t[1] + 0.0, t[2]]); for (let i = 0; i < 6; i++) { const an = i / 6 * 6.28; put(C.G.head, new THREE.SphereGeometry(0.12 * s, 12, 10), m, [t[0] + Math.sin(an) * 0.11 * s, t[1] + 0.17 * s, t[2] + Math.cos(an) * 0.11 * s]); } put(C.G.head, new THREE.SphereGeometry(0.13 * s, 12, 10), m, [t[0], t[1] + 0.22 * s, t[2]]); } },
+    { id: 'tiara', name: 'Tiara', e: '💎', cols: ['#d4d8de'], build(C) { const s = C.hs, t = hatBase(C, 0.2 * s); t[1] += 0.07; put(C.G.head, new THREE.TorusGeometry(0.21 * s, 0.012 * s, 6, 30, Math.PI), silver(), [t[0], t[1] - 0.07, t[2] + 0.03], [-0.3, 0, 0]); [[0, 0.11], [-0.09, 0.06], [0.09, 0.06]].forEach(([x, h]) => { put(C.G.head, new THREE.ConeGeometry(0.03 * s, h * s, 4), silver(), [t[0] + x * s, t[1] + 0.02 + h * s * 0.3, t[2] + 0.17 * s]); put(C.G.head, new THREE.OctahedronGeometry(0.025 * s), plain('#7fd8ff', 0.05, { metalness: 0.2, emissive: '#3a8aaf', emissiveIntensity: 0.4 }), [t[0] + x * s, t[1] + 0.0, t[2] + 0.19 * s]); }); } },
+    { id: 'halo', name: 'Halo', e: '😇', cols: ['#ffe68a'], build(C) { const t = [0, C.HB.max.y, headCz(C)]; put(C.G.head, new THREE.TorusGeometry(0.16 * C.hs, 0.02 * C.hs, 8, 32), plain('#ffe68a', 0.2, { emissive: '#ffd84a', emissiveIntensity: 1 }), [t[0], t[1] + 0.1, t[2]], [Math.PI / 2, 0, 0]); } },
+    { id: 'devil', name: 'Devil horns', e: '😈', cols: ['#e63946', '#151515'], build(C, a) { const t = hatBase(C, 0.16 * C.hs); t[1] += 0.06; [-1, 1].forEach(x => put(C.G.head, new THREE.ConeGeometry(0.05 * C.hs, 0.16 * C.hs, 10), plain(a, 0.3), [t[0] + x * 0.12 * C.hs, t[1] - 0.02, t[2] + 0.05], [0.2, 0, -x * 0.35])); } },
+  ];
+
+  // ---------- TOPS ----------
+  const collar = (C, mat, t = 0.84, h = 0.06, off = 0.055) => put(C.torso, shell(geoOf(C.torso), { t0: t, t1: t + h, off }), mat);
+  const buttons = (C, mat, n = 5, t0 = 0.3, t1 = 0.8) => { for (let i = 0; i < n; i++) { const t = t0 + (t1 - t0) * i / (n - 1), y = C.tY(t); put(C.torso, new THREE.SphereGeometry(0.016, 8, 6), mat, [0, y, frontZ(C, y) + 0.035], null, [1, 1, 0.5]); } };
+  const frontZ = (C, y) => { const P = C.torso.geometry.attributes.position; let best = C.TB.max.z, bd = 1e9; for (let i = 0; i < P.count; i++) { const x = P.getX(i), yy = P.getY(i); if (Math.abs(x) < 0.03 && Math.abs(yy - y) < bd) { bd = Math.abs(yy - y); best = P.getZ(i); } } return best; };
+  const TOP = [
+    { id: 'none', name: 'Bare chest', e: '💪', build() {} },
+    { id: 'tee', name: 'T-shirt', e: '👕', pat: ['solid', 'stripes', 'tiedye', 'camo', 'stars'], cols: ['#ffffff', '#e63946', '#1d4ed8', '#151515', '#ffd84a', '#9be15d'], build(C, a, b, pat) { const m = cloth(pat || 'solid', a, b); bodice(C, m, 0.2, 0.86); sleeve(C, m, 0.68); collar(C, cloth('solid', shade(a, 0.85)), 0.83, 0.04, 0.04); } },
+    { id: 'hawaiian', name: 'Hawaiian shirt', e: '🌺', pat: ['hawaiian', 'floral'], cols: ['#1aa3b8', '#e63946', '#ffd84a', '#2a2a2a'], build(C, a, b, pat) { const m = cloth(pat || 'hawaiian', a, b || '#ff6b9d'); bodice(C, m, 0.2, 0.86, { off: 0.04, flare: t => (1 - t) * 0.025 }); sleeve(C, m, 0.7, { off: 0.045, flare: t => (1 - t) * 0.03 }); collar(C, m, 0.8, 0.07, 0.07); buttons(C, plain('#fffaf0', 0.3)); } },
+    { id: 'tux', name: 'Tuxedo jacket', e: '🤵', cols: ['#151515', '#ffffff', '#7c3aed', '#c8202a'], build(C, a) { const m = cloth('solid', a), sh = plain('#ffffff', 0.5); bodice(C, sh, 0.25, 0.86, { off: 0.028 }); bodiceCut(C, cutCloth('tux', 'solid', a, null, vNeck(0.42, 0.09)), 0.12, 0.84, { off: 0.045 }); sleeve(C, m, 0.24, { off: 0.04 }); cuff(C.armsM[1], geoOf(C.armsM[1]), 0.24, sh, 0.035, 0.04); cuff(C.armsM[0], geoOf(C.armsM[0]), 0.24, sh, 0.035, 0.04); const y = C.tY(0.82), z = frontZ(C, y) + 0.05; put(C.torso, new THREE.ConeGeometry(0.05, 0.09, 4), plain('#151515', 0.4), [-0.045, y, z], [0, 0, Math.PI / 2]); put(C.torso, new THREE.ConeGeometry(0.05, 0.09, 4), plain('#151515', 0.4), [0.045, y, z], [0, 0, -Math.PI / 2]); put(C.torso, new THREE.SphereGeometry(0.02, 8, 6), plain('#151515'), [0, y, z]); buttons(C, plain('#151515', 0.3), 3, 0.3, 0.55); } },
+    { id: 'hoodie', name: 'Hoodie', e: '🧥', pat: ['solid', 'camo', 'tiedye', 'flames'], cols: ['#8a8f98', '#e63946', '#151515', '#ff9ec7', '#1d4ed8'], build(C, a, b, pat) { const m = cloth(pat || 'solid', a, b); bodice(C, m, 0.12, 0.9, { off: 0.05 }); sleeve(C, m, 0.24, { off: 0.05 }); cuff(C.torso, geoOf(C.torso), 0.12, cloth('knit', shade(a, 0.85)), 0.06, 0.06); const y = C.tY(0.34), z = frontZ(C, y) + 0.055; put(C.torso, new THREE.BoxGeometry(0.26, 0.12, 0.02), m, [0, y, z]); put(C.G.body, new THREE.TorusGeometry(C.HM.width * 0.95, 0.06, 10, 28, Math.PI * 1.2), m, [0, C.BM.head[1] - 0.06, C.BM.head[2] - 0.12], [Math.PI / 2 + 0.25, 0, Math.PI * 0.9]); [-1, 1].forEach(x => put(C.torso, new THREE.CylinderGeometry(0.008, 0.008, 0.18, 6), plain('#fffaf0'), [x * 0.05, C.tY(0.72), frontZ(C, C.tY(0.72)) + 0.06])); } },
+    { id: 'leather', name: 'Leather jacket', e: '🏍️', cols: ['#151515', '#5a3214', '#8a1a1a'], build(C, a) { const m = cloth('leather', a); bodice(C, cloth('solid', '#f2f2f2'), 0.25, 0.86, { off: 0.026 }); bodiceCut(C, cutCloth('leather', 'leather', a, null, vNeck(0.3, 0.07, 0.015)), 0.14, 0.86, { off: 0.05 }); sleeve(C, m, 0.24, { off: 0.05 }); collar(C, m, 0.82, 0.08, 0.075); for (let i = 0; i < 6; i++) put(C.torso, new THREE.BoxGeometry(0.008, 0.02, 0.01), silver(), [0.03 + 0.03 * 0, C.tY(0.2 + i * 0.1), frontZ(C, C.tY(0.2 + i * 0.1)) + 0.055]); } },
+    { id: 'sweater', name: 'Cosy sweater', e: '🧶', pat: ['knit'], cols: ['#e63946', '#2f7a3a', '#f0e6d0', '#1d4ed8', '#ff9ec7'], build(C, a, b) { const m = cloth('knit', a, b || shade(a, 1.25)); bodice(C, m, 0.14, 0.88, { off: 0.05 }); sleeve(C, m, 0.24, { off: 0.05 }); cuff(C.torso, geoOf(C.torso), 0.14, cloth('knit', shade(a, 0.8)), 0.065, 0.05); collar(C, cloth('knit', shade(a, 0.8)), 0.84, 0.07, 0.07); } },
+    { id: 'tank', name: 'Tank top', e: '🎽', pat: ['solid', 'stripes', 'leopard', 'tiedye'], cols: ['#ffffff', '#151515', '#e63946', '#ffd84a'], build(C, a, b, pat) { bodiceCut(C, cutCloth('tank', pat || 'solid', a, b, (g, w, h) => { [0.25, 0.75].forEach(u => { g.beginPath(); g.ellipse(w * u, 0, w * 0.13, h * 0.36, 0, 0, 7); g.fill(); }); vNeck(0.8, 0.07)(g, w, h); }), 0.2, 0.84, { off: 0.026 }); } },
+    { id: 'disco', name: 'Disco sequins', e: '🪩', pat: ['sequin'], cols: ['#e0aa3e', '#d4d8de', '#ff4fa3', '#7c3aed', '#3ae8ff'], build(C, a) { const m = cloth('sequin', a); bodice(C, m, 0.2, 0.86, { off: 0.035 }); sleeve(C, m, 0.3, { off: 0.04, flare: t => (1 - t) * 0.07 }); const y = C.tY(0.84), z = frontZ(C, y) + 0.04; [-1, 1].forEach(x => put(C.torso, new THREE.ConeGeometry(0.06, 0.2, 3), plain('#151515', 0.4), [x * 0.06, y - 0.05, z], [0.2, 0, x * 2.6])); } },
+    { id: 'vest', name: 'Cowboy vest', e: '🤠', cols: ['#8a5a2a', '#151515', '#c8202a'], build(C, a) { bodice(C, cloth('plaid', '#c8202a', '#f2f2f2'), 0.22, 0.86, { off: 0.026 }); sleeve(C, cloth('plaid', '#c8202a', '#f2f2f2'), 0.4); bodiceCut(C, cutCloth('vest', 'leather', a, null, (g, w, h) => { vNeck(0.2, 0.06)(g, w, h); slit(0.2, 0.03)(g, w, h); g.fillRect(w * 0.18, 0, w * 0.1, h * 0.3); g.fillRect(w * 0.72, 0, w * 0.1, h * 0.3); }), 0.2, 0.84, { off: 0.045 }); put(C.torso, new THREE.CylinderGeometry(0.03, 0.03, 0.005, 5), gold(), [0.12, C.tY(0.66), frontZ(C, C.tY(0.66)) + 0.03], [Math.PI / 2, 0, 0]); } },
+    { id: 'puffer', name: 'Puffer jacket', e: '🧊', cols: ['#151515', '#ff7a3a', '#3ae8ff', '#ffd84a', '#9be15d'], build(C, a) { const m = plain(a, 0.35); for (let i = 0; i < 6; i++) bodice(C, m, 0.12 + i * 0.125, 0.12 + (i + 1) * 0.125, { off: 0.06, offF: t => 0.6 + Math.sin(t * Math.PI) * 0.8 }); for (let i = 0; i < 4; i++) sleeve(C, m, 0.24 + i * 0.19, { t1: 0.24 + (i + 1) * 0.19, off: 0.06, offF: t => 0.6 + Math.sin(t * Math.PI) * 0.8 }); collar(C, m, 0.84, 0.08, 0.09); } },
+    { id: 'toga', name: 'Toga', e: '🏛️', cols: ['#ffffff', '#f0e6d0'], build(C, a) { const m = cloth('solid', a); bodiceCut(C, cutCloth('toga', 'solid', a, null, (g, w, h) => { g.beginPath(); g.moveTo(w * 0.62, 0); g.lineTo(w * 0.62, h * 0.08); g.bezierCurveTo(w * 0.7, h * 0.45, w * 0.9, h * 0.45, w * 0.98, h * 0.08); g.lineTo(w * 0.98, 0); g.fill(); g.fillRect(w * 0.0, 0, w * 0.12, h * 0.2); }), 0.0, 0.84, { off: 0.04, flare: t => (1 - t) * 0.08 }); put(C.torso, tube([[0.17, C.tY(0.86), 0.05], [0.0, C.tY(0.6), 0.2], [-0.2, C.tY(0.3), 0.18], [-0.24, C.tY(0.1), 0.05]], 0.02, 30), gold()); } },
+    { id: 'superhero', name: 'Superhero suit', e: '🦸', cols: ['#1d4ed8', '#e63946', '#151515', '#15803d'], build(C, a) { const m = plain(a, 0.35); bodice(C, m, 0.1, 0.86, { off: 0.02 }); sleeve(C, m, 0.24, { off: 0.02 }); cuff(C.torso, geoOf(C.torso), 0.18, plain('#ffd84a', 0.3), 0.035, 0.05); const y = C.tY(0.62), z = frontZ(C, y) + 0.03; put(C.torso, new THREE.CircleGeometry(0.08, 5), plain('#ffd84a', 0.3), [0, y, z]); put(C.torso, new THREE.CircleGeometry(0.05, 5), plain('#e63946', 0.3), [0, y, z + 0.002]); } },
+    { id: 'bikini', name: 'Bikini top', e: '👙', pat: ['solid', 'polka', 'leopard', 'floral'], cols: ['#ff4fa3', '#ffd84a', '#3ae8ff', '#151515'], build(C, a, b, pat) { const m = cloth(pat || 'solid', a, b), y = C.tY(0.66), z = frontZ(C, y); [-1, 1].forEach(x => put(C.torso, new THREE.SphereGeometry(0.075, 14, 10, 0, 6.28, 0, 1.6), m, [x * 0.08, y, z - 0.015], [Math.PI / 2 - 0.1, 0, x * 0.1], [1, 0.6, 1])); put(C.torso, shell(geoOf(C.torso), { t0: 0.6, t1: 0.63, off: 0.02 }), m); } },
+    { id: 'armor', name: 'Knight armour', e: '🛡️', cols: ['#d4d8de', '#e0aa3e'], build(C, a) { const m = a === '#e0aa3e' ? gold() : silver(); bodice(C, m, 0.15, 0.86, { off: 0.05 }); sleeve(C, m, 0.5, { off: 0.05 }); [-1, 1].forEach((x, i) => put(C.armsM[i], new THREE.SphereGeometry(0.12, 14, 10, 0, 6.28, 0, 1.4), m, [C.AB.max.x * 0.55, C.AB.max.y - 0.06, 0], [0, 0, -0.4], [1, 0.8, 1])); const y = C.tY(0.6), z = frontZ(C, y) + 0.055; put(C.torso, new THREE.BoxGeometry(0.03, 0.2, 0.01), plain('#c8202a'), [0, y, z]); put(C.torso, new THREE.BoxGeometry(0.15, 0.03, 0.01), plain('#c8202a'), [0, y + 0.04, z]); } },
+    { id: 'apron', name: 'Chef jacket', e: '👨‍🍳', cols: ['#ffffff'], build(C) { const m = cloth('solid', '#ffffff'); bodice(C, m, 0.14, 0.86, { off: 0.04 }); sleeve(C, m, 0.3, { off: 0.04 }); collar(C, m, 0.82, 0.06, 0.06); buttons(C, plain('#151515', 0.3), 4, 0.35, 0.75); } },
+  ];
+
+  // ---------- BOTTOMS ----------
+  const hipBand = (C, mat, t0 = 0.0, t1 = 0.24, o = {}) => bodice(C, mat, t0, t1, Object.assign({ off: 0.035 }, o));
+  const lathe = (C, prof, mat, o = {}) => { const w = (C.TB.max.x - C.TB.min.x) / 2, d = (C.TB.max.z - C.TB.min.z) / 2, cz = (C.TB.max.z + C.TB.min.z) / 2; const g = new THREE.LatheGeometry(prof.map(p => new THREE.Vector2(p[0], p[1])), 40); g.scale(w, 1, d * 0.95); const m = put(C.torso, g, mat, [0, C.tY(o.at ?? 0.16), cz]); return m; };
+  const BOTTOM = [
+    { id: 'loin', name: 'Loincloth', e: '🍃', build() {} },
+    { id: 'jeans', name: 'Jeans', e: '👖', pat: ['denim'], cols: ['#3a5a9a', '#1a2a4a', '#8aa8d0', '#151515'], build(C, a) { hideLoin(C); const m = cloth('denim', a); hipBand(C, m); trouser(C, m, 0.14); cuff(C.torso, geoOf(C.torso), 0.2, cloth('leather', '#3a2414'), 0.045, 0.035); [C.legsM[0], C.legsM[1]].forEach(l => cuff(l, geoOf(l), 0.14, cloth('denim', shade(a, 0.8)), 0.04, 0.04)); } },
+    { id: 'shorts', name: 'Shorts', e: '🩳', pat: ['solid', 'hawaiian', 'camo', 'check', 'stripes'], cols: ['#c8a060', '#e63946', '#1aa3b8', '#151515'], build(C, a, b, pat) { hideLoin(C); const m = cloth(pat || 'solid', a, b); hipBand(C, m); trouser(C, m, 0.62, { off: 0.04, flare: t => (1 - t) * 0.03 }); } },
+    { id: 'flares', name: 'Bell-bottom flares', e: '🕺', pat: ['solid', 'sequin', 'stripes', 'tiedye'], cols: ['#ffffff', '#e0aa3e', '#ff4fa3', '#7c3aed'], build(C, a, b, pat) { hideLoin(C); const m = cloth(pat || 'solid', a, b); hipBand(C, m); trouser(C, m, 0.06, { flare: t => Math.max(0, 0.5 - t) * 0.22 }); } },
+    { id: 'suit', name: 'Suit trousers', e: '👔', pat: ['solid', 'pinstripe', 'plaid'], cols: ['#151515', '#2a3a5a', '#7a7a80', '#7c3aed'], build(C, a, b, pat) { hideLoin(C); const m = cloth(pat || 'solid', a, b || '#cfcfcf'); hipBand(C, m); trouser(C, m, 0.16); cuff(C.torso, geoOf(C.torso), 0.2, plain('#151515', 0.4), 0.045, 0.03); } },
+    { id: 'tutu', name: 'Tutu', e: '🩰', cols: ['#ff9ec7', '#ffffff', '#b07cff', '#151515'], build(C, a) { hideLoin(C); const m = plain(a, 0.8, { transparent: true, opacity: 0.88 }); hipBand(C, plain(a, 0.6)); for (let i = 0; i < 3; i++) lathe(C, [[1.02, 0.02], [1.4 + i * 0.12, -0.04 - i * 0.02], [1.75 + i * 0.12, -0.08 - i * 0.03]].map(([x, y], k) => [x, y]), m, { at: 0.16 - i * 0.015 }); } },
+    { id: 'skirt', name: 'Pleated skirt', e: '👗', pat: ['plaid', 'solid', 'polka', 'check'], cols: ['#c8202a', '#1d4ed8', '#151515', '#ff9ec7'], build(C, a, b, pat) { hideLoin(C); const m = cloth(pat || 'plaid', a, b || '#151515'); const prof = []; for (let i = 0; i <= 8; i++) { const t = i / 8; prof.push([1.04 + t * 0.35, 0.06 - t * 0.32]); } const sk = lathe(C, prof, m); const p = sk.geometry.attributes.position; for (let i = 0; i < p.count; i++) { const an = Math.atan2(p.getX(i), p.getZ(i)), dy = 0.06 - p.getY(i); const k = 1 + Math.abs(Math.sin(an * 12)) * 0.06 * dy * 4; p.setX(i, p.getX(i) * k); p.setZ(i, p.getZ(i) * k); } sk.geometry.computeVertexNormals(); } },
+    { id: 'gown', name: 'Ball gown', e: '👸', pat: ['solid', 'sequin', 'floral', 'stars'], cols: ['#ff4fa3', '#7c3aed', '#e0aa3e', '#e63946', '#3ae8ff'], build(C, a, b, pat) { hideLoin(C); C.G.legs.forEach(l => l.visible = false); const m = cloth(pat || 'solid', a, b); const prof = []; for (let i = 0; i <= 12; i++) { const t = i / 12; prof.push([1.04 + Math.pow(t, 1.8) * 0.75, 0.1 - t * 0.66]); } lathe(C, prof, m); hipBand(C, m, 0.12, 0.3); } },
+    { id: 'kilt', name: 'Kilt', e: '🏴', pat: ['plaid'], cols: ['#15803d', '#c8202a', '#1d4ed8'], build(C, a) { hideLoin(C); const m = cloth('plaid', a, '#151515'); const prof = []; for (let i = 0; i <= 6; i++) { const t = i / 6; prof.push([1.04 + t * 0.2, 0.06 - t * 0.27]); } lathe(C, prof, m); const y = C.tY(0.05), z = frontZ(C, y); put(C.torso, new THREE.BoxGeometry(0.1, 0.12, 0.03), cloth('leather', '#3a2414'), [0, y - 0.02, z + 0.06]); } },
+    { id: 'chaps', name: 'Leather chaps', e: '🐎', cols: ['#5a3214', '#151515'], build(C, a) { hideLoin(C); hipBand(C, cloth('denim', '#3a5a9a')); trouser(C, cloth('denim', '#3a5a9a'), 0.12); trouser(C, cloth('leather', a), 0.14, { off: 0.045, keep: c => c.z > c.cz - 0.06 }); cuff(C.torso, geoOf(C.torso), 0.2, cloth('leather', a), 0.05, 0.04); } },
+    { id: 'speedo', name: 'Speedo', e: '🩲', pat: ['solid', 'stars', 'leopard', 'flames'], cols: ['#e63946', '#1d4ed8', '#ffd84a', '#151515'], build(C, a, b, pat) { hideLoin(C); const m = cloth(pat || 'solid', a, b); hipBand(C, m, 0.02, 0.2, { off: 0.02 }); trouser(C, m, 0.88, { off: 0.02 }); } },
+    { id: 'cargo', name: 'Cargo pants', e: '🪖', pat: ['camo', 'solid'], cols: ['#5a6a3a', '#c8a060', '#151515'], build(C, a, b, pat) { hideLoin(C); const m = cloth(pat || 'camo', a, b || '#3a4a2a'); hipBand(C, m); trouser(C, m, 0.14, { off: 0.04 }); C.legsM.forEach(l => put(l, new THREE.BoxGeometry(0.03, 0.1, 0.09), m, [C.LB.max.x + 0.02, (C.LB.min.y + C.LB.max.y) / 2, 0.03])); } },
+    { id: 'tights', name: 'Fishnet tights', e: '🕸️', cols: ['#151515', '#ff4fa3'], build(C, a) { const net = canvasT('net' + a, 64, 64, (g, w, h) => { g.strokeStyle = a; g.lineWidth = 6; for (let i = -64; i < 128; i += 16) { g.beginPath(); g.moveTo(i, 0); g.lineTo(i + 64, 64); g.moveTo(i + 64, 0); g.lineTo(i, 64); g.stroke(); } }); const m = MAT['net' + a] || (MAT['net' + a] = new THREE.MeshStandardMaterial({ map: net, transparent: true, alphaTest: 0.3, side: THREE.DoubleSide, roughness: 0.8 })); trouser(C, m, 0.12, { off: 0.012, rep: 2.2, urep: 3 }); hipBand(C, plain(a, 0.5), 0.0, 0.2, { off: 0.016 }); } },
+  ];
+
+  // ---------- SHOES: a proper sole + upper built around each foot ----------
+  const footOf = C => { if (C.F) return C.F; const P = C.legsM[1].geometry.attributes.position, y0 = C.LB.min.y; let x0 = 1e9, x1 = -1e9, z0 = 1e9, z1 = -1e9; for (let i = 0; i < P.count; i++) if (P.getY(i) < y0 + 0.13) { x0 = Math.min(x0, P.getX(i)); x1 = Math.max(x1, P.getX(i)); z0 = Math.min(z0, P.getZ(i)); z1 = Math.max(z1, P.getZ(i)); } return (C.F = { x0, x1, z0, z1, y0, cx: (x0 + x1) / 2, cz: (z0 + z1) / 2, W: x1 - x0, L: z1 - z0, H: C.LB.max.y - C.LB.min.y }); };
+  const footShape = (F, k = 1, toe = 1) => { const w = F.W * 0.62 * k, l = F.L * 0.6 * k, s = new THREE.Shape(); s.moveTo(0, -l); s.bezierCurveTo(w * 0.75, -l, w * 0.8, -l * 0.3, w * 0.95, l * 0.15); s.bezierCurveTo(w * 1.05 * toe, l * 0.75, w * 0.45, l * 1.02, 0, l * (0.98 + (toe - 1) * 0.6)); s.bezierCurveTo(-w * 0.45, l * 1.02, -w * 1.05 * toe, l * 0.75, -w * 0.95, l * 0.15); s.bezierCurveTo(-w * 0.8, -l * 0.3, -w * 0.75, -l, 0, -l); return s; };
+  const ftLift = (C, h) => { C.G.lift = Math.max(C.G.lift || 0, h); };
+  // sole: th thick, sitting under the foot (positive lift raises the goblin)
+  const soleK = (C, mat, th = 0.035, o = {}) => { const F = footOf(C); const g = new THREE.ExtrudeGeometry(footShape(F, o.k || 1.04, o.toe || 1), { depth: th, bevelEnabled: true, bevelSize: 0.008, bevelThickness: 0.008, bevelSegments: 2, curveSegments: 18 }); g.rotateX(Math.PI / 2); C.legsM.forEach(l => put(l, g, mat, [F.cx, F.y0 + 0.004, F.cz + 0.01])); if (o.lift !== false) ftLift(C, th * 0.85); };
+  // upper: a rounded shoe body covering the foot, h = height above the sole
+  const upperK = (C, mat, h = 0.1, o = {}) => { const F = footOf(C); const k = o.k || 1.12; const g = new THREE.SphereGeometry(1, 28, 14, 0, Math.PI * 2, 0, Math.PI / 2); g.scale(F.W * 0.6 * k, h * 1.15, F.L * 0.62 * k * (o.toe || 1)); C.legsM.forEach(l => put(l, g, mat, [F.cx, F.y0 + 0.004, F.cz + 0.025 + (o.toe ? (o.toe - 1) * F.L * 0.25 : 0)])); };
+  const capK = (C, mat, o = {}) => { const F = footOf(C); const g = new THREE.SphereGeometry(1, 20, 10, 0, Math.PI * 2, 0, Math.PI / 2); g.scale(F.W * 0.62, 0.06, F.L * 0.24); C.legsM.forEach(l => put(l, g, mat, [F.cx, F.y0 + 0.006, F.z1 - F.L * 0.12])); };
+  // shaft: the leg itself, from the ankle up to tTop, so boots hug the shin
+  const shaftK = (C, mat, tTop, o = {}) => both(C.legsM, shell(geoOf(C.legsM[1]), Object.assign({ t0: 0.12, t1: tTop, off: 0.04, rep: 1.2 }, o)), mat);
+  const lacesK = (C, mat, n = 4, h = 0.1) => { const F = footOf(C); C.legsM.forEach(l => { for (let i = 0; i < n; i++) put(l, new THREE.BoxGeometry(F.W * 0.5, 0.012, 0.014), mat, [F.cx, F.y0 + h * 0.75 + i * 0.018, F.cz + F.L * 0.18 - i * 0.03], [-0.5, 0, 0]); }); };
+  const SHOES = [
+    { id: 'bare', name: 'Barefoot', e: '🦶', build() {} },
+    { id: 'sneakers', name: 'Sneakers', e: '👟', cols: ['#e63946', '#1d4ed8', '#151515', '#ffffff', '#9be15d', '#ff9ec7'], build(C, a) { const up = cloth('solid', a), wh = plain('#f4f4f4', 0.6); upperK(C, up, 0.13); shaftK(C, up, 0.2, { off: 0.03 }); capK(C, wh); soleK(C, wh, 0.045); soleK(C, plain(a === '#ffffff' ? '#e63946' : '#ffffff', 0.5), 0.012, { k: 1.07, lift: false }); lacesK(C, plain(a === '#ffffff' ? '#151515' : '#ffffff', 0.6)); } },
+    { id: 'cboots', name: 'Cowboy boots', e: '🥾', cols: ['#8a5a2a', '#151515', '#e63946', '#f2f2f2'], build(C, a) { const m = cloth('leather', a); upperK(C, m, 0.12, { toe: 1.15 }); shaftK(C, m, 0.48, { off: 0.045, flare: t => t > 0.55 ? (t - 0.55) * 0.08 : 0 }); soleK(C, plain('#2a1a10', 0.6), 0.03, { toe: 1.18 }); const F = footOf(C); C.legsM.forEach(l => put(l, new THREE.BoxGeometry(F.W * 0.7, 0.07, F.L * 0.25), plain('#2a1a10', 0.6), [F.cx, F.y0 - 0.02, F.z0 + F.L * 0.15])); ftLift(C, 0.06); C.legsM.forEach(l => put(l, tube([[F.cx - F.W * 0.35, F.y0 + 0.25, F.cz + 0.06], [F.cx, F.y0 + 0.2, F.cz + 0.11], [F.cx + F.W * 0.35, F.y0 + 0.25, F.cz + 0.06]], 0.008, 12), plain('#e0aa3e', 0.4))); } },
+    { id: 'heels', name: 'Stilettos', e: '👠', cols: ['#e63946', '#151515', '#e0aa3e', '#ff9ec7', '#ffffff'], build(C, a) { const m = plain(a, 0.15); upperK(C, m, 0.1, { toe: 1.2, k: 1.1 }); soleK(C, plain('#151515', 0.4), 0.015, { toe: 1.22 }); const F = footOf(C); C.legsM.forEach(l => { put(l, new THREE.CylinderGeometry(0.012, 0.022, 0.15, 10), m, [F.cx, F.y0 - 0.06, F.z0 + 0.05]); put(l, new THREE.TorusGeometry(F.W * 0.42, 0.012, 6, 20), m, [F.cx, F.y0 + 0.17, F.cz - 0.02], [Math.PI / 2, 0, 0]); }); ftLift(C, 0.05); } },
+    { id: 'platforms', name: 'Platform boots', e: '🪩', cols: ['#d4d8de', '#ff4fa3', '#151515', '#e0aa3e', '#7c3aed'], build(C, a) { const m = plain(a, 0.18, { metalness: a === '#d4d8de' || a === '#e0aa3e' ? 0.8 : 0.1 }); upperK(C, m, 0.12); shaftK(C, m, 0.42, { off: 0.045 }); soleK(C, m, 0.15); soleK(C, plain('#151515', 0.5), 0.015, { k: 1.07, lift: false }); } },
+    { id: 'flipflops', name: 'Flip-flops', e: '🩴', cols: ['#ffd84a', '#3ae8ff', '#ff4fa3', '#9be15d'], build(C, a) { soleK(C, plain(a, 0.6), 0.03); const F = footOf(C); C.legsM.forEach(l => { const tx = F.cx, tz = F.z1 - F.L * 0.18, y = F.y0 + 0.01; put(l, tube([[tx, y, tz], [tx, y + 0.06, tz - 0.05], [F.x0 + 0.005, y + 0.02, F.cz - 0.02]], 0.012, 12), plain(a === '#ffd84a' ? '#e63946' : '#ffffff', 0.5)); put(l, tube([[tx, y, tz], [tx, y + 0.06, tz - 0.05], [F.x1 - 0.005, y + 0.02, F.cz - 0.02]], 0.012, 12), plain(a === '#ffd84a' ? '#e63946' : '#ffffff', 0.5)); put(l, new THREE.SphereGeometry(0.018, 8, 6), plain('#ff4fa3'), [tx, y + 0.065, tz - 0.05]); }); } },
+    { id: 'rainboots', name: 'Rain boots', e: '🌧️', cols: ['#ffd84a', '#e63946', '#15803d', '#151515', '#3ae8ff'], build(C, a) { const m = plain(a, 0.12); upperK(C, m, 0.13, { k: 1.06 }); shaftK(C, m, 0.55, { off: 0.05, flare: t => t * 0.03 }); soleK(C, plain('#2a2a2a', 0.85), 0.03, { k: 1.08 }); } },
+    { id: 'clown', name: 'Clown shoes', e: '🤡', cols: ['#e63946', '#ffd84a', '#1d4ed8'], build(C, a) { const F = footOf(C), m = plain(a, 0.25); C.legsM.forEach(l => { put(l, new THREE.SphereGeometry(1, 24, 16), m, [F.cx, F.y0 + 0.06, F.z1 + 0.03], null, [F.W * 0.95, 0.1, F.L * 0.95]); put(l, new THREE.SphereGeometry(1, 16, 10), plain('#f4f4f4', 0.5), [F.cx, F.y0 + 0.1, F.cz - 0.02], null, [F.W * 0.6, 0.09, F.L * 0.45]); }); ftLift(C, 0.03); } },
+    { id: 'slippers', name: 'Bunny slippers', e: '🐇', cols: ['#ffffff', '#ff9ec7', '#c8a060'], build(C, a) { const m = plain(a, 1), F = footOf(C); C.legsM.forEach(l => { const cx = F.cx, z = F.z1; put(l, new THREE.SphereGeometry(1, 20, 14), m, [cx, F.y0 + 0.06, F.cz + 0.01], null, [F.W * 0.72, 0.11, F.L * 0.66]); [-1, 1].forEach(s2 => { put(l, new THREE.SphereGeometry(0.03, 10, 8), m, [cx + s2 * 0.045, F.y0 + 0.2, z - 0.06], [0.5, 0, s2 * 0.25], [1, 2.8, 0.6]); put(l, new THREE.SphereGeometry(0.016, 8, 6), plain('#151515', 0.3), [cx + s2 * 0.04, F.y0 + 0.13, z - 0.005]); }); put(l, new THREE.SphereGeometry(0.02, 8, 6), plain('#ff9ec7', 0.6), [cx, F.y0 + 0.1, z + 0.02]); }); ftLift(C, 0.02); } },
+    { id: 'combat', name: 'Combat boots', e: '🪖', cols: ['#151515', '#5a3214', '#5a6a3a'], build(C, a) { const m = cloth('leather', a); upperK(C, m, 0.13, { k: 1.06 }); shaftK(C, m, 0.36, { off: 0.05 }); soleK(C, plain('#151515', 0.8), 0.05, { k: 1.1 }); lacesK(C, plain('#d0d0d0', 0.6), 6, 0.13); } },
+    { id: 'skates', name: 'Roller skates', e: '🛼', cols: ['#ff4fa3', '#ffffff', '#3ae8ff', '#ffd84a'], build(C, a) { const m = plain(a, 0.35), F = footOf(C); upperK(C, m, 0.13); shaftK(C, m, 0.34, { off: 0.045 }); soleK(C, plain('#d4d8de', 0.3, { metalness: 0.6 }), 0.025); lacesK(C, plain('#ffffff', 0.6), 5, 0.13); C.legsM.forEach(l => [-1, 1].forEach(z => [-1, 1].forEach(x => { const w = put(l, new THREE.CylinderGeometry(0.04, 0.04, 0.035, 16), plain('#ffd84a', 0.35), [F.cx + x * F.W * 0.38, F.y0 - 0.05, F.cz + z * F.L * 0.32]); w.rotation.z = Math.PI / 2; }))); ftLift(C, 0.08); } },
+    { id: 'socks', name: 'Socks & sandals', e: '🧦', cols: ['#ffffff', '#e63946', '#ffd84a', '#151515'], build(C, a) { const F = footOf(C); both(C.legsM, shell(geoOf(C.legsM[1]), { t0: 0, t1: 0.4, off: 0.014, rep: 1.4 }), cloth('knit', a, shade(a, 0.85))); soleK(C, cloth('leather', '#5a3214'), 0.035, { k: 1.1 }); C.legsM.forEach(l => { [0.25, -0.15].forEach(dz => put(l, new THREE.TorusGeometry(1, 0.016, 6, 24, Math.PI), cloth('leather', '#5a3214'), [F.cx, F.y0 + 0.005, F.cz + dz * F.L], [0, 0, 0], [F.W * 0.6, 0.11, 1])); }); } },
+    { id: 'loafers', name: 'Shiny loafers', e: '👞', cols: ['#151515', '#5a3214', '#c8202a'], build(C, a) { const m = plain(a, 0.12); upperK(C, m, 0.11, { toe: 1.1 }); soleK(C, plain('#2a1a10', 0.6), 0.025, { toe: 1.1 }); const F = footOf(C); C.legsM.forEach(l => put(l, new THREE.BoxGeometry(F.W * 0.5, 0.012, 0.03), gold(), [F.cx, F.y0 + 0.085, F.cz + F.L * 0.12], [-0.4, 0, 0])); } },
+    { id: 'uggs', name: 'Fluffy boots', e: '🧸', cols: ['#c8a060', '#f0e6d0', '#ff9ec7', '#5a3214'], build(C, a) { const m = cloth('knit', a, shade(a, 1.1)); upperK(C, m, 0.14, { k: 1.12 }); shaftK(C, m, 0.42, { off: 0.06 }); cuff(C.legsM[0], geoOf(C.legsM[0]), 0.38, plain('#fffaf0', 1), 0.08, 0.06); cuff(C.legsM[1], geoOf(C.legsM[1]), 0.38, plain('#fffaf0', 1), 0.08, 0.06); soleK(C, plain('#3a2a1a', 0.8), 0.03, { k: 1.14 }); } },
+  ];
+
+  // ---------- ACCESSORIES ----------
+  const eyes = C => [-1, 1].map(s => [s * C.HM.eye[0], C.HM.eye[1], C.HM.eye[2] + C.HM.eyeR * 1.2]);
+  const glasses = (C, lens, frame, shape = 'round', k = 1.2) => { eyes(C).forEach(p => { const r = C.HM.eyeR * k; const g = shape === 'heart' ? (() => { const s = new THREE.Shape(); s.moveTo(0, -r); s.bezierCurveTo(r * 1.4, -r * 0.1, r * 0.9, r * 1.1, 0, r * 0.4); s.bezierCurveTo(-r * 0.9, r * 1.1, -r * 1.4, -r * 0.1, 0, -r); return new THREE.ShapeGeometry(s); })() : shape === 'star' ? (() => { const s = new THREE.Shape(); for (let k2 = 0; k2 < 10; k2++) { const an = k2 * Math.PI / 5 + Math.PI / 2, rr = k2 % 2 ? r * 0.5 : r * 1.2; k2 ? s.lineTo(Math.cos(an) * rr, Math.sin(an) * rr) : s.moveTo(Math.cos(an) * rr, Math.sin(an) * rr); } return new THREE.ShapeGeometry(s); })() : new THREE.CircleGeometry(r, 24); put(C.G.head, g, lens, [p[0], p[1], p[2] + 0.005]); put(C.G.head, new THREE.TorusGeometry(r, 0.008, 6, 24), frame, p); }); put(C.G.head, new THREE.BoxGeometry(C.HM.eye[0] * 0.8, 0.012, 0.012), frame, [0, C.HM.eye[1] + 0.01, C.HM.eye[2] + C.HM.eyeR * 1.2]); };
+  const neckY = C => C.BM.head[1] - 0.1, neckZ = C => C.BM.head[2] + 0.01;
+  const holder = (C, i, rot) => { const h = new THREE.Group(); h.position.set(0, -0.04, 0.1); if (rot) h.rotation.set(rot[0], rot[1], rot[2]); C.G.arms[i].hand.add(h); return h; };
+  const ACC = [
+    { id: 'none', name: 'Nothing', e: '🚫', build() {} },
+    { id: 'shades', name: 'Sunglasses', e: '🕶️', cols: ['#151515', '#e63946', '#ffffff'], build(C, a) { glasses(C, plain('#101010', 0.05, { metalness: 0.6 }), plain(a, 0.3)); } },
+    { id: 'hearts', name: 'Heart glasses', e: '💖', cols: ['#ff4fa3', '#e63946'], build(C, a) { glasses(C, plain(a, 0.1, { transparent: true, opacity: 0.85 }), plain('#ffffff', 0.3), 'heart', 1.3); } },
+    { id: 'stars', name: 'Star glasses', e: '⭐', cols: ['#ffd84a', '#3ae8ff'], build(C, a) { glasses(C, plain(a, 0.2, { transparent: true, opacity: 0.85 }), plain('#151515'), 'star', 1.2); } },
+    { id: 'monocle', name: 'Monocle', e: '🧐', cols: ['#e0aa3e'], build(C) { const p = eyes(C)[1]; put(C.G.head, new THREE.TorusGeometry(C.HM.eyeR * 1.25, 0.01, 8, 24), gold(), p); put(C.G.head, tube([[p[0], p[1] - C.HM.eyeR * 1.25, p[2]], [p[0] + 0.05, p[1] - 0.2, p[2] - 0.02], [p[0] + 0.08, p[1] - 0.4, p[2] - 0.1]], 0.004, 16), gold()); } },
+    { id: 'pearls', name: 'Pearl necklace', e: '📿', cols: ['#fffaf0'], build(C) { const r = (C.TB.max.x - C.TB.min.x) * 0.42; for (let i = 0; i < 26; i++) { const an = -Math.PI * 0.95 + i / 25 * Math.PI * 0.9; put(C.G.body, new THREE.SphereGeometry(0.022, 10, 8), plain('#fffaf0', 0.15, { metalness: 0.2 }), [Math.cos(an) * r, neckY(C) - Math.sin(an + Math.PI) * 0.05 + 0.02, neckZ(C) + 0.08 + Math.sin(-an) * r * 0.9]); } } },
+    { id: 'chain', name: 'Gold chain', e: '⛓️', cols: ['#e0aa3e'], build(C) { const r = (C.TB.max.x - C.TB.min.x) * 0.4, y = neckY(C), z = neckZ(C) + 0.1; put(C.G.body, tube([[-r, y + 0.05, z - 0.1], [-r * 0.6, y - 0.12, z + r * 0.6], [0, y - 0.22, z + r * 0.85], [r * 0.6, y - 0.12, z + r * 0.6], [r, y + 0.05, z - 0.1]], 0.016, 40), gold()); put(C.G.body, new THREE.CylinderGeometry(0.06, 0.06, 0.015, 20), gold(), [0, y - 0.29, z + r * 0.88], [Math.PI / 2 - 0.3, 0, 0]); } },
+    { id: 'boa', name: 'Feather boa', e: '🪶', cols: ['#ff4fa3', '#ffffff', '#7c3aed', '#ffd84a'], build(C, a) { const r = (C.TB.max.x - C.TB.min.x) * 0.48, y = neckY(C), z = neckZ(C) + 0.06; const pts = [[-r * 1.3, y - 0.45, z + 0.1], [-r, y - 0.1, z], [-r * 0.5, y + 0.02, z - 0.15], [r * 0.5, y + 0.02, z - 0.15], [r, y - 0.1, z], [r * 1.25, y - 0.5, z + 0.12]]; const cur = new THREE.CatmullRomCurve3(pts.map(p => new THREE.Vector3(...p))), m = plain(a, 1), rr = R(9); for (let i = 0; i < 90; i++) { const p = cur.getPoint(i / 89); put(C.G.body, new THREE.SphereGeometry(0.035 + rr() * 0.02, 6, 5), m, [p.x + (rr() - .5) * 0.05, p.y + (rr() - .5) * 0.05, p.z + (rr() - .5) * 0.05], null, [1, 0.6 + rr(), 1]); } } },
+    { id: 'cape', name: 'Velvet cape', e: '🦇', cols: ['#c8202a', '#151515', '#7c3aed', '#e0aa3e'], build(C, a) { const w = (C.TB.max.x - C.TB.min.x) * 1.25, g = new THREE.CylinderGeometry(w * 0.55, w * 0.95, 1.15, 24, 8, true, Math.PI * 0.62, Math.PI * 0.76); const p = g.attributes.position; for (let i = 0; i < p.count; i++) { const an = Math.atan2(p.getX(i), p.getZ(i)); p.setZ(i, p.getZ(i) + Math.sin(an * 9) * 0.02 * (0.5 - p.getY(i))); } g.computeVertexNormals(); put(C.G.body, g, cloth('solid', a, null, { roughness: 0.6 }), [0, C.BM.sh[1] - 0.55, -0.06]); put(C.G.body, new THREE.TorusGeometry(w * 0.48, 0.03, 8, 24, Math.PI), cloth('solid', a), [0, C.BM.sh[1] + 0.03, -0.02], [Math.PI / 2, 0, Math.PI]); } },
+    { id: 'wings', name: 'Angel wings', e: '🪽', cols: ['#ffffff', '#151515', '#ff9ec7'], build(C, a) { const m = plain(a, 0.85); const sh = new THREE.Shape(); sh.moveTo(0, 0); sh.bezierCurveTo(0.15, 0.25, 0.45, 0.42, 0.7, 0.4); for (let i = 0; i < 6; i++) { const x0 = 0.7 - i * 0.11, y0 = 0.4 - i * 0.12; sh.quadraticCurveTo(x0 + 0.02, y0 - 0.16, x0 - 0.11, y0 - 0.12); } sh.quadraticCurveTo(0.1, -0.2, 0, 0); const g = new THREE.ExtrudeGeometry(sh, { depth: 0.02, bevelEnabled: true, bevelSize: 0.012, bevelThickness: 0.01, bevelSegments: 2 }); [-1, 1].forEach(s => { const w = put(C.G.body, g, m, [s * 0.08, C.BM.sh[1] - 0.1, (C.BM.belly[2] + C.TB.min.z) - 0.02], [0, s * 0.35, 0.15 * s], [s, 1, 1]); }); } },
+    { id: 'bag', name: 'Designer handbag', e: '👜', cols: ['#e63946', '#151515', '#f0e6d0', '#ff4fa3'], build(C, a) { const h = holder(C, 0), m = cloth('leather', a); const bg = new THREE.Group(); bg.position.set(0, -0.16, 0); h.add(bg); put(bg, new THREE.BoxGeometry(0.26, 0.18, 0.1), m); put(bg, new THREE.TorusGeometry(0.09, 0.012, 6, 18, Math.PI), m, [0, 0.09, 0]); put(bg, new THREE.BoxGeometry(0.06, 0.03, 0.012), gold(), [0, 0.03, 0.056]); } },
+    { id: 'parrot', name: 'Parrot buddy', e: '🦜', cols: ['#e63946', '#15803d', '#1d4ed8'], build(C, a) { const p = new THREE.Group(); p.position.set(C.BM.sh[0] + 0.1, C.BM.sh[1] + 0.1, 0.0); p.scale.setScalar(1.6); p.rotation.y = 0.5; C.G.body.add(p); put(p, new THREE.SphereGeometry(0.08, 12, 10), plain(a, 0.6), [0, 0.06, 0], null, [0.8, 1.2, 0.9]); put(p, new THREE.SphereGeometry(0.06, 12, 10), plain(a, 0.6), [0, 0.2, 0.02]); put(p, new THREE.ConeGeometry(0.025, 0.07, 8), plain('#ffd84a', 0.4), [0, 0.19, 0.09], [Math.PI / 2 + 0.6, 0, 0]); [-1, 1].forEach(s => put(p, new THREE.SphereGeometry(0.014, 8, 6), plain('#151515'), [s * 0.04, 0.22, 0.06])); put(p, new THREE.BoxGeometry(0.05, 0.16, 0.02), plain('#1d4ed8', 0.6), [0, -0.06, -0.06], [0.5, 0, 0]); [-1, 1].forEach(s => put(p, new THREE.SphereGeometry(0.06, 10, 8), plain('#ffd84a', 0.6), [s * 0.07, 0.06, -0.01], null, [0.3, 0.9, 0.7])); } },
+    { id: 'guitar', name: 'Electric guitar', e: '🎸', cols: ['#e63946', '#151515', '#ffd84a'], build(C, a) { const g = new THREE.Group(); g.position.set(0, C.BM.belly[1] - 0.05, C.TB.max.z + 0.12); g.rotation.set(0, 0, 0.75); C.G.body.add(g); const sh = new THREE.Shape(); sh.moveTo(0, -0.2); sh.bezierCurveTo(0.2, -0.22, 0.2, 0.02, 0.1, 0.05); sh.bezierCurveTo(0.17, 0.15, 0.08, 0.2, 0, 0.12); sh.bezierCurveTo(-0.08, 0.2, -0.17, 0.15, -0.1, 0.05); sh.bezierCurveTo(-0.2, 0.02, -0.2, -0.22, 0, -0.2); put(g, new THREE.ExtrudeGeometry(sh, { depth: 0.04, bevelEnabled: true, bevelSize: 0.01, bevelThickness: 0.01 }), plain(a, 0.2, { metalness: 0.2 }), [0, 0, -0.02]); put(g, new THREE.BoxGeometry(0.04, 0.5, 0.02), plain('#5a3214', 0.6), [0, 0.38, 0.02]); put(g, new THREE.BoxGeometry(0.07, 0.1, 0.025), plain('#151515'), [0, 0.66, 0.02]); put(g, tube([[0.1, 0.05, -0.04], [0.25, 0.4, -0.1], [0.3, 0.7, -0.05]], 0.012, 12), plain('#151515')); } },
+    { id: 'umbrella', name: 'Parasol', e: '⛱️', cols: ['#ff9ec7', '#ffffff', '#ffd84a'], build(C, a) { const h = holder(C, 1, [0.5, 0, -0.2]), g = new THREE.Group(); h.add(g); put(g, new THREE.CylinderGeometry(0.01, 0.01, 0.9, 6), plain('#5a3214'), [0, 0.4, 0]); put(g, new THREE.ConeGeometry(0.45, 0.2, 16, 1, true), cloth('stripes', a, '#ffffff', { side: THREE.DoubleSide }), [0, 0.86, 0]); } },
+    { id: 'scepter', name: 'Royal scepter', e: '🔱', cols: ['#e0aa3e'], build(C) { const h = holder(C, 1, [0.35, 0, -0.15]); put(h, new THREE.CylinderGeometry(0.015, 0.015, 0.7, 8), gold(), [0, 0.2, 0]); put(h, new THREE.SphereGeometry(0.06, 14, 10), plain('#c8202a', 0.1, { metalness: 0.3 }), [0, 0.58, 0]); put(h, new THREE.TorusGeometry(0.06, 0.012, 6, 16), gold(), [0, 0.58, 0]); } },
+    { id: 'mic', name: 'Microphone', e: '🎤', cols: ['#151515'], build(C) { const h = holder(C, 1, [1.2, 0, 0]); h.scale.setScalar(1.6); put(h, new THREE.CylinderGeometry(0.02, 0.014, 0.2, 10), plain('#151515', 0.3), [0, 0.06, 0]); put(h, new THREE.SphereGeometry(0.045, 12, 10), silver(), [0, 0.18, 0]); } },
+    { id: 'bowtie', name: 'Bow tie', e: '🎀', cols: ['#c8202a', '#151515', '#ff4fa3', '#ffd84a'], build(C, a) { const m = plain(a, 0.5), y = C.tY(0.72), z = frontZ(C, y) + 0.05; [-1, 1].forEach(s => put(C.torso, new THREE.ConeGeometry(0.055, 0.11, 4), m, [s * 0.055, y, z], [0, 0, -s * Math.PI / 2])); put(C.torso, new THREE.SphereGeometry(0.024, 8, 6), m, [0, y, z + 0.01]); } },
+    { id: 'skateboard', name: 'Skateboard', e: '🛹', cols: ['#e63946', '#151515', '#3ae8ff'], build(C, a) { const h = holder(C, 0), g = new THREE.Group(); g.rotation.set(0.15, 0.3, 0.1); h.add(g); put(g, new THREE.BoxGeometry(0.2, 0.7, 0.025), plain(a, 0.5)); [-1, 1].forEach(y => [-1, 1].forEach(x => put(g, new THREE.CylinderGeometry(0.03, 0.03, 0.03, 10), plain('#ffd84a'), [x * 0.07, y * 0.25, 0.04], [0, 0, Math.PI / 2]))); } },
+  ];
+  const SLOTS = { head: HEAD, top: TOP, bottom: BOTTOM, shoes: SHOES, acc: ACC };
+  const byId = (slot, id) => SLOTS[slot].find(x => x.id === id) || SLOTS[slot][0];
+  // W = { head:{id,c,p}, top:..., bottom:..., shoes:..., acc:... }  (c = colour index, p = pattern name)
+  function dress(G, W) {
+    const C = ctx(G);
+    // shoulder balls so raised arms never show a gap
+    // measure the top of the arm so the joint ball matches it exactly
+    const AP = C.armsM[1].geometry.attributes.position, AH = C.AB.max.y - C.AB.min.y, yTop = C.AB.max.y - AH * 0.16; let sx = 0, sy = 0, sz = 0, n = 0; for (let i = 0; i < AP.count; i++) if (AP.getY(i) > yTop) { sx += AP.getX(i); sy += AP.getY(i); sz += AP.getZ(i); n++; } const ac = new THREE.Vector3(sx / n, sy / n, sz / n); let ar = 0, an = 0; for (let i = 0; i < AP.count; i++) if (Math.abs(AP.getY(i) - (yTop + AH * 0.04)) < AH * 0.03) { ar += Math.hypot(AP.getX(i) - ac.x, AP.getZ(i) - ac.z); an++; } ar = an ? ar / an : 0.08;
+    G.arms.forEach((a, i) => { const sm = G.skinMat.clone(); sm.vertexColors = false; const m = new THREE.Mesh(new THREE.SphereGeometry(ar * 1.02, 24, 16), sm); m.position.set(i ? ac.x : -ac.x, ac.y - ar * 0.1, ac.z); m.scale.set(1, 0.9, 1); a.add(m); a.userData.ball = m; });
+    ['bottom', 'top', 'shoes', 'head', 'acc'].forEach(slot => { const s = W && W[slot]; if (!s) return; const it = byId(slot, s.id); if (!it.build) return; const cols = it.cols || ['#ffffff'], a = cols[(s.c || 0) % cols.length], b = s.b || (cols[((s.c || 0) + 1) % cols.length]); try { it.build(C, a, b, s.p && it.pat && it.pat.includes(s.p) ? s.p : (it.pat ? it.pat[0] : null)); } catch (e) { console.warn('wardrobe', slot, s.id, e); } });
+    G.root.traverse(o => { if (o.isMesh) o.castShadow = true; });
+    if (G.lift) G.legs.forEach(l => l.position.y += G.lift), G.body.position.y += G.lift;
+    return G;
+  }
+  function random(seed) { const r = seed ? R(seed) : Math.random; const pick = a => a[Math.floor(r() * a.length)]; const W = {}; Object.keys(SLOTS).forEach(k => { const it = pick(SLOTS[k].slice(1)); W[k] = { id: it.id, c: Math.floor(r() * (it.cols || [1]).length), p: it.pat ? pick(it.pat) : null }; }); return W; }
+
+  // ---------- POSES ----------
+  const POSES = [
+    { id: 'strike', name: 'Strike!', e: '⚡', arms: [[-0.35, 0], [2.7, 0.1]], head: 0.15, lean: -0.05 },
+    { id: 'tada', name: 'Ta-da!', e: '✨', arms: [[-0.95, -0.35], [0.95, -0.35]], head: -0.12, lean: 0.04 },
+    { id: 'victory', name: 'Victory', e: '🙌', arms: [[-2.6, 0], [2.6, 0]], head: 0 },
+    { id: 'shy', name: 'Shy', e: '🙈', arms: [[0.2, 0.5], [-0.2, 0.5]], head: 0.3, lean: 0.05 },
+    { id: 'kiss', name: 'Blow a kiss', e: '💋', arms: [[-0.3, 0], [1.2, 1.4]], head: -0.15 },
+    { id: 'jazz', name: 'Jazz hands', e: '👐', arms: [[-0.55, 1.0], [0.55, 1.0]], head: 0.1 },
+    { id: 'wave', name: 'Wave', e: '👋', arms: [[-0.3, 0], [2.3, -0.3]], head: -0.1 },
+    { id: 'point', name: 'Point at crowd', e: '👉', arms: [[-0.3, 0], [1.5, 1.2]], head: 0.08 },
+    { id: 'dab', name: 'Dab', e: '🫡', arms: [[-2.3, 0.4], [0.9, 1.0]], head: -0.45, lean: -0.08 },
+  ];
+  function pose(G, id, k = 1) { const P = POSES.find(p => p.id === id) || POSES[0]; G.arms.forEach((a, i) => { const base = i ? 0.25 : -0.25; a.rotation.z = base + (P.arms[i][0] - base) * k; a.rotation.x = -P.arms[i][1] * k; }); G.head.rotation.z = (P.head || 0) * k; G.body.rotation.z = (P.lean || 0) * k; }
+  return { SLOTS, PATTERNS, PAT_LIST, POSES, dress, pose, random, byId, fabric };
+})();
 function buildGoblin(opt) {
   const rnd = a => a[Math.floor(Math.random() * a.length)];
   const look = Object.assign({ head: rnd(GOB_LOOKS.head), ears: rnd(GOB_LOOKS.ears), nose: rnd(GOB_LOOKS.nose), body: rnd(GOB_LOOKS.body) }, opt.look || {});
@@ -7010,7 +7306,7 @@ function maybeStartMini() {
 }
 function startMini(type) {
   if (mini || goblin || toss) return;
-  type = type || bagPick('mini', ['hot', 'boss', 'roulette', 'cups', 'hilo', 'tos']);
+  type = type || bagPick('mini', ['hot', 'boss', 'roulette', 'cups', 'hilo', 'tos', 'runway']);
   musicStyle({ fieldgoal: 'metal', boss: 'boss', roulette: 'tension' }[type] || 'gameshow'); state.lastMini = type;
   // the cups can't be read from straight above: tilt to the normal view for this game, then go back after
   if (type === 'cups' && topView) { cupsWasTop = true; $('#viewBtn').click(); }
@@ -7022,6 +7318,7 @@ function startMini(type) {
   else if (type === 'cups') miniBanner('🥤 COIN UNDER THE CUP! 🥤', 'Follow the coin… then pick the right cup');
   else if (type === 'hilo') miniBanner('🃏 HIGHER OR LOWER! 🃏', 'Everyone guesses at once — higher or lower? Wrong (or a tie) and you drink');
   else if (type === 'tos') miniBanner('🥃 TRUTH OR SHOT! 🥃', "See the question — answer it, or take a shot");
+  else if (type === 'runway') miniBanner('👗 GOBLIN RUNWAY! 👗', 'Dress your goblin on your phone, then strut — everyone rates the look ⭐');
   else if (type === 'fieldgoal') miniBanner('🏈 FIELD GOAL! 🏈', 'Kick it through the posts — miss and you drink');
   else miniBanner('👹 GOBLIN BOSS FIGHT! 👹', 'Mash <b>HIT</b> on your phones (or <b>Space</b>) — beat him in 10 seconds!');
   [0, 0.18, 0.36, 0.7].forEach((d, i) => tone('square', i === 3 ? 880 : 660, i === 3 ? 880 : 660, 0.14, 0.12, d));
@@ -7035,6 +7332,7 @@ function beginMiniPlay() {
   if (mini.type === 'roulette') { spinRoulette(); renderUI(); hostPublish(); return; }
   if (mini.type === 'cups') { cupsBegin(); renderUI(); hostPublish(); return; }
   if (mini.type === 'hilo') { hlBegin(); return; }
+  if (mini.type === 'runway') { mini.n = 0; mini.rid = Math.floor(Math.random() * 1e6); rwBegin(); return; }
   if (mini.type === 'tos') { tosBegin(); return; }
   if (mini.type === 'fieldgoal') { fgBegin(); return; }
   if (mini.type === 'hot') {
@@ -7097,12 +7395,191 @@ function bossEnd(won) {
   }
   state.rounds++; renderUI(); hostPublish();
 }
+// ===================== GOBLIN RUNWAY (host) =====================
+const RW_THEMES = ['Beach Day ☀️', 'Wild West 🤠', 'Villain Era 😈', 'Royal Wedding 👑', 'Rock Star 🎸', 'Disco Night 🪩', 'Winter Wonderland ❄️', 'Fancy Gala 🥂', 'First Date 💘', 'Superhero 🦸', 'Punk Rock 🤘', 'Cosy Sunday 🧸', 'Tourist Trap 📸', 'Goblin Prom 💃', 'Office Party 💼', 'Fairy Tale 🧚'];
+const RW_SKINS = ['#4fa02c', '#6fae2e', '#3f9a5a', '#86b83a', '#5aa83a', '#7ab648', '#4a9a6a', '#8fbf4a'];
+const RW_SLOTS = ['head', 'top', 'bottom', 'shoes', 'acc'];
+// outfits travel as short strings: "head=afro.0.,top=tee.2.flames,...,pose=strike"
+function rwEncode(W, pose) { return RW_SLOTS.map(k => `${k}=${(W[k] && W[k].id) || ''}.${(W[k] && W[k].c) || 0}.${(W[k] && W[k].p) || ''}`).join(',') + ',pose=' + (pose || 'strike'); }
+function rwDecode(s) { const W = {}; let pose = 'strike'; String(s || '').split(',').forEach(kv => { const [k, v] = kv.split('='); if (!v) return; if (k === 'pose') { pose = v; return; } if (!RW_SLOTS.includes(k)) return; const [id, c, p] = v.split('.'); if (id) W[k] = { id: id.slice(0, 20), c: +c || 0, p: p || null }; }); return { W, pose }; }
+// looks: "head.ears.nose.body.skinIndex"
+const RW_LOOK = { head: ['round', 'long', 'wide'], ears: ['long', 'droopy', 'bat', 'tall'], nose: ['hook', 'bulb', 'long', 'pig'], body: ['pot', 'skinny', 'chunky'] };
+function rwLookStr(i) { const r = () => Math.random(); return [Math.floor(r() * 3), Math.floor(r() * 4), Math.floor(r() * 4), (i + Math.floor(r() * 3)) % 3, Math.floor(r() * RW_SKINS.length)].join('.'); }
+function rwLook(s) { const a = String(s || '0.0.0.0.0').split('.').map(Number); return { look: { head: RW_LOOK.head[a[0] % 3], ears: RW_LOOK.ears[a[1] % 4], nose: RW_LOOK.nose[a[2] % 4], body: RW_LOOK.body[a[3] % 3] }, skin: RW_SKINS[(a[4] || 0) % RW_SKINS.length] }; }
+function rwBuildGoblin(lookStr, outfit) {
+  const L = rwLook(lookStr), d = rwDecode(outfit);
+  const G = buildGoblin({ size: 1, skin: L.skin, eye: '#ffe14d', hat: 'none', look: L.look });
+  WR.dress(G, d.W); G.pose = d.pose; return G;
+}
+const rwItemNames = outfit => { const d = rwDecode(outfit); return RW_SLOTS.map(k => d.W[k] ? WR.byId(k, d.W[k].id) : null).filter(it => it && !['none', 'loin', 'bare'].includes(it.id)).map(it => `${it.e} ${it.name}`); };
+
+function rwBegin() {
+  const ps = miniPlayers();
+  mini.theme = RW_THEMES[Math.floor(Math.random() * RW_THEMES.length)];
+  mini.sub = 'dress'; mini.st = 0; mini.wait = 100; mini.outfits = {}; mini.votes = {}; mini.looks = {}; mini.scores = {}; mini.n++;
+  ps.forEach((p, i) => { mini.looks[p.id] = rwLookStr(i); if (!hasPhone(p)) { mini.outfits[p.id] = rwEncode(WR.random(), WR.POSES[Math.floor(Math.random() * WR.POSES.length)].id); mini.votes[p.id] = 1; } });
+  miniBanner('👗 GOBLIN RUNWAY 👗', `Theme: <b>${mini.theme}</b> · dress your goblin on your phone`);
+  rwDressPanel(); renderUI(); hostPublish();
+}
+function rwDressPanel() {
+  const ps = miniPlayers(), left = Math.max(0, Math.ceil(mini.wait - mini.st));
+  const rows = ps.map(p => { const ok = !!mini.votes[p.id]; return `<div class="rw-mir ${ok ? 'ok' : ''}"><div class="rw-sil">${ok ? '✅' : '👗'}</div><div class="rw-nm" style="background:${p.color}">${esc(p.name)}</div><small>${ok ? (hasPhone(p) ? 'ready!' : '🎲 dressed by the stylist') : 'dressing…'}</small></div>`; }).join('');
+  gp(`👗 Dressing room · Theme: ${mini.theme}`, `<div class="rw-mirrors">${rows}</div><div class="rw-left">⏱ <b id="rwLeft">${left}s</b> · everyone dresses on their phone — no peeking!</div>`, `<button data-gp="rwgo">Start the show ▶</button>`);
+}
+function rwOutfit(pid, o, done) {
+  if (!mini || mini.type !== 'runway' || mini.sub !== 'dress') return;
+  const p = pById(pid); if (!p || typeof o !== 'string' || o.length > 400) return;
+  mini.outfits[p.id] = o; if (done) mini.votes[p.id] = 1; else delete mini.votes[p.id];
+  tone('triangle', 700, 900, 0.08, 0.06); rwDressPanel(); hostPublishSoon();
+  if (miniPlayers().every(q => mini.votes[q.id])) setTimeout(() => { if (mini && mini.sub === 'dress') rwStartShow(); }, 900);
+}
+
+// ---------- the runway set (its own scene, rendered instead of the table while the show is on) ----------
+let RW = null;
+function rwSet() {
+  const S = new THREE.Scene(); S.background = new THREE.Color('#07040c'); S.fog = new THREE.Fog('#07040c', 18, 40);
+  const cam = new THREE.PerspectiveCamera(38, innerWidth / innerHeight, 0.05, 80);
+  S.add(new THREE.HemisphereLight('#c8b8ff', '#1a0e20', 0.22));
+  const key = new THREE.SpotLight('#fff3e0', 1.5, 30, 0.38, 0.55, 1.2); key.position.set(0, 9, 4); key.castShadow = true; key.shadow.mapSize.set(1024, 1024); key.shadow.bias = -0.0005; S.add(key); S.add(key.target);
+  const pinkL = new THREE.SpotLight('#ff4fa3', 0.9, 30, 0.5, 0.6, 1); pinkL.position.set(-6, 7, 0); S.add(pinkL); S.add(pinkL.target);
+  const blueL = new THREE.SpotLight('#3ae8ff', 0.8, 30, 0.5, 0.6, 1); blueL.position.set(6, 7, 0); S.add(blueL); S.add(blueL.target);
+  const fill = new THREE.DirectionalLight('#ffe0c8', 0.25); fill.position.set(0, 3, 10); S.add(fill);
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(60, 60), new THREE.MeshStandardMaterial({ color: '#120a18', roughness: 0.35, metalness: 0.4 })); floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true; S.add(floor);
+  // catwalk with bulb edges
+  const walk = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.35, 20), new THREE.MeshStandardMaterial({ color: '#d8d0e0', roughness: 0.25, metalness: 0.1 })); walk.position.set(0, 0.175, -7); walk.receiveShadow = true; S.add(walk);
+  const bulbM = new THREE.MeshStandardMaterial({ color: '#ffd84a', emissive: '#ffd84a', emissiveIntensity: 1.4 }), bulbG = new THREE.SphereGeometry(0.045, 8, 6), bulbs = [];
+  for (let z = -16.8; z <= 2.8; z += 0.55) [-1.26, 1.26].forEach(x => { const b = new THREE.Mesh(bulbG, bulbM); b.position.set(x, 0.36, z); S.add(b); bulbs.push(b); });
+  // backdrop with the neon sign + theme
+  const bdTex = canvasTex(1024, 512, (g, w, h) => { const gr = g.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, '#2a0f3a'); gr.addColorStop(1, '#0d0614'); g.fillStyle = gr; g.fillRect(0, 0, w, h); for (let i = 0; i < 14; i++) { g.fillStyle = `rgba(255,${79 + i * 10},163,${0.05 + (i % 3) * 0.02})`; g.fillRect(i * 76, 0, 30, h); } g.textAlign = 'center'; g.font = '900 120px "Permanent Marker", Impact, sans-serif'; g.shadowColor = '#ff4fa3'; g.shadowBlur = 40; g.fillStyle = '#ffd1ea'; g.fillText('GOBLIN RUNWAY', w / 2, 200); g.shadowBlur = 20; g.shadowColor = '#3ae8ff'; g.font = '800 54px Inter, sans-serif'; g.fillStyle = '#d6fbff'; g.fillText('Theme: ' + (mini && mini.theme || ''), w / 2, 300); });
+  const bd = new THREE.Mesh(new THREE.PlaneGeometry(16, 8), new THREE.MeshBasicMaterial({ map: bdTex })); bd.position.set(0, 4, -17.5); S.add(bd);
+  const door = new THREE.Mesh(new THREE.PlaneGeometry(2.6, 3.4), new THREE.MeshBasicMaterial({ color: '#000' })); door.position.set(0, 1.9, -17.4); S.add(door);
+  const curtM = new THREE.MeshStandardMaterial({ color: '#8a1030', roughness: 0.8, side: THREE.DoubleSide });
+  [-1, 1].forEach(s => { const g = new THREE.CylinderGeometry(1, 1, 3.6, 24, 1, true, 0, Math.PI); const c = new THREE.Mesh(g, curtM); c.scale.set(0.7, 1, 0.25); c.position.set(s * 1.7, 1.8, -17.2); c.rotation.y = s > 0 ? Math.PI : 0; S.add(c); });
+  // crowd: rows of little goblin silhouettes with phones that flash
+  const crowdM = new THREE.MeshStandardMaterial({ color: '#140c1c', roughness: 0.95 }), headG = new THREE.SphereGeometry(0.28, 10, 8), bodyG = new THREE.CylinderGeometry(0.25, 0.34, 0.8, 10), earG = new THREE.ConeGeometry(0.08, 0.4, 6), flashes = [];
+  const flashM = new THREE.MeshBasicMaterial({ color: '#ffffff', transparent: true, opacity: 0 });
+  for (let row = 0; row < 3; row++) for (let z = -14; z <= 3; z += 1.05) [-1, 1].forEach(s => {
+    const x = s * (2.4 + row * 1.0 + Math.random() * 0.2), y = row * 0.35, grp = new THREE.Group(); grp.position.set(x, y, z + (row % 2) * 0.5); grp.rotation.y = -s * Math.PI / 2 * 0.85; S.add(grp);
+    const b = new THREE.Mesh(bodyG, crowdM); b.position.y = 0.4; grp.add(b); const h = new THREE.Mesh(headG, crowdM); h.position.y = 1.05; grp.add(h);
+    [-1, 1].forEach(e => { const ea = new THREE.Mesh(earG, crowdM); ea.position.set(e * 0.3, 1.1, 0); ea.rotation.z = -e * 1.2; grp.add(ea); });
+    if (Math.random() < 0.45) { const f = new THREE.Mesh(new THREE.PlaneGeometry(0.16, 0.24), flashM.clone()); f.position.set(0, 1.0, 0.35); grp.add(f); flashes.push(f); }
+    grp.userData.bob = Math.random() * 6; grp.userData.crowd = true;
+  });
+  // photographers' pit at the end of the runway
+  const pit = new THREE.PointLight('#ffffff', 0, 8); pit.position.set(0, 1.5, 4.2); S.add(pit);
+  RW = { S, cam, key, pinkL, blueL, bulbs, flashes, pit, t: 0, G: null, podium: [], camPos: new THREE.Vector3(0, 1.6, 6.5), camLook: new THREE.Vector3(0, 1.2, -6) };
+  cam.position.copy(RW.camPos); cam.lookAt(RW.camLook);
+  document.body.classList.add('rwShow');
+  let hud = $('#rwHud'); if (!hud) { hud = document.createElement('div'); hud.id = 'rwHud'; document.body.appendChild(hud); }
+}
+function rwStartShow() {
+  if (!mini || mini.sub !== 'dress') return;
+  miniPlayers().forEach(p => { if (!mini.outfits[p.id]) mini.outfits[p.id] = rwEncode(WR.random(), WR.POSES[Math.floor(Math.random() * WR.POSES.length)].id); });
+  gpOff(); $('#mini').classList.remove('on');
+  mini.order = shuffle(miniPlayers().map(p => p.id)); mini.k = -1; rwSet(); musicStyle('gameshow');
+  rwNext();
+}
+function rwNext() {
+  mini.k++;
+  if (RW.G) { RW.S.remove(RW.G.root); disposeTree(RW.G.root); RW.G = null; }
+  if (mini.k >= mini.order.length) return rwResults();
+  const id = mini.order[mini.k], p = pById(id); if (!p) return rwNext();
+  const G = rwBuildGoblin(mini.looks[id], mini.outfits[id]); G.root.position.set(0, 0.35, -17); G.root.traverse(o => { if (o.isMesh) o.castShadow = true; }); RW.S.add(G.root); RW.G = G;
+  mini.sub = 'walk'; mini.st = 0; mini.walker = id; mini.votes = {}; mini.n++; mini.left = 0;
+  tone('square', 330, 660, 0.25, 0.1);
+  rwHud(); renderUI(); hostPublish();
+}
+function rwVoters() { return miniPlayers().filter(p => String(p.id) !== String(mini.walker)); }
+function rwVote(pid, s) {
+  if (!mini || mini.type !== 'runway' || (mini.sub !== 'walk' && mini.sub !== 'vote')) return;
+  const p = pById(pid); s = Math.round(+s); if (!p || String(p.id) === String(mini.walker) || !(s >= 1 && s <= 5) || mini.votes[p.id]) return;
+  mini.votes[p.id] = s; tone('sine', 600 + s * 120, 900 + s * 120, 0.12, 0.08);
+  if (RW) RW.flash = 0.25 + s * 0.05;
+  rwHud(); hostPublishSoon();
+  if (mini.sub === 'vote' && rwVoters().every(q => mini.votes[q.id])) mini.st = Math.max(mini.st, mini.wait - 1.2);
+}
+function rwHud() {
+  const hud = $('#rwHud'); if (!hud || !mini) return;
+  if (mini.sub === 'results') { hud.innerHTML = ''; return; }
+  const p = pById(mini.walker); if (!p) return;
+  const vs = Object.values(mini.votes), avg = vs.length ? vs.reduce((a, b) => a + b, 0) / vs.length : 0, voters = rwVoters();
+  const items = rwItemNames(mini.outfits[mini.walker]);
+  const noPhone = voters.filter(q => !hasPhone(q));
+  hud.innerHTML = `<div class="rw-plate"><div class="w">NOW WALKING · ${mini.k + 1} of ${mini.order.length}</div><h3 style="color:${lighten(p.color)}">${esc(p.name)}'s goblin</h3><div class="th">Theme: ${mini.theme}</div><div class="its">${items.map(esc).join('<br>') || '🍃 Au naturel'}</div></div>
+    <div class="rw-votes"><div class="r"><span>Votes</span><b>${vs.length}/${voters.length}</b></div><div class="st">${'★'.repeat(Math.round(avg))}<span>${'★'.repeat(5 - Math.round(avg))}</span></div><div class="hint">${mini.sub === 'vote' ? `Vote on your phone! <b>${Math.max(0, Math.ceil(mini.wait - mini.st))}s</b>` : 'Rate the look on your phone ⭐'}</div>
+    ${noPhone.map(q => `<div class="np">${esc(q.name)} ${mini.votes[q.id] ? '✅' : [1, 2, 3, 4, 5].map(s => `<button data-gp="rwv" data-p="${q.id}" data-v="${s}">${s}★</button>`).join('')}</div>`).join('')}</div>`;
+}
+function rwWalkAnim(G, u, t) {
+  // strut: hips sway, legs swing, arms counter-swing, little head bob
+  const ph = t * 6.2, sw = Math.sin(ph);
+  G.legs.forEach((l, i) => l.rotation.x = (i ? -1 : 1) * sw * 0.42);
+  G.arms.forEach((a, i) => { a.rotation.x = (i ? 1 : -1) * sw * 0.35; a.rotation.z = (i ? 0.2 : -0.2); });
+  G.body.rotation.z = Math.sin(ph) * 0.06; G.body.rotation.y = Math.sin(ph) * 0.1; G.head.rotation.z = -Math.sin(ph) * 0.05;
+  G.body.position.y = 0.45 + (G.lift || 0) + Math.abs(Math.cos(ph)) * 0.04;
+}
+function stepRW(dt) {
+  mini.st += dt;
+  if (mini.sub === 'dress') { const l = Math.max(0, Math.ceil(mini.wait - mini.st)); if (l !== mini.left) { mini.left = l; const e = $('#rwLeft'); if (e) e.textContent = l + 's'; hostPublishSoon(); } if (mini.st > mini.wait) rwStartShow(); return; }
+  if (!RW) return;
+  RW.t += dt; const t = RW.t, G = RW.G;
+  // set dressing: bulbs chase, crowd bobs, phone flashes
+  RW.bulbs.forEach((b, i) => b.scale.setScalar(0.7 + 0.5 * (Math.sin(t * 6 - i * 0.5) > 0.6 ? 1 : 0)));
+  RW.S.children.forEach(o => { if (o.userData.crowd) o.position.y += Math.sin(t * 5 + o.userData.bob) * 0.002; });
+  RW.flashes.forEach(f => { f.material.opacity = Math.max(0, f.material.opacity - dt * 4); if (Math.random() < dt * (mini.sub === 'vote' ? 0.9 : 0.35)) f.material.opacity = 1; });
+  if (RW.flash) { RW.pit.intensity = RW.flash * 30; RW.flash = Math.max(0, RW.flash - dt * 1.5); } else RW.pit.intensity = Math.random() < dt * 0.8 ? 12 : Math.max(0, RW.pit.intensity - dt * 60);
+  RW.pinkL.target.position.set(Math.sin(t * 0.7) * 2, 0, -6 + Math.cos(t * 0.5) * 6); RW.blueL.target.position.set(-Math.sin(t * 0.6) * 2, 0, -6 + Math.sin(t * 0.4) * 6);
+  if (mini.sub === 'walk' && G) {
+    const D = 8, u = Math.min(1, mini.st / D), z = -17 + 17.2 * (1 - Math.pow(1 - u, 1.6));
+    G.root.position.z = z; G.root.position.y = 0.35; G.root.rotation.y = 0;
+    if (u < 1) rwWalkAnim(G, u, mini.st);
+    RW.key.target.position.set(0, 1, z); RW.key.position.set(0, 9, z + 4);
+    RW.camLook.lerp(new THREE.Vector3(0, 1.2, z), 0.08); RW.camPos.lerp(new THREE.Vector3(Math.sin(t * 0.3) * 0.8, 1.6 + (1 - u) * 0.6, z + 5.0 + (1 - u) * 2.5), 0.05);
+    if (mini.st > D) { mini.sub = 'vote'; mini.st = 0; mini.wait = 14; G.legs.forEach(l => l.rotation.x = 0); RW.flash = 1; boingSfx(); hostPublish(); rwHud(); }
+  } else if (mini.sub === 'vote' && G) {
+    const k = Math.min(1, mini.st / 0.5); G.body.rotation.set(0, 0, 0); G.body.position.y = 0.45 + (G.lift || 0); WR.pose(G, G.pose, k);
+    if (mini.st > 2.2 && mini.st < 4.2) G.root.rotation.y = (mini.st - 2.2) / 2 * Math.PI * 2; else if (mini.st >= 4.2) G.root.rotation.y = 0;
+    RW.camLook.lerp(new THREE.Vector3(0, 1.25, G.root.position.z), 0.08); RW.camPos.lerp(new THREE.Vector3(0.7, 1.55, G.root.position.z + 5.0), 0.04);
+    const l = Math.max(0, Math.ceil(mini.wait - mini.st)); if (l !== mini.left) { mini.left = l; rwHud(); hostPublishSoon(); }
+    if (mini.st > mini.wait) { const vs = Object.values(mini.votes); mini.scores[mini.walker] = vs.length ? vs.reduce((a, b) => a + b, 0) / vs.length : 0; rwNext(); }
+  } else if (mini.sub === 'results') {
+    RW.podium.forEach((g, i) => { if (!g) return; const k = Math.min(1, Math.max(0, (mini.st - i * 0.4) / 0.6)); WR.pose(g, g.pose, k); g.root.rotation.y = Math.sin(t * 0.8 + i) * 0.25; });
+    RW.camLook.lerp(new THREE.Vector3(0, 2.0, -0.5), 0.05); RW.camPos.lerp(new THREE.Vector3(Math.sin(t * 0.25) * 1.2, 2.5, 8.6), 0.03);
+    if (Math.random() < dt * 4) RW.flash = 0.6;
+    if (mini.st > 9 && mini.stage !== 'done') { mini.stage = 'done'; mini.t = 0; renderUI(); hostPublish(); }
+  }
+  RW.cam.position.copy(RW.camPos); RW.cam.lookAt(RW.camLook); RW.cam.aspect = innerWidth / innerHeight; RW.cam.updateProjectionMatrix();
+}
+function rwResults() {
+  mini.sub = 'results'; mini.st = 0; mini.n++;
+  const ranked = mini.order.map(id => ({ id, s: mini.scores[id] || 0, r: Math.random() })).sort((a, b) => b.s - a.s || b.r - a.r);
+  mini.rank = ranked.map(x => x.id);
+  // podium (top 3) in front of the runway end
+  const blocks = [[0, 1.0, '#ffd84a'], [-1.9, 0.65, '#c0c6d0'], [1.9, 0.4, '#d08a4a']];
+  ranked.slice(0, 3).forEach((x, i) => { const [px, h, c] = blocks[i]; const b = new THREE.Mesh(new THREE.BoxGeometry(1.6, h, 1.4), new THREE.MeshStandardMaterial({ color: c, roughness: 0.3, metalness: 0.3 })); b.position.set(px, h / 2 + 0.35, -0.5); b.receiveShadow = true; RW.S.add(b);
+    const G = rwBuildGoblin(mini.looks[x.id], mini.outfits[x.id]); G.root.position.set(px, 0.35 + h, -0.5); G.root.traverse(o => { if (o.isMesh) o.castShadow = true; }); RW.S.add(G.root); RW.podium[i] = G; });
+  RW.key.position.set(0, 9, 5); RW.key.target.position.set(0, 1, -0.5); RW.key.angle = 0.55; RW.camPos.set(0, 2.5, 8.6); RW.camLook.set(0, 2.0, -0.5);
+  const win = pById(ranked[0].id), last = ranked.length > 1 ? pById(ranked[ranked.length - 1].id) : null;
+  const st = id => (mini.scores[id] || 0).toFixed(1);
+  const hud = $('#rwHud'); if (hud) hud.innerHTML = `<div class="rw-res"><h2>👑 BEST DRESSED 👑</h2><div class="rows">${ranked.map((x, i) => { const p = pById(x.id); return p ? `<div class="row ${i === 0 ? 'win' : ''}"><span>${['🥇', '🥈', '🥉'][i] || (i + 1) + '.'}</span><b style="color:${lighten(p.color)}">${esc(p.name)}</b><em>${st(x.id)}★</em></div>` : ''; }).join('')}</div>
+    <div class="rw-drinks">${win ? `👑 <b>${esc(win.name)}</b> gives out a drink` : ''}${last && last !== win ? `<br>🍅 <b>${esc(last.name)}</b> (last place) drinks!` : ''}</div></div>`;
+  if (last && last !== win) drink(last);
+  showResult(`👑 ${win ? win.name : ''} is Best Dressed!`, last && last !== win ? `${win.name} gives out a drink · ${last.name} drinks 🍅` : 'Gorgeous goblins all round', '#ffd84a');
+  addLog(`👗 Goblin Runway — ${win ? win.name : '?'} won (${st(ranked[0].id)}★)${last && last !== win ? ', ' + last.name + ' drank' : ''}`);
+  [0, 0.15, 0.3, 0.6].forEach((d, i) => tone('triangle', [523, 659, 784, 1046][i], [523, 659, 784, 1046][i], 0.3, 0.12, d));
+  renderUI(); hostPublish();
+}
+function rwCleanup() {
+  document.body.classList.remove('rwShow'); const hud = $('#rwHud'); if (hud) hud.remove();
+  if (RW) { RW.S.traverse(o => { if (o.geometry) o.geometry.dispose(); }); RW = null; }
+}
+
 function endMini() {
   if (!mini) return; musicStyle('jazz');
   if (cupsWasTop) { cupsWasTop = false; if (!topView) setTimeout(() => { if (!topView && !mini) $('#viewBtn').click(); }, 600); }
   $('#slot').classList.remove('on');
   if (mini.type === 'cups') cupsCleanup();
   if (mini.type === 'fieldgoal') fgCleanup();
+  if (mini.type === 'runway') rwCleanup();
   gpOff();
   if (mini.type === 'boss') restoreWorld();
   if (mini.G) scene.remove(mini.G.root);
@@ -7169,6 +7646,7 @@ function stepMini(dt) {
   if (mini.type === 'roulette') { if (mini.stage === 'done' && mini.t > 3.8) endMini(); return; }
   if (mini.type === 'cups') { stepCups(dt); if (mini.stage === 'done' && mini.t > 4.2) endMini(); return; }
   if (mini.type === 'hilo') { if (mini.stage === 'done') { if (mini.t > 4) endMini(); } else stepHL(dt); return; }
+  if (mini.type === 'runway') { if (mini.stage === 'done') { if (mini.t > 2) endMini(); } else stepRW(dt); return; }
   if (mini.type === 'tos') { if (mini.stage === 'done') { if (mini.t > 2.5) endMini(); } else stepTOS(dt); return; }
   if (mini.type === 'fieldgoal') { stepFG(dt); if (mini && mini.stage === 'done' && mini.t > 2.6) endMini(); return; }
   if (mini.type === 'hot') {
@@ -7403,9 +7881,10 @@ $('#jackList').onclick = () => {
 $('#jackActs').onclick = e => { const b = e.target.closest('[data-act]'); if (b) watchJack(b.dataset.act); };
 if (WATCH) setTimeout(watchBoot, 700);
 ['Hilo:hilo', 'Tos:tos', 'Fg:fieldgoal'].forEach(x => { const [id, t] = x.split(':'); $('#try' + id).onclick = () => { if (!canAim() && !mini) return toast('Start a game with 2+ players first (and wait for the turn to finish)'); startMini(t); if (mini && t === 'fieldgoal') mini.who = current().id; }; });
-document.addEventListener('click', e => { const b = e.target.closest('[data-gp]'); if (!b || !mini) return; const k = b.dataset.gp; if (k === 'hl') hlGuess(b.dataset.p, b.dataset.v); else if (k === 'tos') tosChoose(null, b.dataset.v); else if (k === 'vote') tosVote(null, b.dataset.v); else if (k === 'tosq') tosAsk(null, b.dataset.v); else if (k === 'kick') fgPress(null); });
+document.addEventListener('click', e => { const b = e.target.closest('[data-gp]'); if (!b || !mini) return; const k = b.dataset.gp; if (k === 'rwgo') { rwStartShow(); return; } if (k === 'rwv') { rwVote(b.dataset.p, b.dataset.v); return; } if (k === 'hl') hlGuess(b.dataset.p, b.dataset.v); else if (k === 'tos') tosChoose(null, b.dataset.v); else if (k === 'vote') tosVote(null, b.dataset.v); else if (k === 'tosq') tosAsk(null, b.dataset.v); else if (k === 'kick') fgPress(null); });
 $('#tryCups').onclick = () => { if (!canAim() && !mini) return toast('Start a game with 2+ players first (and wait for the turn to finish)'); startMini('cups'); };
 $('#tryRoul').onclick = () => { if (!canAim() && !mini) return toast('Start a game with 2+ players first (and wait for the turn to finish)'); startMini('roulette'); };
+$('#tryRunway').onclick = () => { if (!canAim() && !mini) return toast('Start a game with 2+ players first (and wait for the turn to finish)'); startMini('runway'); };
 $('#tryBoss').onclick = () => { if (!canAim() && !mini) return toast('Start a game with 2+ players first (and wait for the turn to finish)'); startMini('boss'); };
 $('#obeyBtn').onclick = e => { e.stopPropagation(); finishObey(); };
 $('#extrasBtn').onclick = () => $('#extras').classList.toggle('on');
@@ -7645,7 +8124,7 @@ function loop() {
     p.m.visible = p.t >= 0; const s = p.r * (1 + u * 0.35); p.m.scale.set(s, s, s); p.m.material.opacity = 0.9 * (1 - u);
     if (u >= 1) { scene.remove(p.m); p.m.material.dispose(); pulses.splice(i, 1); }
   }
-  renderer.render(scene, camera); renderStreamCam(); requestAnimationFrame(loop);
+  if (RW) renderer.render(RW.S, RW.cam); else { renderer.render(scene, camera); renderStreamCam(); } requestAnimationFrame(loop);
 }
 
 // ---------- phones as controllers (Jackbox-style), over the page's live room ----------
@@ -7676,7 +8155,7 @@ function hostPublish() {
   const g = {
     role: 'host', since: hostSince, phase: gamePhase(), turn: cur ? cur.id : null, obey: obey ? { pid: obey.pid, name: obey.name, text: obey.text } : null,
     ruleFor: pendingRule ? pendingRule.tosser.id : null, trip: TRIP ? 1 : 0, gift: GIFT ? { pid: GIFT.pid } : null, qte: QTE ? { pid: QTE.pid, z: +QTE.z.toFixed(3), w: QTE.w, sp: QTE.sp, done: QTE.done, hit: QTE.hit, lbl: QTE.lbl, btn: QTE.btn, ok: QTE.okLbl } : null, started: !!state.started, tl: turnClock && turnClock.on ? turnClock.shown : null, fr: +fairR().toFixed(2), fm: +maxDrawR().toFixed(2), owners, roundRule: state.roundRule ? [String(state.roundRule.text).slice(0, 80), state.roundRule.left] : null,
-    mini: mini ? { type: mini.type, stage: mini.stage, holder: mini.holder ? mini.holder.id : null, hp: mini.hp, max: mini.max, left: Math.ceil(mini.type === 'cups' ? (mini.pickLeft || 0) : mini.left), sub: mini.sub || null, who: mini.who != null ? mini.who : null, n: mini.n || 0, card: mini.card ? cardTxt(mini.card) : null, cardS: mini.card ? mini.card.s : null, next: mini.next ? cardTxt(mini.next) : null, q: mini.q || null, asker: mini.asker != null ? mini.asker : null, verdict: mini.verdict || null, vb: mini.vb || 0, vl: mini.vl || 0, voted: mini.votes ? Object.keys(mini.votes) : [] } : null,
+    mini: mini ? { type: mini.type, stage: mini.stage, holder: mini.holder ? mini.holder.id : null, hp: mini.hp, max: mini.max, left: Math.ceil(mini.type === 'cups' ? (mini.pickLeft || 0) : mini.left), sub: mini.sub || null, who: mini.who != null ? mini.who : null, n: mini.n || 0, card: mini.card ? cardTxt(mini.card) : null, cardS: mini.card ? mini.card.s : null, next: mini.next ? cardTxt(mini.next) : null, q: mini.q || null, asker: mini.asker != null ? mini.asker : null, verdict: mini.verdict || null, vb: mini.vb || 0, vl: mini.vl || 0, voted: mini.votes ? Object.keys(mini.votes) : [], ...(mini.type === 'runway' ? { th: mini.theme, rn: mini.rid, lk: mini.sub === 'dress' ? mini.looks : undefined, wk: mini.walker, wo: mini.walker != null && mini.sub !== 'dress' ? mini.outfits[mini.walker] : undefined, wl: mini.walker != null ? mini.looks[mini.walker] : undefined, rank: mini.rank } : {}) } : null,
     vote: state.started ? null : votePublic(),
     lobby: state.lobby.map(p => ({ id: p.id, name: p.name, color: p.color })), drawer: drawerId(),
     players: state.players.map(p => ({ id: p.id, name: p.name, color: p.color, x: +p.x.toFixed(2), z: +p.z.toFixed(2), r: +p.r.toFixed(2) })),
@@ -7693,6 +8172,8 @@ function handleCmd(c, cmd) {
   if (cmd.type === 'obeyDone') { finishObey(); return; }
   if (cmd.type === 'cup') { cupPick(pid, cmd.i); return; }
   if (cmd.type === 'hl') { hlGuess(pid, cmd.v === 'h' ? 'h' : 'l'); return; }
+  if (cmd.type === 'rw') { rwOutfit(pid, cmd.o, !!cmd.done); return; }
+  if (cmd.type === 'rwv') { rwVote(pid, cmd.s); return; }
   if (cmd.type === 'tos') { tosChoose(pid, ['truth', 'shot', 'done'].includes(cmd.v) ? cmd.v : null); return; }
   if (cmd.type === 'kick') { fgPress(pid); return; }
   if (cmd.type === 'gift') { giftPick(+cmd.i, pid); return; }
@@ -7815,10 +8296,98 @@ function setRoomCode(code) {
 }
 
 // ----- phone: mini-game controls -----
+// ===================== GOBLIN RUNWAY (phone) =====================
+const RWP = { W: null, pose: 'strike', tab: 0, sent: false, ry: 0.5, n: -1, R: null, G: null, look: null, raf: 0, drag: null, keyO: '' };
+const RWP_TABS = [['head', '🎩', 'HEAD'], ['top', '👕', 'TOP'], ['bottom', '👖', 'BOTTOM'], ['shoes', '👟', 'SHOES'], ['acc', '💍', 'EXTRA'], ['pose', '💃', 'POSE']];
+function rwpItems(tab) { return tab === 'pose' ? WR.POSES : WR.SLOTS[tab]; }
+function rwpSel(tab) { if (tab === 'pose') return RWP.pose; return (RWP.W[tab] && RWP.W[tab].id) || rwpItems(tab)[0].id; }
+// a small 3D preview of a goblin on the phone
+function rwpView(canvas, lookStr, outfit, spin) {
+  if (!canvas || typeof THREE === 'undefined') return;
+  const w = canvas.clientWidth || 300, h = canvas.clientHeight || 300;
+  if (!RWP.R || RWP.R.domElement !== canvas) {
+    if (RWP.R) try { RWP.R.dispose(); RWP.R.forceContextLoss(); } catch (e) {}
+    const R = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true }); R.setPixelRatio(Math.min(2, devicePixelRatio || 1)); R.outputEncoding = THREE.sRGBEncoding; R.toneMapping = THREE.ACESFilmicToneMapping; R.toneMappingExposure = 1.0;
+    const S = new THREE.Scene(); S.add(new THREE.HemisphereLight('#fff6e8', '#3a2a40', 0.55)); const k = new THREE.DirectionalLight('#ffffff', 1.15); k.position.set(2, 4, 5); S.add(k); const rim = new THREE.DirectionalLight('#a0c8ff', 0.7); rim.position.set(-3, 3, -4); S.add(rim);
+    const cam = new THREE.PerspectiveCamera(30, 1, 0.05, 50);
+    RWP.R = R; RWP.S = S; RWP.cam = cam; RWP.G = null; RWP.keyO = '';
+    const pd = e => { RWP.drag = { x: e.clientX, ry: RWP.ry }; }, pm = e => { if (RWP.drag) RWP.ry = RWP.drag.ry + (e.clientX - RWP.drag.x) * 0.015; }, pu = () => { RWP.drag = null; };
+    canvas.addEventListener('pointerdown', pd); if (!RWP.wired) { RWP.wired = true; addEventListener('pointermove', pm); addEventListener('pointerup', pu); }
+  }
+  RWP.R.setSize(w, h, false); RWP.cam.aspect = w / h; RWP.cam.updateProjectionMatrix();
+  const key = lookStr + '|' + outfit;
+  if (key !== RWP.keyO) {
+    RWP.keyO = key;
+    if (RWP.G) { RWP.S.remove(RWP.G.root); disposeTree(RWP.G.root, false); }
+    try { const G = rwBuildGoblin(lookStr, outfit); WR.pose(G, G.pose, 1); RWP.S.add(G.root); G.root.traverse(o => o.frustumCulled = false); RWP.G = G; } catch (e) { console.warn('rwp', e); }
+  }
+  const fit = h / w > 1.25 ? 5.4 : 4.6; RWP.cam.position.set(0, 1.12, fit); RWP.cam.lookAt(0, 0.95, 0);
+  RWP.spin = !!spin;
+  if (!RWP.raf) { const tick = () => { if (!RWP.R || !document.body.contains(RWP.R.domElement)) { RWP.raf = 0; return; } if (RWP.G) { if (RWP.spin && !RWP.drag) RWP.ry += 0.006; RWP.G.root.rotation.y = RWP.ry; } RWP.R.render(RWP.S, RWP.cam); RWP.raf = requestAnimationFrame(tick); }; RWP.raf = requestAnimationFrame(tick); }
+}
+function rwpDressHTML(M, mine) {
+  const tab = RWP_TABS[RWP.tab][0];
+  return `<div id="cMini" class="rwp">
+    <div class="rwp-top"><span class="rwp-th">Theme: <b>${esc(M.th || '')}</b></span><b class="rwp-t" id="cRwT">${M.left}s</b></div>
+    <div class="rwp-stage"><canvas id="rwCv"></canvas><div class="rwp-hint">↔ drag to spin</div></div>
+    <div class="rwp-tabs">${RWP_TABS.map(([k, e, n], i) => `<button data-rwtab="${i}" class="${i === RWP.tab ? 'on' : ''} ${i < RWP.tab ? 'done' : ''}">${e}<small>${n}</small></button>`).join('')}</div>
+    <div class="rwp-car"><button class="rwp-arr" data-rwa="-1">‹</button><div class="rwp-items" id="rwItems"></div><button class="rwp-arr" data-rwa="1">›</button></div>
+    <div class="rwp-sw" id="rwSw"></div>
+    <button class="c-big rwp-next" id="rwNext">${RWP.tab < RWP_TABS.length - 1 ? `Next: ${RWP_TABS[RWP.tab + 1][2].toLowerCase()} ▶` : '✅ Ready for the runway!'}</button>
+  </div>`;
+}
+function rwpFill(M) {
+  const tab = RWP_TABS[RWP.tab][0], items = rwpItems(tab), sel = rwpSel(tab), i0 = Math.max(0, items.findIndex(x => x.id === sel));
+  const show = [-1, 0, 1].map(d => items[(i0 + d + items.length) % items.length]);
+  const box = $('#rwItems'); if (box) box.innerHTML = show.map((it, k) => `<button data-rwi="${it.id}" class="${k === 1 ? 'sel' : ''}"><span>${it.e}</span><b>${esc(it.name)}</b></button>`).join('');
+  const sw = $('#rwSw'); if (sw) {
+    if (tab === 'pose') sw.innerHTML = `<span class="rwp-cnt">${i0 + 1} / ${items.length}</span>`;
+    else { const it = WR.byId(tab, sel), cur = RWP.W[tab] || { c: 0 }, cols = it.cols || [], pats = it.pat || [];
+      sw.innerHTML = (cols.length > 1 ? cols.map((c, k) => `<i data-rwc="${k}" class="${k === (cur.c || 0) % cols.length ? 'on' : ''}" style="background:${c}"></i>`).join('') : '') + (pats.length > 1 ? `<span class="rwp-pats">${pats.map(p => `<button data-rwp="${p}" class="${(cur.p || pats[0]) === p ? 'on' : ''}">${p}</button>`).join('')}</span>` : '') || `<span class="rwp-cnt">${i0 + 1} / ${items.length}</span>`; }
+  }
+  rwpView($('#rwCv'), (M.lk || {})[RWP.me] || '0.0.0.0.0', rwEncode(RWP.W, RWP.pose), false);
+}
+function rwpSet(tab, id) {
+  if (tab === 'pose') RWP.pose = id; else { const it = WR.byId(tab, id); const old = RWP.W[tab] || {}; RWP.W[tab] = { id, c: old.id === id ? old.c : 0, p: it.pat ? (old.id === id && old.p) || it.pat[0] : null }; }
+  rwpFill(H.mini); if (RWP.sent) { RWP.sent = false; cSend('rw', { o: rwEncode(RWP.W, RWP.pose), done: 0 }); }
+}
+function rwpWire(body) {
+  body.querySelectorAll('[data-rwtab]').forEach(b => b.onclick = () => { RWP.tab = +b.dataset.rwtab; body.dataset.mk = ''; renderCtrl(); });
+  body.querySelectorAll('[data-rwa]').forEach(b => b.onclick = () => { const tab = RWP_TABS[RWP.tab][0], items = rwpItems(tab), i0 = Math.max(0, items.findIndex(x => x.id === rwpSel(tab))); rwpSet(tab, items[(i0 + +b.dataset.rwa + items.length) % items.length].id); });
+  const box = $('#rwItems'); if (box) box.onclick = e => { const b = e.target.closest('[data-rwi]'); if (b) rwpSet(RWP_TABS[RWP.tab][0], b.dataset.rwi); };
+  const sw = $('#rwSw'); if (sw) sw.onclick = e => { const tab = RWP_TABS[RWP.tab][0]; if (tab === 'pose') return; const c = e.target.closest('[data-rwc]'), p = e.target.closest('[data-rwp]'); const cur = RWP.W[tab] || { id: rwpSel(tab), c: 0 }; if (c) cur.c = +c.dataset.rwc; if (p) cur.p = p.dataset.rwp; RWP.W[tab] = cur; rwpFill(H.mini); };
+  const nx = $('#rwNext'); if (nx) nx.onclick = () => { if (RWP.tab < RWP_TABS.length - 1) { RWP.tab++; body.dataset.mk = ''; renderCtrl(); } else { RWP.sent = true; cSend('rw', { o: rwEncode(RWP.W, RWP.pose), done: 1 }); body.dataset.mk = ''; renderCtrl(); } };
+}
+function rwpRender(body, M, mine, players) {
+  RWP.me = mine.id;
+  if (RWP.n !== M.rn) { RWP.n = M.rn; RWP.W = WR.random(); Object.keys(RWP.W).forEach(k => { if (Math.random() < 0.5) RWP.W[k] = { id: WR.SLOTS[k][0].id, c: 0 }; }); RWP.pose = 'strike'; RWP.tab = 0; RWP.sent = false; }
+  const ready = (M.voted || []).map(String).includes(String(mine.id));
+  if (M.stage === 'intro') { body.innerHTML = `<div class="c-card" id="cMini" style="text-align:center"><h3>👗 GOBLIN RUNWAY</h3><p>Dress your goblin for the theme, pick a pose, then strut down the runway. Everyone rates every look 1–5 ⭐ — last place drinks!</p></div>`; return; }
+  if (M.stage === 'done' || M.sub === 'results') { const rk = (M.rank || []).map(id => players.find(p => String(p.id) === String(id))).filter(Boolean), me2 = rk.findIndex(p => String(p.id) === String(mine.id));
+    body.innerHTML = `<div class="c-card" id="cMini" style="text-align:center"><h3>${me2 === 0 ? '👑 You won Best Dressed!' : me2 === rk.length - 1 && rk.length > 1 ? '🍅 Last place — drink!' : '👗 Results'}</h3>${rk.map((p, i) => `<div class="rwp-rk ${String(p.id) === String(mine.id) ? 'me' : ''}"><span>${['🥇', '🥈', '🥉'][i] || i + 1 + '.'}</span><b>${esc(p.name)}</b></div>`).join('')}</div>`; return; }
+  if (M.sub === 'dress') {
+    if (ready && RWP.sent) { body.innerHTML = `<div id="cMini" class="rwp"><div class="rwp-top"><span class="rwp-th">Theme: <b>${esc(M.th || '')}</b></span><b class="rwp-t" id="cRwT">${M.left}s</b></div><div class="rwp-stage"><canvas id="rwCv"></canvas></div><div class="c-card" style="text-align:center;margin:8px 0"><h3>✅ Ready for the runway!</h3><p>Waiting for the others…</p></div><button class="c-big" id="rwEdit" style="background:#fffaf0;color:#2a1606">✏️ Change my look</button></div>`;
+      $('#rwEdit').onclick = () => { RWP.sent = false; cSend('rw', { o: rwEncode(RWP.W, RWP.pose), done: 0 }); body.dataset.mk = ''; renderCtrl(); };
+      rwpView($('#rwCv'), (M.lk || {})[mine.id] || '0.0.0.0.0', rwEncode(RWP.W, RWP.pose), true); return; }
+    body.innerHTML = rwpDressHTML(M, mine); rwpWire(body); rwpFill(M); return;
+  }
+  // walking / voting
+  const wk = players.find(p => String(p.id) === String(M.wk));
+  if (!wk) { body.innerHTML = `<div class="c-card" id="cMini" style="text-align:center"><h3>👗 The show is on!</h3><p>Watch the big screen 👀</p></div>`; return; }
+  if (String(wk.id) === String(mine.id)) { body.innerHTML = `<div class="c-card" id="cMini" style="text-align:center"><h3>💃 You're on the runway!</h3><p>Work it! Everyone's rating your look right now.</p><div style="font-size:64px">✨</div></div>`; return; }
+  const myV = (M.myv || {})[mine.id];
+  body.innerHTML = `<div id="cMini" class="rwp"><div class="rwp-top"><span class="rwp-th"><b style="color:${wk.color}">${esc(wk.name)}</b>'s goblin</span><b class="rwp-t" id="cRwT">${M.sub === 'vote' ? M.left + 's' : '👀'}</b></div>
+    <div class="rwp-stage"><canvas id="rwCv"></canvas></div>
+    ${(M.voted || []).map(String).includes(String(mine.id)) ? `<div class="c-card" style="text-align:center"><h3>⭐ Vote in!</h3><p>Next goblin coming up…</p></div>` : `<div class="rwp-q">Rate this look for <b>${esc(M.th || '')}</b></div><div class="rwp-stars">${[1, 2, 3, 4, 5].map(s => `<button data-rws="${s}">${s}<span>★</span></button>`).join('')}</div>`}</div>`;
+  body.querySelectorAll('[data-rws]').forEach(b => b.addEventListener('pointerdown', e => { e.preventDefault(); cSend('rwv', { s: +b.dataset.rws }); body.querySelectorAll('[data-rws]').forEach(x => x.disabled = true); b.classList.add('on'); }));
+  rwpView($('#rwCv'), M.wl || '0.0.0.0.0', M.wo || '', true);
+}
+
 function renderMiniCtrl(body, mine, players) {
   const M = H.mini, key = [M.type, M.stage, M.sub, M.holder, mine.id, M.who, M.n, (M.voted || []).map(String).includes(String(mine.id))].join('|');
   if (body.dataset.mk === key && $('#cMini')) { updateMiniCtrl(M); return; }
   body.dataset.mk = key;
+  if (M.type === 'runway') { rwpRender(body, M, mine, players); return; }
   const holder = players.find(p => String(p.id) === String(M.holder));
   let html = '';
   const myTurn = M.who != null && String(M.who) === String(mine.id), whoP = players.find(p => String(p.id) === String(M.who)), whoN = whoP ? esc(whoP.name) : 'Someone';
@@ -7885,6 +8454,7 @@ function updateMiniCtrl(M) {
   const t = $('#cBossT'); if (t) t.textContent = M.left + 's';
   const ct = $('#cCupT'); if (ct) ct.textContent = M.left + 's';
   const hl = $('#cHlT'); if (hl) hl.textContent = M.left + 's';
+  const rt = $('#cRwT'); if (rt && (M.sub === 'dress' || M.sub === 'vote')) rt.textContent = M.left + 's';
 }
 
 // ----- the phone side -----
@@ -8209,7 +8779,7 @@ $('#startBtn').onclick = () => {
 };
 
 // ---------- installable app + automatic updates (website version only) ----------
-const BUILD = '1795709265';
+const BUILD = '1795791046';
 if (STANDALONE) {
   try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
   let deferredInstall = null;
