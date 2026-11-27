@@ -7423,7 +7423,7 @@ const rwItemNames = outfit => { const d = rwDecode(outfit); return RW_SLOTS.map(
 function rwBegin() {
   const ps = miniPlayers();
   mini.theme = RW_THEMES[Math.floor(Math.random() * RW_THEMES.length)];
-  mini.sub = 'dress'; mini.st = 0; mini.wait = 100; mini.outfits = {}; mini.votes = {}; mini.looks = {}; mini.scores = {}; mini.n++;
+  mini.sub = 'dress'; mini.st = 0; mini.wait = 50; mini.outfits = {}; mini.votes = {}; mini.looks = {}; mini.scores = {}; mini.n++;
   ps.forEach((p, i) => { mini.looks[p.id] = rwLookStr(i); if (!hasPhone(p)) { mini.outfits[p.id] = rwEncode(WR.random(), WR.POSES[Math.floor(Math.random() * WR.POSES.length)].id); mini.votes[p.id] = 1; } });
   miniBanner('👗 GOBLIN RUNWAY 👗', `Theme: <b>${mini.theme}</b> · dress your goblin on your phone`);
   rwDressPanel(); renderUI(); hostPublish();
@@ -8787,7 +8787,7 @@ $('#startBtn').onclick = () => {
 };
 
 // ---------- installable app + automatic updates (website version only) ----------
-const BUILD = '1795793649';
+const BUILD = '1795797175';
 if (STANDALONE) {
   try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
   let deferredInstall = null;
