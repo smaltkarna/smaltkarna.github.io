@@ -7541,7 +7541,7 @@ function stepRW(dt) {
     if (u < 1) rwWalkAnim(G, u, mini.st);
     RW.key.target.position.set(0, 1, z); RW.key.position.set(0, 9, z + 4);
     RW.camLook.lerp(new THREE.Vector3(0, 1.2, z), 0.08); RW.camPos.lerp(new THREE.Vector3(Math.sin(t * 0.3) * 0.8, 1.6 + (1 - u) * 0.6, z + 5.0 + (1 - u) * 2.5), 0.05);
-    if (mini.st > D) { mini.sub = 'vote'; mini.st = 0; mini.wait = 9; G.legs.forEach(l => l.rotation.x = 0); RW.flash = 1; boingSfx(); hostPublish(); rwHud(); }
+    if (mini.st > D) { mini.sub = 'vote'; mini.st = 0; mini.wait = 10; G.legs.forEach(l => l.rotation.x = 0); RW.flash = 1; boingSfx(); hostPublish(); rwHud(); }
   } else if (mini.sub === 'vote' && G) {
     const k = Math.min(1, mini.st / 0.5); G.body.rotation.set(0, 0, 0); G.body.position.y = 0.45 + (G.lift || 0); WR.pose(G, G.pose, k);
     if (mini.st > 2.2 && mini.st < 4.2) G.root.rotation.y = (mini.st - 2.2) / 2 * Math.PI * 2; else if (mini.st >= 4.2) G.root.rotation.y = 0;
@@ -8787,7 +8787,7 @@ $('#startBtn').onclick = () => {
 };
 
 // ---------- installable app + automatic updates (website version only) ----------
-const BUILD = '1795791669';
+const BUILD = '1795793649';
 if (STANDALONE) {
   try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
   let deferredInstall = null;
