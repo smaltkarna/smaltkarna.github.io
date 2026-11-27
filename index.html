@@ -613,12 +613,9 @@
     </form>
     <ul id="playerList"></ul>
   </section>
-  <section id="miniSec">
-    <h2>🎮 Mini-games</h2>
-    <div class="mg-grid">
-      <button data-mg="runway"><span>👗</span>Goblin Runway</button><button data-mg="hot"><span>🔥</span>Hot Goblin</button><button data-mg="boss"><span>👹</span>Boss Fight</button><button data-mg="roulette"><span>🎰</span>Rule Roulette</button>
-      <button data-mg="cups"><span>🥤</span>Coin Under the Cup</button><button data-mg="hilo"><span>🃏</span>Higher or Lower</button><button data-mg="tos"><span>🥃</span>Truth or Shot</button><button data-mg="fieldgoal"><span>🏈</span>Field Goal</button>
-    </div>
+  <section class="fold" id="miniSec">
+    <h2><button class="foldBtn" data-sec="miniSec">Mini-games <span class="chev">▾</span></button></h2>
+    <div class="foldBody"><div style="display:flex;gap:8px"><select id="mgSel" class="lookSel"><option value="runway">👗 Goblin Runway</option><option value="hot">🔥 Hot Goblin</option><option value="boss">👹 Boss Fight</option><option value="roulette">🎰 Rule Roulette</option><option value="cups">🥤 Coin Under the Cup</option><option value="hilo">🃏 Higher or Lower</option><option value="tos">🥃 Truth or Shot</option><option value="fieldgoal">🏈 Field Goal</option></select><button id="mgPlay" class="lookSel" style="flex:0 0 auto;cursor:pointer">▶ Play</button></div></div>
   </section>
   <section class="fold" id="lookSec">
     <h2><button class="foldBtn" data-sec="lookSec">Map &amp; box <span class="chev">▾</span></button></h2>
@@ -7894,7 +7891,7 @@ if (WATCH) setTimeout(watchBoot, 700);
 document.addEventListener('click', e => { const b = e.target.closest('[data-gp]'); if (!b || !mini) return; const k = b.dataset.gp; if (k === 'rwgo') { rwStartShow(); return; } if (k === 'rwv') { rwVote(b.dataset.p, b.dataset.v); return; } if (k === 'hl') hlGuess(b.dataset.p, b.dataset.v); else if (k === 'tos') tosChoose(null, b.dataset.v); else if (k === 'vote') tosVote(null, b.dataset.v); else if (k === 'tosq') tosAsk(null, b.dataset.v); else if (k === 'kick') fgPress(null); });
 $('#tryCups').onclick = () => { if (!canAim() && !mini) return toast('Start a game with 2+ players first (and wait for the turn to finish)'); startMini('cups'); };
 $('#tryRoul').onclick = () => { if (!canAim() && !mini) return toast('Start a game with 2+ players first (and wait for the turn to finish)'); startMini('roulette'); };
-document.querySelectorAll('[data-mg]').forEach(b => b.onclick = () => { const t = b.dataset.mg; if (mini) return toast('A mini-game is already on'); if (!canAim()) return toast('Start a game with 2+ players first (and wait for the turn to finish)'); $('#try' + { runway: 'Runway', hot: 'Hot', boss: 'Boss', roulette: 'Roul', cups: 'Cups', hilo: 'Hilo', tos: 'Tos', fieldgoal: 'Fg' }[t]).click(); if (document.body.classList.contains('hudE')) { const pc = $('#panelClose'); if (pc) pc.click(); } });
+$('#mgPlay').onclick = () => { const t = $('#mgSel').value; if (mini) return toast('A mini-game is already on'); if (!canAim()) return toast('Start a game with 2+ players first (and wait for the turn to finish)'); $('#try' + { runway: 'Runway', hot: 'Hot', boss: 'Boss', roulette: 'Roul', cups: 'Cups', hilo: 'Hilo', tos: 'Tos', fieldgoal: 'Fg' }[t]).click(); if (document.body.classList.contains('hudE')) { const pc = $('#panelClose'); if (pc) pc.click(); } };
 $('#tryRunway').onclick = () => { if (!canAim() && !mini) return toast('Start a game with 2+ players first (and wait for the turn to finish)'); startMini('runway'); };
 $('#tryBoss').onclick = () => { if (!canAim() && !mini) return toast('Start a game with 2+ players first (and wait for the turn to finish)'); startMini('boss'); };
 $('#obeyBtn').onclick = e => { e.stopPropagation(); finishObey(); };
@@ -8790,7 +8787,7 @@ $('#startBtn').onclick = () => {
 };
 
 // ---------- installable app + automatic updates (website version only) ----------
-const BUILD = '1795791305';
+const BUILD = '1795791419';
 if (STANDALONE) {
   try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
   let deferredInstall = null;
