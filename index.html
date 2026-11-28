@@ -7578,9 +7578,9 @@ function rwResults() {
   const win = pById(ranked[0].id), last = ranked.length > 1 ? pById(ranked[ranked.length - 1].id) : null;
   const st = id => (mini.scores[id] || 0).toFixed(1);
   const rest = ranked.slice(3).map((x, k) => { const p = pById(x.id); return p ? `${k + 4}. ${esc(p.name)} ${st(x.id)}★` : ''; }).filter(Boolean).join(' · ');
-  const hud = $('#rwHud'); if (hud) hud.innerHTML = `<div class="rw-top"><div class="l1">👑 <b>${esc(win ? win.name : '')}</b> is Best Dressed — gives out a drink!</div>${last && last !== win ? `<div class="l2">🍅 <b>${esc(last.name)}</b> came last — drink!</div>` : ''}${rest ? `<div class="l3">${rest}</div>` : ''}</div>`;
+  const hud = $('#rwHud'); if (hud) hud.innerHTML = `<div class="rw-top"><div class="l1">👑 <b>${esc(win ? win.name : '')}</b> is Best Dressed!</div>${last && last !== win ? `<div class="l2">🍅 <b>${esc(last.name)}</b> came last — drink!</div>` : ''}${rest ? `<div class="l3">${rest}</div>` : ''}</div>`;
   if (last && last !== win) drink(last);
-  showResult(`👑 ${win ? win.name : ''} is Best Dressed!`, last && last !== win ? `${win.name} gives out a drink · ${last.name} drinks 🍅` : 'Gorgeous goblins all round', '#ffd84a');
+  showResult(`👑 ${win ? win.name : ''} is Best Dressed!`, last && last !== win ? `${last.name} came last — drink 🍅` : 'Gorgeous goblins all round', '#ffd84a');
   addLog(`👗 Goblin Runway — ${win ? win.name : '?'} won (${st(ranked[0].id)}★)${last && last !== win ? ', ' + last.name + ' drank' : ''}`);
   [0, 0.15, 0.3, 0.6].forEach((d, i) => tone('triangle', [523, 659, 784, 1046][i], [523, 659, 784, 1046][i], 0.3, 0.12, d));
   renderUI(); hostPublish();
@@ -8798,7 +8798,7 @@ $('#startBtn').onclick = () => {
 };
 
 // ---------- installable app + automatic updates (website version only) ----------
-const BUILD = '1795844974';
+const BUILD = '1795845072';
 if (STANDALONE) {
   try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
   let deferredInstall = null;
