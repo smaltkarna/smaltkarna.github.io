@@ -1721,6 +1721,7 @@ function setMap(id) {
   const env = MAP_BUILD[m.id](mapGroup);
   mapGroup.traverse(o => { if (o.isMesh && o.position.lengthSq() < 900 && !(o.material && o.material.transparent)) o.castShadow = true; });
   scene.add(mapGroup);
+  setTimeout(() => { try { if (state.map === m.id) { renderer.compile(scene, camera); warmMapEvents(m.id); } } catch (e) {} }, 400);
   scene.background = scene.background && scene.background.isColor ? scene.background : new THREE.Color();
   scene.background.set(env.bg); scene.fog.color.set(env.bg); scene.fog.near = env.fog[0]; scene.fog.far = env.fog[1];
   hemiMain.color.set(env.hemi[0]); hemiMain.groundColor.set(env.hemi[1]); hemiMain.intensity = env.hemi[2];
@@ -3458,9 +3459,10 @@ function operaNote(dur) {
 let goblin = null, poop = null, lastGob = {};
 function clearPoop() { if (poop) { scene.remove(poop); poop = null; } }
 function tone(type, f0, f1, dur, vol, delay = 0) {
-  if (!actx) return; try { const t = actx.currentTime + delay, o = actx.createOscillator(), g = actx.createGain(); o.type = type; o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(f1, t + dur); g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dur); o.connect(g).connect(actx.destination); o.start(t); o.stop(t + dur + 0.02); } catch (e) {}
+  if (!actx || window.__mute) return; try { const t = actx.currentTime + delay, o = actx.createOscillator(), g = actx.createGain(); o.type = type; o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(f1, t + dur); g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dur); o.connect(g).connect(actx.destination); o.start(t); o.stop(t + dur + 0.02); } catch (e) {}
 }
 function noiseSfx(type, f0, f1, dur, vol, q = 1) {
+  if (window.__mute) return;
   if (!actx) return; try { const t = actx.currentTime, n = actx.createBufferSource(); n.buffer = noiseBuf(); n.loop = true; const f = actx.createBiquadFilter(); f.type = type; f.Q.value = q; f.frequency.setValueAtTime(f0, t); f.frequency.exponentialRampToValueAtTime(f1, t + dur); const g = actx.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.08); g.gain.exponentialRampToValueAtTime(0.0001, t + dur); n.connect(f).connect(g).connect(actx.destination); n.start(t); n.stop(t + dur + 0.05); } catch (e) {}
 }
 const wheeSfx = () => { tone('sine', 1500, 320, 1.1, 0.22); tone('sine', 1520, 330, 1.1, 0.08); };
@@ -8122,6 +8124,21 @@ function adaptRes(raw) {
   else { perf.slow = 0; perf.fast = 0; }
 }
 // unpack every goblin part + prop and compile their shaders up front, so nothing stutters when a goblin shows up
+// build every random event of a map once, off-screen, so their shaders are compiled now instead of freezing the game when they first appear
+function warmMapEvents(id) {
+  if (CTRL || typeof MAP_EVENTS === 'undefined') return;
+  const list = MAP_EVENTS[id] || []; if (!list.length) return;
+  const keep = new Set(evGroup.children), lid = Object.assign({}, LIDCTL), saved = EV; let made = [];
+  const mute = window.__mute; window.__mute = true;
+  try {
+    list.forEach(fn => { try { const e = fn(); if (e && e.end) made.push(e); } catch (e) {} });
+    const added = evGroup.children.filter(c => !keep.has(c));
+    renderer.compile(scene, camera);
+    added.forEach(c => { evGroup.remove(c); c.traverse(o => { if (o.geometry) o.geometry.dispose(); }); });
+  } catch (e) { console.warn('warm', e); }
+  made.forEach(e => { try { e.end(); } catch (x) {} });
+  Object.assign(LIDCTL, lid); EV = saved; window.__mute = mute;
+}
 function prewarm() {
   if (CTRL) return;
   try {
@@ -8798,7 +8815,7 @@ $('#startBtn').onclick = () => {
 };
 
 // ---------- installable app + automatic updates (website version only) ----------
-const BUILD = '1795845194';
+const BUILD = '1795845486';
 if (STANDALONE) {
   try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
   let deferredInstall = null;
