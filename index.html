@@ -242,10 +242,10 @@
   #rwHud .rw-votes .hint{text-align:center;color:#e6d8f0;font-size:15px}
   #rwHud .np{margin-top:8px;background:rgba(0,0,0,.45);border-radius:10px;padding:6px;font-weight:800;font-size:13px;display:flex;gap:3px;align-items:center;flex-wrap:wrap}
   #rwHud .np button{border:0;border-radius:8px;background:#ffd84a;color:#2a1606;font-weight:900;padding:4px 6px;cursor:pointer}
-  #rwHud .rw-res{position:absolute;left:50%;bottom:3vh;transform:translateX(-50%);width:min(560px,60vw);background:rgba(20,10,28,.88);border:2px solid #ffd84a;border-radius:20px;padding:16px;color:#fff}
-  #rwHud .rw-res h2{margin:0 0 10px;text-align:center;font:900 clamp(22px,2.6vw,34px) 'Permanent Marker',cursive;color:#ffd84a}
-  #rwHud .rw-res .rows{display:grid;grid-template-columns:1fr 1fr;gap:2px 12px}#rwHud .rw-res .row{display:flex;gap:10px;align-items:center;padding:6px 8px;border-radius:10px;font-size:18px}#rwHud .rw-res .row b{flex:1}#rwHud .rw-res .row em{font-style:normal;color:#ffd84a;font-weight:900}
-  #rwHud .rw-res .row.win{background:rgba(255,216,74,.18)}#rwHud .rw-drinks{margin-top:10px;text-align:center;font-weight:700;line-height:1.5}
+  #rwHud .rw-res{position:absolute;left:50%;bottom:3vh;transform:translateX(-50%);width:min(880px,78vw);background:rgba(20,10,28,.88);border:2px solid #ffd84a;border-radius:20px;padding:16px;color:#fff}
+  #rwHud .rw-res h2{margin:0 0 10px;text-align:center;font:900 clamp(30px,3.6vw,50px) 'Permanent Marker',cursive;color:#ffd84a}
+  #rwHud .rw-res .rows{display:grid;grid-template-columns:1fr 1fr;gap:2px 12px}#rwHud .rw-res .row{display:flex;gap:12px;align-items:center;padding:6px 12px;border-radius:12px;font-size:clamp(24px,2.6vw,36px)}#rwHud .rw-res .row b{flex:1}#rwHud .rw-res .row em{font-style:normal;color:#ffd84a;font-weight:900}
+  #rwHud .rw-res .row.win{background:rgba(255,216,74,.18)}#rwHud .rw-drinks{margin-top:12px;text-align:center;font-weight:800;line-height:1.45;font-size:clamp(24px,2.8vw,38px)}
   /* phone */
   .rwp{display:flex;flex-direction:column;height:calc(100dvh - 150px);min-height:440px}
   .rwp-top{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:4px}.rwp-th{background:linear-gradient(90deg,#ff4fa3,#ffb03a);border-radius:12px;padding:5px 10px;font-size:14px;color:#fff;flex:1}
@@ -264,7 +264,7 @@
   .rwp .c-big{min-height:0!important;height:auto!important;padding:13px 10px!important;font-size:19px!important;margin-top:6px}
   .rwp-q{text-align:center;margin:8px 0 6px;color:#e6d8f0}.rwp-stars{display:flex;gap:6px}.rwp-stars button{flex:1;border:0;border-radius:14px;background:#fffaf0;color:#2a1606;font-size:22px;font-weight:900;padding:12px 0;display:flex;flex-direction:column;align-items:center}
   .rwp-stars button span{color:#e0aa3e;font-size:20px}.rwp-stars button.on{background:#ffd84a}.rwp-stars button:disabled{opacity:.5}
-  .rwp-rk{display:flex;gap:10px;padding:6px 10px;border-radius:10px;font-size:18px;text-align:left}.rwp-rk.me{background:rgba(255,216,74,.2)}
+  .rwp-rk{display:flex;gap:10px;padding:8px 12px;border-radius:10px;font-size:24px;text-align:left}.rwp-rk.me{background:rgba(255,216,74,.2)}
   /* ---- end runway ---- */
   .hl-list{display:flex;flex-direction:column;gap:6px;margin:12px auto 0;max-width:460px}
   .hl-p{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.07);border-radius:10px;padding:6px 10px}
@@ -7305,9 +7305,13 @@ function fgResult(good, why) {
 }
 function fgCleanup() { $('#fgFail').classList.remove('on'); document.body.classList.remove('fgmode'); $('#fgWind').classList.remove('on'); if (mini.fg) scene.remove(mini.fg.g); $('#fgMeter').classList.remove('on'); $('#gamePanel').classList.remove('fg'); mini.cam = null; }
 
+let mini_wait = 0;
 function maybeStartMini() {
   if (CTRL || mini || !state.started || gameOver || toss || goblin || placing || aim.mode !== 'wander') return;
-  if (state.players.length < 2 || $('#modal').classList.contains('on') || Date.now() - lastResultAt < 2600) return;
+  if (state.players.length < 2 || $('#modal').classList.contains('on') || Date.now() - lastResultAt < 5500) return;
+  // never cut in while someone is still doing a rule, writing one, or getting a gift/quick-time drink
+  if (obey || pendingRule || (typeof GIFT !== 'undefined' && GIFT) || (typeof QTE !== 'undefined' && QTE) || (typeof TRIP !== 'undefined' && TRIP)) { mini_wait = Date.now(); return; }
+  if (Date.now() - mini_wait < 3500) return;
   if (state.miniAt == null) { state.miniAt = state.rounds + 5 + Math.floor(Math.random() * 4); save(); }
   if (state.rounds >= state.miniAt) startMini();
 }
@@ -7541,7 +7545,7 @@ function stepRW(dt) {
     if (u < 1) rwWalkAnim(G, u, mini.st);
     RW.key.target.position.set(0, 1, z); RW.key.position.set(0, 9, z + 4);
     RW.camLook.lerp(new THREE.Vector3(0, 1.2, z), 0.08); RW.camPos.lerp(new THREE.Vector3(Math.sin(t * 0.3) * 0.8, 1.6 + (1 - u) * 0.6, z + 5.0 + (1 - u) * 2.5), 0.05);
-    if (mini.st > D) { mini.sub = 'vote'; mini.st = 0; mini.wait = 10; G.legs.forEach(l => l.rotation.x = 0); RW.flash = 1; boingSfx(); hostPublish(); rwHud(); }
+    if (mini.st > D) { mini.sub = 'vote'; mini.st = 0; mini.wait = 5; G.legs.forEach(l => l.rotation.x = 0); RW.flash = 1; boingSfx(); hostPublish(); rwHud(); }
   } else if (mini.sub === 'vote' && G) {
     const k = Math.min(1, mini.st / 0.5); G.body.rotation.set(0, 0, 0); G.body.position.y = 0.45 + (G.lift || 0); WR.pose(G, G.pose, k);
     if (mini.st > 2.2 && mini.st < 4.2) G.root.rotation.y = (mini.st - 2.2) / 2 * Math.PI * 2; else if (mini.st >= 4.2) G.root.rotation.y = 0;
@@ -8355,15 +8359,16 @@ function rwpFill(M) {
   }
   rwpView($('#rwCv'), (M.lk || {})[RWP.me] || '0.0.0.0.0', rwEncode(RWP.W, RWP.pose), false);
 }
+function rwpSync() { clearTimeout(RWP.syncT); RWP.syncT = setTimeout(() => { if (!RWP.sent && H && H.mini && H.mini.type === 'runway' && H.mini.sub === 'dress') cSend('rw', { o: rwEncode(RWP.W, RWP.pose), done: 0 }); }, 500); }
 function rwpSet(tab, id) {
   if (tab === 'pose') RWP.pose = id; else { const it = WR.byId(tab, id); const old = RWP.W[tab] || {}; RWP.W[tab] = { id, c: old.id === id ? old.c : 0, p: it.pat ? (old.id === id && old.p) || it.pat[0] : null }; }
-  rwpFill(H.mini); if (RWP.sent) { RWP.sent = false; cSend('rw', { o: rwEncode(RWP.W, RWP.pose), done: 0 }); }
+  rwpFill(H.mini); if (RWP.sent) { RWP.sent = false; cSend('rw', { o: rwEncode(RWP.W, RWP.pose), done: 0 }); } else rwpSync();
 }
 function rwpWire(body) {
   body.querySelectorAll('[data-rwtab]').forEach(b => b.onclick = () => { RWP.tab = +b.dataset.rwtab; body.dataset.mk = ''; renderCtrl(); });
   body.querySelectorAll('[data-rwa]').forEach(b => b.onclick = () => { const tab = RWP_TABS[RWP.tab][0], items = rwpItems(tab), i0 = Math.max(0, items.findIndex(x => x.id === rwpSel(tab))); rwpSet(tab, items[(i0 + +b.dataset.rwa + items.length) % items.length].id); });
   const box = $('#rwItems'); if (box) box.onclick = e => { const b = e.target.closest('[data-rwi]'); if (b) rwpSet(RWP_TABS[RWP.tab][0], b.dataset.rwi); };
-  const sw = $('#rwSw'); if (sw) sw.onclick = e => { const tab = RWP_TABS[RWP.tab][0]; if (tab === 'pose') return; const c = e.target.closest('[data-rwc]'), p = e.target.closest('[data-rwp]'); const cur = RWP.W[tab] || { id: rwpSel(tab), c: 0 }; if (c) cur.c = +c.dataset.rwc; if (p) cur.p = p.dataset.rwp; RWP.W[tab] = cur; rwpFill(H.mini); };
+  const sw = $('#rwSw'); if (sw) sw.onclick = e => { const tab = RWP_TABS[RWP.tab][0]; if (tab === 'pose') return; const c = e.target.closest('[data-rwc]'), p = e.target.closest('[data-rwp]'); const cur = RWP.W[tab] || { id: rwpSel(tab), c: 0 }; if (c) cur.c = +c.dataset.rwc; if (p) cur.p = p.dataset.rwp; RWP.W[tab] = cur; rwpFill(H.mini); rwpSync(); };
   const nx = $('#rwNext'); if (nx) nx.onclick = () => { if (RWP.tab < RWP_TABS.length - 1) { RWP.tab++; body.dataset.mk = ''; renderCtrl(); } else { RWP.sent = true; cSend('rw', { o: rwEncode(RWP.W, RWP.pose), done: 1 }); body.dataset.mk = ''; renderCtrl(); } };
 }
 function rwpRender(body, M, mine, players) {
@@ -8377,7 +8382,7 @@ function rwpRender(body, M, mine, players) {
     if (ready && RWP.sent) { body.innerHTML = `<div id="cMini" class="rwp"><div class="rwp-top"><span class="rwp-th">Theme: <b>${esc(M.th || '')}</b></span><b class="rwp-t" id="cRwT">${M.left}s</b></div><div class="rwp-stage"><canvas id="rwCv"></canvas></div><div class="c-card" style="text-align:center;margin:8px 0"><h3>✅ Ready for the runway!</h3><p>Waiting for the others…</p></div><button class="c-big" id="rwEdit" style="background:#fffaf0;color:#2a1606">✏️ Change my look</button></div>`;
       $('#rwEdit').onclick = () => { RWP.sent = false; cSend('rw', { o: rwEncode(RWP.W, RWP.pose), done: 0 }); body.dataset.mk = ''; renderCtrl(); };
       rwpView($('#rwCv'), (M.lk || {})[mine.id] || '0.0.0.0.0', rwEncode(RWP.W, RWP.pose), true); return; }
-    body.innerHTML = rwpDressHTML(M, mine); rwpWire(body); rwpFill(M); return;
+    body.innerHTML = rwpDressHTML(M, mine); rwpWire(body); rwpFill(M); if (!RWP.synced0 || RWP.synced0 !== M.rn) { RWP.synced0 = M.rn; rwpSync(); } return;
   }
   // walking / voting
   const wk = players.find(p => String(p.id) === String(M.wk));
@@ -8787,7 +8792,7 @@ $('#startBtn').onclick = () => {
 };
 
 // ---------- installable app + automatic updates (website version only) ----------
-const BUILD = '1795797175';
+const BUILD = '1795844817';
 if (STANDALONE) {
   try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
   let deferredInstall = null;
