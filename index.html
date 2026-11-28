@@ -3186,7 +3186,7 @@ function stepToss(dt) {
   if (toss.rest > 0.25 || toss.t > 6) {
     const f = P.clone(); toss = null;
     coin.rotation.set(Math.round(coin.rotation.x / Math.PI) * Math.PI, coin.rotation.y, 0, 'YXZ');
-    if (state.playTime >= DOOM_AFTER && Math.random() < 0.2) startDoom(); else evaluate(f.x, f.z);
+    if (state.playTime >= DOOM_AFTER && Math.random() < 0.1) startDoom(); else evaluate(f.x, f.z);
   }
 }
 function evaluate(x, z) {
@@ -8798,7 +8798,7 @@ $('#startBtn').onclick = () => {
 };
 
 // ---------- installable app + automatic updates (website version only) ----------
-const BUILD = '1795845072';
+const BUILD = '1795845194';
 if (STANDALONE) {
   try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
   let deferredInstall = null;
