@@ -3028,6 +3028,7 @@ function renderE() {
   $('#erBy').textContent = LR ? [LR.n ? `Rule #${LR.n}` : '', LR.by ? `written by ${LR.by}` : '', !obey && LR.who ? `landed by ${LR.who}` : ''].filter(Boolean).join(' · ') : `${state.rules.length} rule${state.rules.length === 1 ? '' : 's'} on the box`;
   let sign;
   if (!ok) sign = 'ADD AT LEAST 2 PLAYERS';
+  else if (state.started && state.lobby.length) sign = `✏️ WAITING FOR ${state.lobby.length === 1 ? esc(state.lobby[0].name.toUpperCase()) : state.lobby.length + ' PLAYERS'} <small>TO DRAW ${state.lobby.length === 1 ? 'THEIR' : 'THEIR'} CIRCLE${state.lobby.length === 1 ? '' : 'S'}</small>`;
   else if (mini) sign = $('#tossBtn').textContent.replace(/Space$/i, '').trim().toUpperCase();
   else if (goblin) sign = '👺 GOBLIN TIME!';
   else if (obey) sign = `📜 ${esc(cur.name.toUpperCase())}: DO THE RULE`;
@@ -3297,7 +3298,8 @@ const aimRing = new THREE.Group(); scene.add(aimRing);
   flat.add(overlay(new THREE.Mesh(new THREE.RingGeometry(0.965, 1, 96), new THREE.MeshBasicMaterial({ color: '#ffd84a', opacity: 0.95 }))));
   flat.add(overlay(new THREE.Mesh(new THREE.CircleGeometry(1, 64), new THREE.MeshBasicMaterial({ color: '#ffd84a', opacity: 0.13 }))));
 }
-const canAim = () => !gameOver && !mini && !obey && state.started && state.players.length >= 2 && !toss && !goblin && !placing && !$('#modal').classList.contains('on');
+// nobody flips until every player has drawn their circle
+const canAim = () => !gameOver && !mini && !obey && state.started && state.players.length >= 2 && !(state.lobby && state.lobby.length) && !toss && !goblin && !placing && !$('#modal').classList.contains('on');
 function stepAim(dt) {
   const ok = canAim();
   if (!ok && aim.mode === 'lock' && !toss) { aim.mode = 'wander'; }
@@ -8181,7 +8183,7 @@ function gamePhase() {
   if ($('#modal').classList.contains('on')) return 'rule';
   if (placing) return 'place';
   if (toss || goblin) return 'busy';
-  if (state.players.length < 2) return 'wait';
+  if (state.players.length < 2 || (state.started && state.lobby.length)) return 'wait';
   return aim.mode === 'lock' ? 'lock' : 'aim';
 }
 function hostPublish() {
@@ -8736,7 +8738,7 @@ function renderCtrl0() {
       + (String(H.obey.pid) === String(mine.id) ? `<button class="c-big" id="cObey">✅ I did it — next turn</button>` : '');
   } else if (myTurn) {
     const lock = H.phase === 'lock', busy = !['aim', 'lock'].includes(H.phase);
-    html += `<button class="c-big mine ${lock ? 'lock' : ''}" id="cFlip" ${busy ? 'disabled' : ''}>${busy ? (H.phase === 'busy' ? '🪙 In the air…' : 'Hold on…') : lock ? '🪙 TAP TO<br>THROW!' : '🎯 TAP TO<br>FREEZE'}</button>
+    html += `<button class="c-big mine ${lock ? 'lock' : ''}" id="cFlip" ${busy ? 'disabled' : ''}>${busy ? (H.phase === 'busy' ? '🪙 In the air…' : H.phase === 'wait' && (H.lobby || []).length ? '✏️ Waiting for everyone<br>to draw their circle' : 'Hold on…') : lock ? '🪙 TAP TO<br>THROW!' : '🎯 TAP TO<br>FREEZE'}</button>
       <p class="c-status" style="font-size:13px">${lock ? 'Throw when the yellow circle is small!' : 'Freeze the crosshair where you want to aim.'}</p>`;
   }
   const focusTurn = myTurn && H.phase !== 'over' && !(H.phase === 'rule' && String(H.ruleFor) === String(mine.id));
@@ -8815,7 +8817,7 @@ $('#startBtn').onclick = () => {
 };
 
 // ---------- installable app + automatic updates (website version only) ----------
-const BUILD = '1795845486';
+const BUILD = '1795845613';
 if (STANDALONE) {
   try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
   let deferredInstall = null;
