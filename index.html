@@ -265,6 +265,10 @@
   .rwp-q{text-align:center;margin:8px 0 6px;color:#e6d8f0}.rwp-stars{display:flex;gap:6px}.rwp-stars button{flex:1;border:0;border-radius:14px;background:#fffaf0;color:#2a1606;font-size:22px;font-weight:900;padding:12px 0;display:flex;flex-direction:column;align-items:center}
   .rwp-stars button span{color:#e0aa3e;font-size:20px}.rwp-stars button.on{background:#ffd84a}.rwp-stars button:disabled{opacity:.5}
   .rwp-rk{display:flex;gap:10px;padding:8px 12px;border-radius:10px;font-size:24px;text-align:left}.rwp-rk.me{background:rgba(255,216,74,.2)}
+  #rwHud .rw-top{position:absolute;left:50%;top:2.5vh;transform:translateX(-50%);width:min(1100px,92vw);text-align:center;color:#fff;text-shadow:0 4px 14px rgba(0,0,0,.8)}
+  #rwHud .rw-top .l1{font:900 clamp(30px,4vw,58px) 'Permanent Marker',cursive;color:#ffd84a;line-height:1.1}
+  #rwHud .rw-top .l2{font:900 clamp(26px,3.3vw,48px) 'Permanent Marker',cursive;color:#ff8a8a;margin-top:.4vh}
+  #rwHud .rw-top .l3{font:800 clamp(16px,1.6vw,22px) Inter,sans-serif;color:#e6d8f0;margin-top:.6vh}
   /* ---- end runway ---- */
   .hl-list{display:flex;flex-direction:column;gap:6px;margin:12px auto 0;max-width:460px}
   .hl-p{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.07);border-radius:10px;padding:6px 10px}
@@ -803,7 +807,7 @@ function seedRules() {
     let best = null, bd = -1;
     for (let k = 0; k < 500; k++) { const x = (Math.random() * 2 - 1) * (HALF - 0.4), z = (Math.random() * 2 - 1) * (HALF - 0.4), c = ruleCap(x, z, null); if (c > bd) { bd = c; best = { x, z }; } }
     if (!best || bd < 0.32) return;
-    const r = Math.min(bd * 0.95, ruleR());
+    const r = Math.min(bd * 0.95, ruleR() * 0.8); // starting rules a touch smaller than added ones
     state.rules.push({ id: newId(), text, by: '🍕 the house', byId: null, color: cols[i % cols.length], r, x: clamp(best.x, -HALF + r, HALF - r), z: clamp(best.z, -HALF + r, HALF - r) }); n++;
   });
   if (n) { addLog(`🍕 ${n} house rules are already on the box`); drawTop(); state.rules.slice(-n).forEach(r => pulse(r)); toast(`🍕 ${n} random house rules are on the box — good luck`); }
@@ -7554,7 +7558,7 @@ function stepRW(dt) {
     if (mini.st > mini.wait) { const vs = Object.values(mini.votes); mini.scores[mini.walker] = vs.length ? vs.reduce((a, b) => a + b, 0) / vs.length : 0; rwNext(); }
   } else if (mini.sub === 'results') {
     RW.podium.forEach((g, i) => { if (!g) return; const k = Math.min(1, Math.max(0, (mini.st - i * 0.4) / 0.6)); WR.pose(g, g.pose, k); g.root.rotation.y = Math.sin(t * 0.8 + i) * 0.25; });
-    RW.camLook.lerp(new THREE.Vector3(0, 2.0, -0.5), 0.05); RW.camPos.lerp(new THREE.Vector3(Math.sin(t * 0.25) * 1.2, 2.5, 8.6), 0.03);
+    RW.camLook.lerp(new THREE.Vector3(0, 1.45, -0.5), 0.05); RW.camPos.lerp(new THREE.Vector3(Math.sin(t * 0.25) * 1.0, 2.0, 8.4), 0.03);
     if (Math.random() < dt * 4) RW.flash = 0.6;
     if (mini.st > 9 && mini.stage !== 'done') { mini.stage = 'done'; mini.t = 0; renderUI(); hostPublish(); }
   }
@@ -7565,14 +7569,16 @@ function rwResults() {
   const ranked = mini.order.map(id => ({ id, s: mini.scores[id] || 0, r: Math.random() })).sort((a, b) => b.s - a.s || b.r - a.r);
   mini.rank = ranked.map(x => x.id);
   // podium (top 3) in front of the runway end
-  const blocks = [[0, 1.0, '#ffd84a'], [-1.9, 0.65, '#c0c6d0'], [1.9, 0.4, '#d08a4a']];
+  const blocks = [[0, 1.0, '#ffd84a'], [-1.9, 0.8, '#c0c6d0'], [1.9, 0.8, '#d08a4a']];
   ranked.slice(0, 3).forEach((x, i) => { const [px, h, c] = blocks[i]; const b = new THREE.Mesh(new THREE.BoxGeometry(1.6, h, 1.4), new THREE.MeshStandardMaterial({ color: c, roughness: 0.3, metalness: 0.3 })); b.position.set(px, h / 2 + 0.35, -0.5); b.receiveShadow = true; RW.S.add(b);
+    { const p = pById(x.id), sc = (mini.scores[x.id] || 0).toFixed(1); const tx = canvasTex(512, 256, (g, w, hh) => { g.fillStyle = 'rgba(0,0,0,0)'; g.clearRect(0, 0, w, hh); g.textAlign = 'center'; g.font = '110px serif'; g.fillText(['🥇', '🥈', '🥉'][i], w / 2, 100); g.font = '900 70px Inter, sans-serif'; g.lineWidth = 10; g.strokeStyle = 'rgba(0,0,0,.55)'; g.strokeText(p ? p.name : '?', w / 2, 175); g.fillStyle = p ? lighten(p.color) : '#fff'; g.fillText(p ? p.name : '?', w / 2, 175); g.font = '800 48px Inter, sans-serif'; g.fillStyle = '#2a1606'; g.fillText(sc + ' ★', w / 2, 238); });
+      const pl = new THREE.Mesh(new THREE.PlaneGeometry(1.5, 0.75), new THREE.MeshBasicMaterial({ map: tx, transparent: true })); pl.position.set(px, Math.max(0.35 + h / 2, 0.35 + 0.38), -0.5 + 0.71); RW.S.add(pl); }
     const G = rwBuildGoblin(mini.looks[x.id], mini.outfits[x.id]); G.root.position.set(px, 0.35 + h, -0.5); G.root.traverse(o => { if (o.isMesh) o.castShadow = true; }); RW.S.add(G.root); RW.podium[i] = G; });
-  RW.key.position.set(0, 9, 5); RW.key.target.position.set(0, 1, -0.5); RW.key.angle = 0.55; RW.camPos.set(0, 2.5, 8.6); RW.camLook.set(0, 2.0, -0.5);
+  RW.key.position.set(0, 9, 5); RW.key.target.position.set(0, 1, -0.5); RW.key.angle = 0.55; RW.camPos.set(0, 2.0, 8.4); RW.camLook.set(0, 1.45, -0.5);
   const win = pById(ranked[0].id), last = ranked.length > 1 ? pById(ranked[ranked.length - 1].id) : null;
   const st = id => (mini.scores[id] || 0).toFixed(1);
-  const hud = $('#rwHud'); if (hud) hud.innerHTML = `<div class="rw-res"><h2>👑 BEST DRESSED 👑</h2><div class="rows">${ranked.map((x, i) => { const p = pById(x.id); return p ? `<div class="row ${i === 0 ? 'win' : ''}"><span>${['🥇', '🥈', '🥉'][i] || (i + 1) + '.'}</span><b style="color:${lighten(p.color)}">${esc(p.name)}</b><em>${st(x.id)}★</em></div>` : ''; }).join('')}</div>
-    <div class="rw-drinks">${win ? `👑 <b>${esc(win.name)}</b> gives out a drink` : ''}${last && last !== win ? `<br>🍅 <b>${esc(last.name)}</b> (last place) drinks!` : ''}</div></div>`;
+  const rest = ranked.slice(3).map((x, k) => { const p = pById(x.id); return p ? `${k + 4}. ${esc(p.name)} ${st(x.id)}★` : ''; }).filter(Boolean).join(' · ');
+  const hud = $('#rwHud'); if (hud) hud.innerHTML = `<div class="rw-top"><div class="l1">👑 <b>${esc(win ? win.name : '')}</b> is Best Dressed — gives out a drink!</div>${last && last !== win ? `<div class="l2">🍅 <b>${esc(last.name)}</b> came last — drink!</div>` : ''}${rest ? `<div class="l3">${rest}</div>` : ''}</div>`;
   if (last && last !== win) drink(last);
   showResult(`👑 ${win ? win.name : ''} is Best Dressed!`, last && last !== win ? `${win.name} gives out a drink · ${last.name} drinks 🍅` : 'Gorgeous goblins all round', '#ffd84a');
   addLog(`👗 Goblin Runway — ${win ? win.name : '?'} won (${st(ranked[0].id)}★)${last && last !== win ? ', ' + last.name + ' drank' : ''}`);
@@ -8792,7 +8798,7 @@ $('#startBtn').onclick = () => {
 };
 
 // ---------- installable app + automatic updates (website version only) ----------
-const BUILD = '1795844817';
+const BUILD = '1795844974';
 if (STANDALONE) {
   try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
   let deferredInstall = null;
